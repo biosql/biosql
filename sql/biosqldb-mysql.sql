@@ -40,13 +40,13 @@ CREATE INDEX biodatabaseidx1 on biodatabase(authority);
 CREATE TABLE taxon (
   	taxon_id   	INT(10) UNSIGNED NOT NULL auto_increment,
   	binomial 	VARCHAR(96) NOT NULL,
+	variant         VARCHAR(64) NOT NULL,
   	common_name 	VARCHAR(255),
   	ncbi_taxon_id 	INT(10),
   	full_lineage 	TEXT NOT NULL,
 	PRIMARY KEY (taxon_id),
-  	UNIQUE (binomial),
-  	UNIQUE (ncbi_taxon_id),
-  	UNIQUE (common_name)
+  	UNIQUE (binomial,variant),
+  	UNIQUE (ncbi_taxon_id)
 ) TYPE=INNODB;
 
 
@@ -154,8 +154,6 @@ CREATE TABLE bioentry_dblink (
 --     	bioentry_dblink_id INT(10) UNSIGNED NOT NULL auto_increment,
        	bioentry_id        INT(10) UNSIGNED NOT NULL,
        	dbxref_id          INT(10) UNSIGNED NOT NULL,
---	PRIMARY KEY (bioentry_dblink_id),
---	UNIQUE (bioentry_id,dbxref_id)
 	PRIMARY KEY (bioentry_id,dbxref_id)
 ) TYPE=INNODB;
 
@@ -222,14 +220,6 @@ CREATE INDEX bqv2 ON bioentry_qualifier_value(ontology_term_id);
 --   - split locations on remote sequences
 
 -- The fuzzies are not handled yet
-
--- CREATE TABLE seqfeature_source (
---        	seqfeature_source_id 	INT(10) UNSIGNED NOT NULL auto_increment,
---       	source_name 		VARCHAR(255) NOT NULL,
--- 	PRIMARY KEY (seqfeature_source_id)
--- ) TYPE=INNODB;
-
--- CREATE INDEX seqfeatsource_name ON seqfeature_source(source_name);
 
 CREATE TABLE seqfeature (
    	seqfeature_id 		INT(10) UNSIGNED NOT NULL auto_increment,
