@@ -109,7 +109,7 @@ CREATE TABLE term_dbxref (
 	PRIMARY KEY (term_id, dbxref_id)
 ) TYPE=INNODB;
 
-CREATE INDEX ontdbxref_dbxrefid ON term_dbxref(dbxref_id);
+CREATE INDEX trmdbxref_dbxrefid ON term_dbxref(dbxref_id);
 
 -- relationship between controlled vocabulary / ontology term
 -- we use subject/predicate/object but this could also
@@ -131,14 +131,14 @@ CREATE TABLE term_relationship (
        	subject_term_id	INT(10) UNSIGNED NOT NULL,
        	predicate_term_id    INT(10) UNSIGNED NOT NULL,
        	object_term_id       INT(10) UNSIGNED NOT NULL,
-	ontology_id	INT(10) UNSIGNED,
+	ontology_id	INT(10) UNSIGNED NOT NULL,
 	PRIMARY KEY (term_relationship_id),
 	UNIQUE (subject_term_id,predicate_term_id,object_term_id,ontology_id)
 ) TYPE=INNODB;
 
-CREATE INDEX ontrel_predicateid ON term_relationship(predicate_term_id);
-CREATE INDEX ontrel_objectid ON term_relationship(object_term_id);
-CREATE INDEX ontrel_ontid ON term_relationship(ontology_id);
+CREATE INDEX trmrel_predicateid ON term_relationship(predicate_term_id);
+CREATE INDEX trmrel_objectid ON term_relationship(object_term_id);
+CREATE INDEX trmrel_ontid ON term_relationship(ontology_id);
 -- you may want to add this for mysql because MySQL often is broken with
 -- respect to using the composite index for the initial keys
 --CREATE INDEX ontrel_subjectid ON term_relationship(subject_term_id);
@@ -165,12 +165,12 @@ CREATE TABLE term_path (
 	UNIQUE (subject_term_id,predicate_term_id,object_term_id,ontology_id,distance)
 ) TYPE=INNODB;
 
-CREATE INDEX ontpath_predicateid ON term_path(predicate_term_id);
-CREATE INDEX ontpath_objectid ON term_path(object_term_id);
-CREATE INDEX ontpath_ontid ON term_path(ontology_id);
+CREATE INDEX trmpath_predicateid ON term_path(predicate_term_id);
+CREATE INDEX trmpath_objectid ON term_path(object_term_id);
+CREATE INDEX trmpath_ontid ON term_path(ontology_id);
 -- you may want to add this for mysql because MySQL often is broken with
 -- respect to using the composite index for the initial keys
---CREATE INDEX ontpath_subjectid ON term_path(subject_term_id);
+--CREATE INDEX trmpath_subjectid ON term_path(subject_term_id);
 
 -- we can be a bioentry without a biosequence, but not visa-versa
 -- most things are going to be keyed off bioentry_id
@@ -223,7 +223,7 @@ CREATE TABLE bioentry_relationship (
 	UNIQUE (object_bioentry_id,subject_bioentry_id,term_id)
 ) TYPE=INNODB;
 
-CREATE INDEX bioentryrel_ont   ON bioentry_relationship(term_id);
+CREATE INDEX bioentryrel_trm   ON bioentry_relationship(term_id);
 CREATE INDEX bioentryrel_child ON bioentry_relationship(subject_bioentry_id);
 -- you may want to add this for mysql because MySQL often is broken with
 -- respect to using the composite index for the initial keys
@@ -239,7 +239,7 @@ CREATE TABLE bioentry_path (
 	UNIQUE (object_bioentry_id,subject_bioentry_id,term_id,distance)
 ) TYPE=INNODB;
 
-CREATE INDEX bioentrypath_ont   ON bioentry_path(term_id);
+CREATE INDEX bioentrypath_trm   ON bioentry_path(term_id);
 CREATE INDEX bioentrypath_child ON bioentry_path(subject_bioentry_id);
 -- you may want to add this for mysql because MySQL often is broken with
 -- respect to using the composite index for the initial keys
@@ -299,7 +299,7 @@ CREATE TABLE dbxref_qualifier_value (
 ) TYPE=INNODB;
 
 CREATE INDEX dbxrefqual_dbx ON dbxref_qualifier_value(dbxref_id);
-CREATE INDEX dbxrefqual_ont ON dbxref_qualifier_value(term_id);
+CREATE INDEX dbxrefqual_trm ON dbxref_qualifier_value(term_id);
 
 -- Direct dblinks. It is tempting to do this
 -- from bioentry_id to bioentry_id. But that wont work
@@ -369,7 +369,7 @@ CREATE TABLE bioentry_qualifier_value (
 	UNIQUE (bioentry_id,term_id,rank)
 ) TYPE=INNODB;
 
-CREATE INDEX bioentryqual_ont ON bioentry_qualifier_value(term_id);
+CREATE INDEX bioentryqual_trm ON bioentry_qualifier_value(term_id);
 
 -- feature table. We cleanly handle
 --   - simple locations
@@ -387,7 +387,7 @@ CREATE TABLE seqfeature (
 	UNIQUE (bioentry_id,type_term_id,source_term_id,rank)
 ) TYPE=INNODB;
 
-CREATE INDEX seqfeature_ont  ON seqfeature(type_term_id);
+CREATE INDEX seqfeature_trm  ON seqfeature(type_term_id);
 CREATE INDEX seqfeature_fsrc ON seqfeature(source_term_id);
 -- you may want to add this for mysql because MySQL often is broken with
 -- respect to using the composite index for the initial keys
@@ -407,7 +407,7 @@ CREATE TABLE seqfeature_relationship (
 	UNIQUE (object_seqfeature_id,subject_seqfeature_id,term_id)
 ) TYPE=INNODB;
 
-CREATE INDEX seqfeaturerel_ont   ON seqfeature_relationship(term_id);
+CREATE INDEX seqfeaturerel_trm   ON seqfeature_relationship(term_id);
 CREATE INDEX seqfeaturerel_child ON seqfeature_relationship(subject_seqfeature_id);
 -- you may want to add this for mysql because MySQL often is broken with
 -- respect to using the composite index for the initial keys
@@ -423,7 +423,7 @@ CREATE TABLE seqfeature_path (
 	UNIQUE (object_seqfeature_id,subject_seqfeature_id,term_id,distance)
 ) TYPE=INNODB;
 
-CREATE INDEX seqfeaturepath_ont   ON seqfeature_path(term_id);
+CREATE INDEX seqfeaturepath_trm   ON seqfeature_path(term_id);
 CREATE INDEX seqfeaturepath_child ON seqfeature_path(subject_seqfeature_id);
 -- you may want to add this for mysql because MySQL often is broken with
 -- respect to using the composite index for the initial keys
@@ -438,7 +438,7 @@ CREATE TABLE seqfeature_qualifier_value (
    	PRIMARY KEY (seqfeature_id,term_id,rank)
 ) TYPE=INNODB;
 
-CREATE INDEX seqfeaturequal_ont ON seqfeature_qualifier_value(term_id);
+CREATE INDEX seqfeaturequal_trm ON seqfeature_qualifier_value(term_id);
    
 -- DBXrefs for features. This is necessary for genome oriented viewpoints,
 -- where you have a few have long sequences (contigs, or chromosomes) with many
@@ -484,7 +484,7 @@ CREATE TABLE location (
 
 CREATE INDEX seqfeatureloc_start ON location(start_pos, end_pos);
 CREATE INDEX seqfeatureloc_dbx   ON location(dbxref_id);
-CREATE INDEX seqfeatureloc_ont   ON location(term_id);
+CREATE INDEX seqfeatureloc_trm   ON location(term_id);
 
 -- location qualifiers - mainly intended for fuzzies but anything
 -- can go in here
@@ -502,7 +502,7 @@ CREATE TABLE location_qualifier_value (
 	PRIMARY KEY (location_id,term_id)
 ) TYPE=INNODB;
 
-CREATE INDEX locationqual_ont ON location_qualifier_value(term_id);
+CREATE INDEX locationqual_trm ON location_qualifier_value(term_id);
 
 --
 -- Create the foreign key constraints
@@ -522,40 +522,40 @@ ALTER TABLE term_synonym ADD CONSTRAINT FKterm_syn
 
 -- term_dbxref
 
-ALTER TABLE term_dbxref ADD CONSTRAINT FKdbxref_ontdbxref
+ALTER TABLE term_dbxref ADD CONSTRAINT FKdbxref_trmdbxref
        	FOREIGN KEY (dbxref_id) REFERENCES dbxref(dbxref_id)
 	ON DELETE CASCADE;
-ALTER TABLE term_dbxref ADD CONSTRAINT FKterm_ontdbxref
+ALTER TABLE term_dbxref ADD CONSTRAINT FKterm_trmdbxref
       FOREIGN KEY (term_id) REFERENCES term(term_id)
 	ON DELETE CASCADE;
 
 -- term_relationship
 
-ALTER TABLE term_relationship ADD CONSTRAINT FKontsubject_ontrel
+ALTER TABLE term_relationship ADD CONSTRAINT FKtrmsubject_trmrel
 	FOREIGN KEY (subject_term_id) REFERENCES term(term_id)
 	ON DELETE CASCADE;
-ALTER TABLE term_relationship ADD CONSTRAINT FKontpredicate_ontrel
+ALTER TABLE term_relationship ADD CONSTRAINT FKtrmpredicate_trmrel
        	FOREIGN KEY (predicate_term_id) REFERENCES term(term_id)
 	ON DELETE CASCADE;
-ALTER TABLE term_relationship ADD CONSTRAINT FKontobject_ontrel
+ALTER TABLE term_relationship ADD CONSTRAINT FKtrmobject_trmrel
        	FOREIGN KEY (object_term_id) REFERENCES term(term_id)
 	ON DELETE CASCADE;
-ALTER TABLE term_relationship ADD CONSTRAINT FKterm_ontrel
+ALTER TABLE term_relationship ADD CONSTRAINT FKterm_trmrel
        	FOREIGN KEY (ontology_id) REFERENCES ontology(ontology_id)
 	ON DELETE CASCADE;
 
 -- term_path
 
-ALTER TABLE term_path ADD CONSTRAINT FKontsubject_ontpath
+ALTER TABLE term_path ADD CONSTRAINT FKtrmsubject_trmpath
 	FOREIGN KEY (subject_term_id) REFERENCES term(term_id)
 	ON DELETE CASCADE;
-ALTER TABLE term_path ADD CONSTRAINT FKontpredicate_ontpath
+ALTER TABLE term_path ADD CONSTRAINT FKtrmpredicate_trmpath
        	FOREIGN KEY (predicate_term_id) REFERENCES term(term_id)
 	ON DELETE CASCADE;
-ALTER TABLE term_path ADD CONSTRAINT FKontobject_ontpath
+ALTER TABLE term_path ADD CONSTRAINT FKtrmobject_trmpath
        	FOREIGN KEY (object_term_id) REFERENCES term(term_id)
 	ON DELETE CASCADE;
-ALTER TABLE term_path ADD CONSTRAINT FKterm_ontpath
+ALTER TABLE term_path ADD CONSTRAINT FKontology_trmpath
        	FOREIGN KEY (ontology_id) REFERENCES ontology(ontology_id)
 	ON DELETE CASCADE;
 
@@ -621,7 +621,7 @@ ALTER TABLE bioentry_dbxref ADD CONSTRAINT FKdbxref_dblink
 
 -- dbxref_qualifier_value
 
-ALTER TABLE dbxref_qualifier_value ADD CONSTRAINT FKont_dbxrefqual
+ALTER TABLE dbxref_qualifier_value ADD CONSTRAINT FKtrm_dbxrefqual
 	FOREIGN KEY (term_id) REFERENCES term(term_id);
 ALTER TABLE dbxref_qualifier_value ADD CONSTRAINT FKdbxref_dbxrefqual
 	FOREIGN KEY (dbxref_id) REFERENCES dbxref(dbxref_id)
@@ -643,6 +643,10 @@ ALTER TABLE bioentry_qualifier_value ADD CONSTRAINT FKbioentry_entqual
 	ON DELETE CASCADE;
 ALTER TABLE bioentry_qualifier_value ADD CONSTRAINT FKterm_entqual
 	FOREIGN KEY (term_id) REFERENCES term(term_id);
+
+-- reference 
+ALTER TABLE reference ADD CONSTRAINT FKdbxref_reference
+      FOREIGN KEY ( dbxref_id ) REFERENCES dbxref ( dbxref_id ) ;
 
 -- seqfeature
 
