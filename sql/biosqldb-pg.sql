@@ -60,9 +60,11 @@ CREATE INDEX bioentryacc ON bioentry ( accession );
 CREATE TABLE bioentry_taxa ( 
 	 bioentry_id int NOT NULL , 
 	 taxa_id int NOT NULL , 
+	 FOREIGN KEY ( taxa_id ) REFERENCES taxa ( taxa_id ) , 
 	 FOREIGN KEY ( bioentry_id ) REFERENCES bioentry ( bioentry_id ) , 
 	 PRIMARY KEY ( bioentry_id ) ); 
 
+CREATE INDEX bioentryentry ON bioentry_entry ( entry_id ); 
 CREATE INDEX bioentrytax ON bioentry_taxa ( taxa_id ); 
 --- some bioentries will have a sequence 
 --- biosequence because sequence is sometimes  
@@ -161,6 +163,7 @@ CREATE TABLE comment (
 	 bioentry_id int NOT NULL , 
 	 comment_text text NOT NULL , 
 	 comment_rank int NOT NULL , 
+	 UNIQUE ( bioentry_id , comment_rank ) , 
 	 FOREIGN KEY ( bioentry_id ) REFERENCES bioentry ( bioentry_id ) ); 
 
 CREATE INDEX cmtidx1 ON comment ( bioentry_id ); 
@@ -247,6 +250,7 @@ CREATE TABLE seqfeature_location (
 	 seq_end int , 
 	 seq_strand int NOT NULL , 
 	 location_rank int NOT NULL , 
+	 UNIQUE ( seqfeature_id , location_rank ) , 
 	 FOREIGN KEY ( seqfeature_id ) REFERENCES seqfeature ( seqfeature_id ) ); 
 
 CREATE INDEX sfl1 ON seqfeature_location ( seqfeature_id ); 
