@@ -2,6 +2,28 @@
 -- SQL script to create a BioSQL-compliant API on top of the Symgene
 -- schema.
 --
+-- Even though the relational model of the Symgene schema is identical to the
+-- BioSQL schema, the naming conventions used are not. The Oracle version uses
+-- a prefix for all table names (SG_), names association tables by 
+-- concatenating the two entities (using '_' as delimiter) and appending 
+-- '_assoc'. Also, all primary keys are called 'OID' (which short and sweet),
+-- whereas foreign key names are formed by appending '_OID' to a consistently
+-- re-occurring 2-4 letter acronym for the referenced table.
+-- 
+-- This API achieves partial naming identity by mapping the table names to the
+-- original BioSQL table names using synonyms while leaving the column names
+-- unchanged. It may be more efficient than the view-based API (see below) when
+-- joining aliased tables instead of views, but it also requires a language
+-- binding that is agnostic of the precise column naming. Presently, only
+-- bioperl-db accomplishes this.
+--
+-- There is another API (BS-create-Biosql-API.sql) that emulates the original
+-- BioSQL naming convention using views except where this is not possible due
+-- to Oracle reserved words being used in the original schema.
+--
+-- Choose the API you want to instantiate according to your needs. Since the
+-- eventual table names are identical, you can only have either of the two,
+-- not both at the same time.
 --
 -- $GNF: projects/gi/symgene/src/DB/BS-create-Biosql-API.sql,v 1.7 2003/06/01 21:07:24 hlapp Exp $
 --
