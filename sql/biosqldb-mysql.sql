@@ -110,7 +110,7 @@ CREATE TABLE biosequence (
   FOREIGN KEY (bioentry_id) REFERENCES bioentry(bioentry_id),
   UNIQUE(bioentry_id)
 );
-CREATE INDEX biosequenceeid  ON biosequence(bioentry_id);
+
 
 # new table
 CREATE TABLE dbxref (
@@ -179,15 +179,15 @@ CREATE TABLE bioentry_reference (
   reference_start    int(10),
   reference_end      int(10),
   reference_rank int(5) unsigned NOT NULL,
-
   PRIMARY KEY(bioentry_id,reference_id,reference_rank),
   FOREIGN KEY(bioentry_id) REFERENCES bioentry(bioentry_id),
   FOREIGN KEY(reference_id) REFERENCES reference(reference_id)
 );
-CREATE INDEX reference_rank_idx ON bioentry_reference(reference_rank);
-CREATE INDEX reference_rank_idx2 ON bioentry_reference(bioentry_id);
+# does anyone really query only by rank??
+# CREATE INDEX reference_rank_idx ON bioentry_reference(reference_rank);
+# already in PK at first position:
+# CREATE INDEX reference_rank_idx2 ON bioentry_reference(bioentry_id);
 CREATE INDEX reference_rank_idx3 ON bioentry_reference(reference_id);
-CREATE INDEX reference_rank_idx4 ON bioentry_reference(reference_rank);
 CREATE INDEX reference_rank_idx5 ON bioentry_reference(bioentry_id, reference_rank);
 
 
@@ -218,7 +218,6 @@ CREATE TABLE bioentry_qualifier_value (
 );
 CREATE INDEX bqv1 ON bioentry_qualifier_value(bioentry_id);
 CREATE INDEX bqv2 ON bioentry_qualifier_value(ontology_term_id);
-CREATE INDEX bqv3 ON bioentry_qualifier_value(bioentry_id, ontology_term_id);
 
 # feature table. We cleanly handle
 #   - simple locations
@@ -315,7 +314,6 @@ CREATE TABLE remote_seqfeature_name (
        version   int(10) NOT NULL,
   FOREIGN KEY (seqfeature_location_id) REFERENCES seqfeature_location(seqfeature_location_id)
 );
-CREATE INDEX rsfn1 ON remote_seqfeature_name(seqfeature_location_id);
 
 # location qualifiers - mainly intended for fuzzies but anything
 # can go in here
