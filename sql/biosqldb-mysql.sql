@@ -59,11 +59,13 @@ CREATE TABLE ontology_term (
        	term_name        VARCHAR(255) NOT NULL,
        	term_definition  TEXT,
 	term_identifier	 VARCHAR(40),
+	category_id      INT(10) UNSIGNED,
 	PRIMARY KEY (ontology_term_id),
-	UNIQUE (term_name),
+	UNIQUE (term_name,category_id),
 	UNIQUE (term_identifier)
 ) TYPE=INNODB;
 
+CREATE INDEX ontcat ON ontology_term(category_id);
 
 -- we can be a bioentry without a biosequence, but not visa-versa
 -- most things are going to be keyed off bioentry_id
@@ -221,28 +223,26 @@ CREATE INDEX bqv2 ON bioentry_qualifier_value(ontology_term_id);
 
 -- The fuzzies are not handled yet
 
-CREATE TABLE seqfeature_source (
-       	seqfeature_source_id 	INT(10) UNSIGNED NOT NULL auto_increment,
-      	source_name 		VARCHAR(255) NOT NULL,
-	PRIMARY KEY (seqfeature_source_id)
-) TYPE=INNODB;
+-- CREATE TABLE seqfeature_source (
+--        	seqfeature_source_id 	INT(10) UNSIGNED NOT NULL auto_increment,
+--       	source_name 		VARCHAR(255) NOT NULL,
+-- 	PRIMARY KEY (seqfeature_source_id)
+-- ) TYPE=INNODB;
 
-CREATE INDEX seqfeatsource_name ON seqfeature_source(source_name);
+-- CREATE INDEX seqfeatsource_name ON seqfeature_source(source_name);
 
 CREATE TABLE seqfeature (
    	seqfeature_id 		INT(10) UNSIGNED NOT NULL auto_increment,
    	bioentry_id   		INT(10) UNSIGNED NOT NULL,
    	ontology_term_id	INT(10) UNSIGNED,
---   	seqfeature_source_id  	INT(10) UNSIGNED,
+   	seqfeature_source_id  	INT(10) UNSIGNED,
    	seqfeature_rank 	INT(5),
-	seqfeature_source	VARCHAR(96),
 	PRIMARY KEY (seqfeature_id),
 	UNIQUE (bioentry_id,ontology_term_id,seqfeature_rank)
 ) TYPE=INNODB;
 
 CREATE INDEX sf1 ON seqfeature(ontology_term_id);
--- CREATE INDEX sf2 ON seqfeature(seqfeature_source_id);
-CREATE INDEX sf3 ON seqfeature(seqfeature_source);
+CREATE INDEX sf2 ON seqfeature(seqfeature_source_id);
 
 -- seqfeatures can be arranged in containment hierarchies.
 -- one can imagine storing other relationships between features,
@@ -257,7 +257,6 @@ CREATE TABLE seqfeature_relationship (
 ) TYPE=INNODB;
 
 CREATE INDEX sfr1 ON seqfeature_relationship(ontology_term_id);
--- CREATE INDEX sfr2 ON seqfeature_relationship(parent_seqfeature_id);
 CREATE INDEX sfr3 ON seqfeature_relationship(child_seqfeature_id);
 
 CREATE TABLE seqfeature_qualifier_value (
@@ -286,7 +285,7 @@ CREATE TABLE seqfeature_location (
    	seq_start              	INT(10),
    	seq_end                	INT(10),
    	seq_strand             	TINYINT NOT NULL,
-   	location_rank          	SMALLINT NOT NULL,
+   	location_rank          	SMALLINT,
 	PRIMARY KEY (seqfeature_location_id),
    	UNIQUE (seqfeature_id, location_rank)
 ) TYPE=INNODB;
@@ -344,6 +343,11 @@ CREATE TABLE cache_corba_support (
 -- Create the foreign key constraints
 --
 
+-- ontology
+ALTER TABLE ontology_term ADD CONSTRAINT FKontology_ontology
+	FOREIGN KEY (category_id) REFERENCES ontology_term(ontology_term_id)
+	ON DELETE CASCADE;
+
 -- bioentry
 ALTER TABLE bioentry ADD CONSTRAINT FKtaxon_bioentry
 	FOREIGN KEY (taxon_id) REFERENCES taxon(taxon_id);
@@ -394,8 +398,9 @@ ALTER TABLE bioentry_qualifier_value ADD CONSTRAINT FKontology_entqual
 -- seqfeature
 ALTER TABLE seqfeature ADD CONSTRAINT FKontology_seqfeature
 	FOREIGN KEY (ontology_term_id) REFERENCES ontology_term(ontology_term_id);
--- ALTER TABLE seqfeature ADD CONSTRAINT FKfeatsource_seqfeature
--- 	FOREIGN KEY (seqfeature_source_id) REFERENCES seqfeature_source(seqfeature_source_id);
+ALTER TABLE seqfeature ADD CONSTRAINT FKsourceterm_seqfeature
+	FOREIGN KEY (seqfeature_source_id) REFERENCES ontology_term(ontology_term_id)
+	ON DELETE CASCADE;
 ALTER TABLE seqfeature ADD CONSTRAINT FKbioentry_seqfeature
 	FOREIGN KEY (bioentry_id) REFERENCES bioentry(bioentry_id)
 	ON DELETE CASCADE;
@@ -439,14 +444,39 @@ ALTER TABLE location_qualifier_value ADD CONSTRAINT FKontology_locqual
 -- Done with foreign key constraints.
 
 -- pre-make the fuzzy ontology
-INSERT INTO ontology_term (term_name) VALUES ('min_start');
-INSERT INTO ontology_term (term_name) VALUES ('min_end');
-INSERT INTO ontology_term (term_name) VALUES ('max_start');
-INSERT INTO ontology_term (term_name) VALUES ('max_end');
-INSERT INTO ontology_term (term_name) VALUES ('unknown_start');
-INSERT INTO ontology_term (term_name) VALUES ('unknown_end');
-INSERT INTO ontology_term (term_name) VALUES ('end_pos_type');
-INSERT INTO ontology_term (term_name) VALUES ('start_pos_type');
-INSERT INTO ontology_term (term_name) VALUES ('location_type');
+-- CREATE TABLE _tmp AS SELECT * FROM ontology_term;
+-- INSERT INTO ontology_term (term_name) VALUES ('Location Tags');
+-- INSERT INTO _tmp (term_name, category_id)
+-- SELECT 'min_start', t.ontology_term_id
+-- FROM ontology_term t WHERE t.term_name = 'Location Tags';
+-- INSERT INTO _tmp (term_name, category_id)
+-- SELECT 'min_end', t.ontology_term_id
+-- FROM ontology_term t WHERE t.term_name = 'Location Tags';
+-- INSERT INTO _tmp (term_name, category_id)
+-- SELECT 'max_start', t.ontology_term_id
+-- FROM ontology_term t WHERE t.term_name = 'Location Tags';
+-- INSERT INTO _tmp (term_name, category_id)
+-- SELECT 'max_end', t.ontology_term_id
+-- FROM ontology_term t WHERE t.term_name = 'Location Tags';
+-- INSERT INTO _tmp (term_name, category_id)
+-- SELECT 'unknown_start', t.ontology_term_id
+-- FROM ontology_term t WHERE t.term_name = 'Location Tags';
+-- INSERT INTO _tmp (term_name, category_id)
+-- SELECT 'unknown_end', t.ontology_term_id
+-- FROM ontology_term t WHERE t.term_name = 'Location Tags';
+-- INSERT INTO _tmp (term_name, category_id)
+-- SELECT 'end_pos_type', t.ontology_term_id
+-- FROM ontology_term t WHERE t.term_name = 'Location Tags';
+-- INSERT INTO _tmp (term_name, category_id)
+-- SELECT 'start_pos_type', t.ontology_term_id
+-- FROM ontology_term t WHERE t.term_name = 'Location Tags';
+-- INSERT INTO _tmp (term_name, category_id)
+-- SELECT 'location_type', t.ontology_term_id
+-- FROM ontology_term t WHERE t.term_name = 'Location Tags';
+
+-- INSERT INTO ontology_term (term_name, category_id)
+-- SELECT t.term_name, t.category_id FROM _tmp t;
+
+-- DROP TABLE _tmp;
 -- coordinate policies?
 
