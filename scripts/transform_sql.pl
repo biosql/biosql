@@ -193,7 +193,7 @@ sub pg {
         }
         if ($c[0]->children->[0]->type eq "inttype") {
             # ints don't have size in postgres
-            splice(@c, 1, 2, (new node "")); # splice out size decl
+            splice(@c, 1, 1, (new node "")); # splice out size decl
         }
     }
     if ($type eq "texttype") {
