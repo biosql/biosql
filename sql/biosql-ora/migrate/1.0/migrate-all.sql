@@ -74,5 +74,5 @@ ALTER TABLE SG_Term_Assoc
        ADD  ( CONSTRAINT FKTrm_TrmA
               FOREIGN KEY (Trm_Oid)
                              REFERENCES SG_Term (Oid)
-			     ON DELETE CASCADE ) ;
+			     ON DELETE SET NULL ) ;
 
