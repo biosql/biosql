@@ -22,20 +22,22 @@
 
 CREATE TABLE biodatabase (
   	biodatabase_id 	INT(10) UNSIGNED NOT NULL auto_increment,
-  	name           	VARCHAR(40) NOT NULL,
-	authority	VARCHAR(40),
+  	name           	VARCHAR(40) NOT NULL, -- NOTE: why (40) and not max VARCHAR?
+	authority	VARCHAR(40), -- NOTE: ditto on (40)
 	PRIMARY KEY (biodatabase_id),
   	UNIQUE (name)
 ) TYPE=INNODB;
 
--- do we really this?
+-- do we really this? NOTE: doesn't hurt
 --CREATE INDEX db_auth on biodatabase(authority);
 
 -- we could insist that taxa are NCBI taxon id, but on reflection I made this
 -- an optional extra line, as many flat file formats do not have the NCBI id
 --
 -- full lineage is : delimited string starting with species.
---
+
+-- NOTE: '; ' delimited would better reflect typical NCBI usage ...
+
 -- no organelle/sub species
 
 -- CREATE TABLE taxon (
@@ -53,25 +55,29 @@ CREATE TABLE biodatabase (
 CREATE TABLE taxon (
        taxon_id		INT(10) UNSIGNED NOT NULL auto_increment,
        ncbi_taxon_id 	INT(10),
-       parent_taxon_id	INT(10) UNSIGNED,
+       parent_ncbi_taxon_id	INT(10) UNSIGNED,
        node_rank	VARCHAR(32),
        genetic_code	TINYINT UNSIGNED,
        mito_genetic_code TINYINT UNSIGNED,
-       left_id		INT(10) UNSIGNED,
-       right_id		INT(10) UNSIGNED,
+       left_value	INT(10) UNSIGNED,
+       right_value	INT(10) UNSIGNED,
        PRIMARY KEY (taxon_id),
-       UNIQUE (ncbi_taxon_id)
+       UNIQUE (ncbi_taxon_id),
+       UNIQUE (left_value),
+       UNIQUE (right_value),
+       UNIQUE (left_value, right_value)
 ) TYPE=INNODB;
 
-CREATE INDEX taxparent ON taxon(parent_taxon_id);
-CREATE INDEX taxleft ON taxon(left_id);
-CREATE INDEX taxright ON taxon(right_id);
+--NOTE: necessary, given UNIQUE's above??
+CREATE INDEX taxparent ON taxon(ncbi_parent_taxon_id);
+CREATE INDEX taxleft ON taxon(left_value);
+CREATE INDEX taxright ON taxon(right_value);
 
 CREATE TABLE taxon_name (
        taxon_id		INT(10) UNSIGNED NOT NULL,
        name		VARCHAR(255) NOT NULL,
-       unique_name	VARCHAR(255),
-       name_class	VARCHAR(32) NOT NULL,
+       unique_name	VARCHAR(255), --NOTE: What is this??
+       name_class	VARCHAR(32) NOT NULL, --NOTE: is simply "class" not allowable?
        UNIQUE (taxon_id,name,name_class),
        UNIQUE (unique_name)
 ) TYPE=INNODB;
@@ -140,6 +146,8 @@ CREATE TABLE ontology_relationship (
 
 CREATE INDEX ontrel_predicateid ON ontology_relationship(predicate_id);
 CREATE INDEX ontrel_objectid ON ontology_relationship(object_id);
+--NOTE: why no subject_id INDEX ??
+
 
 -- the infamous transitive closure table on ontology term relationships
 -- this is a warehouse approach - you will need to update this regularly
@@ -174,7 +182,7 @@ CREATE TABLE bioentry (
 	bioentry_id	INT(10) UNSIGNED NOT NULL auto_increment,
   	biodatabase_id  INT(10) UNSIGNED NOT NULL,
   	taxon_id     	INT(10) UNSIGNED,
-  	display_id   	VARCHAR(40) NOT NULL,
+  	display_id   	VARCHAR(40) NOT NULL, --NOTE: "name" better semantic??
   	accession    	VARCHAR(40) NOT NULL,
   	identifier   	VARCHAR(40),
   	description  	TEXT,
@@ -213,7 +221,7 @@ CREATE TABLE biosequence (
   	version     	SMALLINT, 
   	length      	INT(10), 
   	alphabet        VARCHAR(10),
-	division	VARCHAR(6),
+	division	VARCHAR(6), --NOTE: why 6 if VARCHAR?
   	seq 		LONGTEXT,
 	PRIMARY KEY (bioentry_id)
 ) TYPE=INNODB;
@@ -258,7 +266,7 @@ CREATE INDEX dbxrefqual_ont ON dbxref_qualifier_value(ontology_term_id);
 -- this table each time. Better to do the join through accession
 -- and db each time. Should be almost as cheap
 
-CREATE TABLE bioentry_dblink (
+CREATE TABLE bioentry_dblink ( --NOTE: why not called bioentry_dbxref ??
        	bioentry_id        INT(10) UNSIGNED NOT NULL,
        	dbxref_id          INT(10) UNSIGNED NOT NULL,
 	PRIMARY KEY (bioentry_id,dbxref_id)
@@ -336,7 +344,7 @@ CREATE TABLE seqfeature (
    	seqfeature_id 		INT(10) UNSIGNED NOT NULL auto_increment,
    	bioentry_id   		INT(10) UNSIGNED NOT NULL,
    	ontology_term_id	INT(10) UNSIGNED NOT NULL,
-   	seqfeature_source_id  	INT(10) UNSIGNED,
+   	seqfeature_source_id  	INT(10) UNSIGNED, --NOTE: why not ontology_source_id, or source_ontology_term_id ??
 	display_name		VARCHAR(64),
    	rank 			SMALLINT UNSIGNED NOT NULL,
 	PRIMARY KEY (seqfeature_id),
@@ -479,8 +487,8 @@ ALTER TABLE ontology_path ADD CONSTRAINT FKontobject_ontpath
 
 -- taxon, taxon_name
 ALTER TABLE taxon ADD CONSTRAINT FKtaxon_taxon
-        FOREIGN KEY (parent_taxon_id) REFERENCES taxon(taxon_id)
-        ON DELETE CASCADE;
+        FOREIGN KEY (ncbi_parent_taxon_id) REFERENCES taxon(ncbi_taxon_id)
+        ON DELETE CASCADE; --NOTE: dangerous - we don't really want this
 ALTER TABLE taxon_name ADD CONSTRAINT FKtaxon_taxonname
         FOREIGN KEY (taxon_id) REFERENCES taxon(taxon_id)
         ON DELETE CASCADE;
