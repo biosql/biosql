@@ -80,7 +80,8 @@ CREATE TABLE bioentry_taxa (
   FOREIGN KEY (bioentry_id) REFERENCES bioentry(bioentry_id),
   PRIMARY KEY(bioentry_id)
 );
-CREATE INDEX bioentryentry  ON bioentry_entry(entry_id);
+# bioentry_id is already the primary key, no index needed
+# CREATE INDEX bioentryentry  ON bioentry_taxa(bioentry_id);
 CREATE INDEX bioentrytax  ON bioentry_taxa(taxa_id);
 
 # some bioentries will have a sequence
