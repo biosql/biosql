@@ -203,6 +203,7 @@ CREATE TABLE bioentry_qualifier_value (
    FOREIGN KEY(bioentry_id) REFERENCES bioentry(bioentry_id),
    ontology_term_id  int(10) unsigned NOT NULL,
    FOREIGN KEY(ontology_term_id) REFERENCES ontology_term(ontology_term_id),
+   qualifier_rank int(5),
    qualifier_value             mediumtext
 );
 CREATE INDEX bqv1 ON bioentry_qualifier_value(bioentry_id);
@@ -266,6 +267,19 @@ CREATE TABLE seqfeature_qualifier_value (
 );
 CREATE INDEX sqv1 ON seqfeature_qualifier_value(ontology_term_id);
 CREATE INDEX sqv3 ON seqfeature_qualifier_value(seqfeature_id);
+   
+# seqfeatures can have dbxrefs (model organism db ids, dbSNP, OMIM etc)
+# attached to them;
+# this may be redundant with seqfeature_qualifier_value type db_xref,
+# to make roundtripping easier
+CREATE TABLE seqfeature_dbxref (
+   seqfeature_id int(10) NOT NULL,
+   dbxref_id int(10) NOT NULL,
+   FOREIGN KEY (dbxref_id) REFERENCES dbxref(dbxref_id),
+   FOREIGN KEY (seqfeature_id) REFERENCES seqfeature(seqfeature_id)
+);
+CREATE INDEX sfxref1 ON seqfeature_dbxref(seqfeature_id);
+CREATE INDEX sfxref2 ON seqfeature_dbxref(dbxref_id);
    
 # basically we model everything as potentially having
 # any number of locations, ie, a split location. SimpleLocations

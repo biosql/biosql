@@ -5,8 +5,8 @@ CREATE VIEW seqfeature_key_v
     FROM seqfeature f, seqfeature_key k 
     WHERE f.seqfeature_key_id = k.seqfeature_key_id;
 
-DROP VIEW gff;
-CREATE VIEW gff
+DROP VIEW gffjoin;
+CREATE VIEW gffjoin
  AS SELECT e.accession       AS fref, 
            fl.seq_start      AS fstart, 
            fl.seq_end        AS fend,
@@ -14,7 +14,8 @@ CREATE VIEW gff
            NULL              AS fscore,
            fl.seq_strand     AS fstrand, 
            NULL              AS fphase,
-           f.seqfeature_id   AS gid
+           f.seqfeature_id   AS gid,
+           e.bioentry_id     AS bioentry_id
     FROM seqfeature f, 
          ontology_term k, 
          seqfeature_location fl,
@@ -22,6 +23,20 @@ CREATE VIEW gff
     WHERE f.seqfeature_key_id = k.ontology_term_id  AND
           fl.seqfeature_id = f.seqfeature_id        AND
           f.bioentry_id    = e.bioentry_id;
+
+--- GFF is just a projection on gffjoin, to
+--- get rid of unneeded attributes
+DROP VIEW gff;
+CREATE VIEW gff
+ AS SELECT  fref, 
+            fstart, 
+            fend,
+            type, 
+            fscore,
+            fstrand, 
+            fphase,
+            gid
+    FROM gffjoin;
 
 --- basic fasta view; we may have others where we
 --- cram more into header
@@ -90,23 +105,40 @@ CREATE FUNCTION reverse(text) RETURNS text
   WITH (isStrict);
 SELECT reverse('abcde');
 
---- doesn't do reverse comp yet
+DROP FUNCTION reverse_compl(text);
+CREATE FUNCTION reverse_compl(text) RETURNS text
+  AS 'SELECT(reverse(compl($1))) as RESULT;'
+LANGUAGE 'sql';
+
 DROP FUNCTION get_subseq(text,int,int,int);
 CREATE FUNCTION get_subseq (text, int, int, int)
   RETURNS text
-  AS 'BEGIN
-        IF $4 > 0 THEN
-          return (select 
+  AS 'SELECT CASE $4 > 0
+        WHEN TRUE THEN
                    substring($1,
                       $2,
-                     ($3 - $2)+1));
+                     ($3 - $2)+1)
         ELSE
-           return NULL;
-        END IF;
-     END;
+             reverse_compl(
+                      substring($1,
+                        $2,
+                       ($3 - $2)+1)) 
+        END
+          AS RESULT
      '
-  LANGUAGE 'plpgsql';
+  LANGUAGE 'sql';
 select get_subseq('abcdefg',2,3,1);
+
+DROP VIEW gffseq;
+CREATE VIEW gffseq
+  AS SELECT gff.*,
+           get_subseq(s.biosequence_str,
+                      fstart,
+                      fend,
+                      fstrand)
+                             AS subseq
+     FROM   gffjoin gff, biosequence s
+     WHERE  gff.bioentry_id = s.bioentry_id;
 
 DROP VIEW gffseq;
 CREATE VIEW gffseq

@@ -64,7 +64,8 @@ CREATE TABLE bioentry_taxa (
 	 FOREIGN KEY ( bioentry_id ) REFERENCES bioentry ( bioentry_id ) , 
 	 PRIMARY KEY ( bioentry_id ) ); 
 
-CREATE INDEX bioentryentry ON bioentry_entry ( entry_id ); 
+--- bioentry_id is already the primary key, no index needed 
+--- CREATE INDEX bioentryentry  ON bioentry_taxa(bioentry_id); 
 CREATE INDEX bioentrytax ON bioentry_taxa ( taxa_id ); 
 --- some bioentries will have a sequence 
 --- biosequence because sequence is sometimes  
@@ -176,6 +177,7 @@ CREATE TABLE bioentry_qualifier_value (
 	 FOREIGN KEY ( bioentry_id ) REFERENCES bioentry ( bioentry_id ) , 
 	 ontology_term_id int NOT NULL , 
 	 FOREIGN KEY ( ontology_term_id ) REFERENCES ontology_term ( ontology_term_id ) , 
+	 qualifier_rank int , 
 	 qualifier_value text ); 
 
 CREATE INDEX bqv1 ON bioentry_qualifier_value ( bioentry_id ); 
@@ -234,6 +236,18 @@ CREATE TABLE seqfeature_qualifier_value (
 
 CREATE INDEX sqv1 ON seqfeature_qualifier_value ( ontology_term_id ); 
 CREATE INDEX sqv3 ON seqfeature_qualifier_value ( seqfeature_id ); 
+--- seqfeatures can have dbxrefs (model organism db ids, dbSNP, OMIM etc) 
+--- attached to them; 
+--- this may be redundant with seqfeature_qualifier_value type db_xref, 
+--- to make roundtripping easier 
+CREATE TABLE seqfeature_dbxref ( 
+	 seqfeature_id int NOT NULL , 
+	 dbxref_id int NOT NULL , 
+	 FOREIGN KEY ( dbxref_id ) REFERENCES dbxref ( dbxref_id ) , 
+	 FOREIGN KEY ( seqfeature_id ) REFERENCES seqfeature ( seqfeature_id ) ); 
+
+CREATE INDEX sfxref1 ON seqfeature_dbxref ( seqfeature_id ); 
+CREATE INDEX sfxref2 ON seqfeature_dbxref ( dbxref_id ); 
 --- basically we model everything as potentially having 
 --- any number of locations, ie, a split location. SimpleLocations 
 --- just have one location. We need to have a location id so for remote 
