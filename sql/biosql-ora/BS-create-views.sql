@@ -1,7 +1,7 @@
 --
 -- SQL script to create the views for SYMGENE/BioSQL
 --
--- $GNF: projects/gi/symgene/src/DB/BS-create-views.sql,v 1.22 2003/06/14 02:53:05 hlapp Exp $
+-- $GNF: projects/gi/symgene/src/DB/BS-create-views.sql,v 1.23 2003/07/08 04:09:14 hlapp Exp $
 --
 
 --
@@ -400,6 +400,7 @@ SELECT
 	, Trm.Identifier	Trm_Identifier
 	, Ont.Name		Ont_Name
 	, EntTrmA.Value		Qual_Value
+	, EntTrmA.Rank		Qual_Rank
 	, EntTrmA.Trm_Oid	Trm_Oid
 	, Trm.Ont_Oid		Ont_Oid
 	, EntTrmA.Ent_Oid	Ent_Oid
