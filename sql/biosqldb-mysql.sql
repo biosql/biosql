@@ -17,6 +17,7 @@ CREATE TABLE biodatabase (
   biodatabase_id int(10) unsigned NOT NULL PRIMARY KEY auto_increment,
   name        varchar(40) NOT NULL
 );
+CREATE INDEX biodatabaseidx1 on biodatabase(name);
 
 # we could insist that taxa are NCBI taxa id, but on reflection I made this
 # an optional extra line, as many flat file formats do not have the NCBI id
@@ -32,6 +33,9 @@ CREATE TABLE taxa (
   ncbi_taxa_id int(10)
   
 );
+CREATE INDEX taxancbi ON taxa(ncbi_taxa_id);
+CREATE INDEX taxaname ON taxa(common_name);
+
 
 # any controlled vocab term, everything from full ontology
 # terms eg GO IDs to the various keys allowed as qualifiers
@@ -42,6 +46,7 @@ CREATE TABLE ontology_term (
        term_name        char(255),
        term_definition  mediumtext
 );
+CREATE INDEX otn ON ontology_term(term_name);
 
 # we can be a bioentry without a biosequence, but not visa-versa
 # most things are going to be keyed off bioentry_id
@@ -60,6 +65,9 @@ CREATE TABLE bioentry (
   UNIQUE (biodatabase_id,accession,entry_version, division),
   FOREIGN KEY (biodatabase_id) REFERENCES biodatabase(biodatabase_id)
 );
+CREATE INDEX bioentrydbid ON bioentry(biodatabase_id);
+CREATE INDEX bioentrydid  ON bioentry(display_id);
+CREATE INDEX bioentryacc  ON bioentry(accession);
 
 
 # not all entries have a taxa, but many do.
@@ -71,6 +79,7 @@ CREATE TABLE bioentry_taxa (
   FOREIGN KEY (bioentry_id) REFERENCES bioentry(bioentry_id),
   PRIMARY KEY(bioentry_id)
 );
+CREATE INDEX bioentrytax  ON bioentry_taxa(taxa_id);
 
 # some bioentries will have a sequence
 # biosequence because sequence is sometimes 
@@ -87,6 +96,7 @@ CREATE TABLE biosequence (
   FOREIGN KEY (bioentry_id) REFERENCES bioentry(bioentry_id),
   UNIQUE(bioentry_id)
 );
+CREATE INDEX biosequenceeid  ON biosequence(bioentry_id);
 
 # new table
 CREATE TABLE dbxref (
@@ -95,6 +105,8 @@ CREATE TABLE dbxref (
         accession               varchar(40) NOT NULL,
         UNIQUE(dbname, accession)
 );
+CREATE INDEX dbxrefdbn  ON dbxref(dbname);
+CREATE INDEX dbxrefacc  ON dbxref(accession);
 
 # new table
 # for roundtripping embl/genbank, we need to have the "optional ID"
@@ -114,6 +126,8 @@ CREATE TABLE dbxref_qualifier_value (
        FOREIGN KEY(ontology_term_id) REFERENCES ontology_term(ontology_term_id),
        qualifier_value             mediumtext
 );
+CREATE INDEX dqv1  ON dbxref_qualifier_value(dbxref_id);
+CREATE INDEX dqv2  ON dbxref_qualifier_value(ontology_term_id);
 
 # Direct links. It is tempting to do this
 # from bioentry_id to bioentry_id. But that wont work
@@ -129,6 +143,8 @@ CREATE TABLE bioentry_direct_links (
        FOREIGN KEY (source_bioentry_id) REFERENCES bioentry(bioentry_id),
        FOREIGN KEY (dbxref_id) REFERENCES dbxref(dbxref_id)
 );
+CREATE INDEX bdl1  ON bioentry_direct_links(source_bioentry_id);
+CREATE INDEX bdl2  ON bioentry_direct_links(dbxref_id);
 
 #We can have multiple references per bioentry, but one reference
 #can also be used for the same bioentry.
@@ -155,6 +171,10 @@ CREATE TABLE bioentry_reference (
   FOREIGN KEY(reference_id) REFERENCES reference(reference_id)
 );
 CREATE INDEX reference_rank_idx ON bioentry_reference(reference_rank);
+CREATE INDEX reference_rank_idx2 ON bioentry_reference(bioentry_id);
+CREATE INDEX reference_rank_idx3 ON bioentry_reference(reference_id);
+CREATE INDEX reference_rank_idx4 ON bioentry_reference(reference_rank);
+CREATE INDEX reference_rank_idx5 ON bioentry_reference(bioentry_id, reference_rank);
 
 
 # We can have multiple comments per seqentry, and
@@ -167,6 +187,7 @@ CREATE TABLE comment (
   comment_rank   int(5) NOT NULL,
   FOREIGN KEY(bioentry_id) REFERENCES bioentry(bioentry_id)
 );
+CREATE INDEX cmtidx1 ON comment(bioentry_id);
 
 # separate description table separate to save on space when we
 # do not store descriptions
@@ -180,6 +201,9 @@ CREATE TABLE bioentry_qualifier_value (
    FOREIGN KEY(ontology_term_id) REFERENCES ontology_term(ontology_term_id),
    qualifier_value             mediumtext
 );
+CREATE INDEX bqv1 ON bioentry_qualifier_value(bioentry_id);
+CREATE INDEX bqv2 ON bioentry_qualifier_value(ontology_term_id);
+CREATE INDEX bqv3 ON bioentry_qualifier_value(bioentry_id, ontology_term_id);
 
 # feature table. We cleanly handle
 #   - simple locations
@@ -205,6 +229,9 @@ CREATE TABLE seqfeature (
   FOREIGN KEY (seqfeature_source_id) REFERENCES seqfeature_source(seqfeature_source_id),
   FOREIGN KEY (bioentry_id) REFERENCES bioentry(bioentry_id)
 );
+CREATE INDEX sf1 ON seqfeature(seqfeature_key_id);
+CREATE INDEX sf2 ON seqfeature(seqfeature_source_id);
+CREATE INDEX sf3 ON seqfeature(bioentry_id);
 
 CREATE TABLE seqfeature_qualifier_value (
    seqfeature_id int(10) NOT NULL,
@@ -214,6 +241,8 @@ CREATE TABLE seqfeature_qualifier_value (
    FOREIGN KEY (ontology_term_id) REFERENCES ontology_term(ontology_term_id),
    PRIMARY KEY(seqfeature_id,ontology_term_id,qualifier_rank)
 );
+CREATE INDEX sqv1 ON seqfeature_qualifier_value(ontology_term_id);
+CREATE INDEX sqv2 ON seqfeature_qualifier_value(qualifier_value(20));
    
 # basically we model everything as potentially having
 # any number of locations, ie, a split location. SimpleLocations
@@ -234,6 +263,9 @@ CREATE TABLE seqfeature_location (
    location_rank          int(5)  NOT NULL,
   FOREIGN KEY (seqfeature_id) REFERENCES seqfeature(seqfeature_id)
 );
+CREATE INDEX sfl1 ON seqfeature_location(seqfeature_id);
+CREATE INDEX sfl2 ON seqfeature_location(seq_start);
+CREATE INDEX sfl3 ON seqfeature_location(seq_end);
 
 # for remote locations, this is the join to make.
 # beware - in the object layer it has to make a double SQL query to figure out
@@ -248,6 +280,7 @@ CREATE TABLE remote_seqfeature_name (
        version   int(10) NOT NULL,
   FOREIGN KEY (seqfeature_location_id) REFERENCES seqfeature_location(seqfeature_location_id)
 );
+CREATE INDEX rsfn1 ON remote_seqfeature_name(seqfeature_location_id);
 
 # location qualifiers - mainly intended for fuzzies but anything
 # can go in here
@@ -265,6 +298,8 @@ CREATE TABLE location_qualifier_value (
   FOREIGN KEY (seqfeature_location_id) REFERENCES seqfeature_location(seqfeature_location_id),
   FOREIGN KEY (ontology_term_id) REFERENCES ontology_term(ontology_term_id)
 );
+CREATE INDEX lqv1 ON location_qualifier_value(seqfeature_location_id);
+CREATE INDEX lqv2 ON location_qualifier_value(ontology_term_id);
 
 # pre-make the fuzzy ontology
 INSERT INTO ontology_term (term_name) VALUES ('min_start');

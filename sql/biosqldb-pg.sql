@@ -12,6 +12,7 @@ CREATE TABLE biodatabase (
 	 biodatabase_id integer primary key default (nextval ( 'biodatabase_pkey_seq' )) , 
 	 name varchar ( 40 ) NOT NULL ); 
 
+CREATE INDEX biodatabaseidx1 on biodatabase ( name ); 
 --- we could insist that taxa are NCBI taxa id, but on reflection I made this 
 --- an optional extra line, as many flat file formats do not have the NCBI id 
 --- full lineage is : delimited string starting with species. 
@@ -23,6 +24,8 @@ CREATE TABLE taxa (
 	 common_name varchar ( 255 ) NOT NULL , 
 	 ncbi_taxa_id int ); 
 
+CREATE INDEX taxancbi ON taxa ( ncbi_taxa_id ); 
+CREATE INDEX taxaname ON taxa ( common_name ); 
 --- any controlled vocab term, everything from full ontology 
 --- terms eg GO IDs to the various keys allowed as qualifiers 
 --- 
@@ -33,6 +36,7 @@ CREATE TABLE ontology_term (
 	 term_name char ( 255 ) , 
 	 term_definition text ); 
 
+CREATE INDEX otn ON ontology_term ( term_name ); 
 --- we can be a bioentry without a biosequence, but not visa-versa 
 --- most things are going to be keyed off bioentry_id 
 --- accession is the stable id, display_id is a potentially volatile, 
@@ -48,6 +52,9 @@ CREATE TABLE bioentry (
 	 UNIQUE ( biodatabase_id , accession , entry_version , division ) , 
 	 FOREIGN KEY ( biodatabase_id ) REFERENCES biodatabase ( biodatabase_id ) ); 
 
+CREATE INDEX bioentrydbid ON bioentry ( biodatabase_id ); 
+CREATE INDEX bioentrydid ON bioentry ( display_id ); 
+CREATE INDEX bioentryacc ON bioentry ( accession ); 
 --- not all entries have a taxa, but many do. 
 --- one bioentry only has one taxa! (weirdo chimerias are not handled. tough) 
 CREATE TABLE bioentry_taxa ( 
@@ -56,6 +63,7 @@ CREATE TABLE bioentry_taxa (
 	 FOREIGN KEY ( bioentry_id ) REFERENCES bioentry ( bioentry_id ) , 
 	 PRIMARY KEY ( bioentry_id ) ); 
 
+CREATE INDEX bioentrytax ON bioentry_taxa ( taxa_id ); 
 --- some bioentries will have a sequence 
 --- biosequence because sequence is sometimes  
 --- a reserved word 
@@ -71,6 +79,7 @@ CREATE TABLE biosequence (
 	 FOREIGN KEY ( bioentry_id ) REFERENCES bioentry ( bioentry_id ) , 
 	 UNIQUE ( bioentry_id ) ); 
 
+CREATE INDEX biosequenceeid ON biosequence ( bioentry_id ); 
 --- new table 
 CREATE SEQUENCE dbxref_pkey_seq;
 CREATE TABLE dbxref ( 
@@ -79,6 +88,8 @@ CREATE TABLE dbxref (
 	 accession varchar ( 40 ) NOT NULL , 
 	 UNIQUE ( dbname , accession ) ); 
 
+CREATE INDEX dbxrefdbn ON dbxref ( dbname ); 
+CREATE INDEX dbxrefacc ON dbxref ( accession ); 
 --- new table 
 --- for roundtripping embl/genbank, we need to have the "optional ID" 
 --- for the dbxref. 
@@ -98,6 +109,8 @@ CREATE TABLE dbxref_qualifier_value (
 	 FOREIGN KEY ( ontology_term_id ) REFERENCES ontology_term ( ontology_term_id ) , 
 	 qualifier_value text ); 
 
+CREATE INDEX dqv1 ON dbxref_qualifier_value ( dbxref_id ); 
+CREATE INDEX dqv2 ON dbxref_qualifier_value ( ontology_term_id ); 
 --- Direct links. It is tempting to do this 
 --- from bioentry_id to bioentry_id. But that wont work 
 --- during updates of one database - we will have to edit 
@@ -112,6 +125,8 @@ CREATE TABLE bioentry_direct_links (
 	 FOREIGN KEY ( source_bioentry_id ) REFERENCES bioentry ( bioentry_id ) , 
 	 FOREIGN KEY ( dbxref_id ) REFERENCES dbxref ( dbxref_id ) ); 
 
+CREATE INDEX bdl1 ON bioentry_direct_links ( source_bioentry_id ); 
+CREATE INDEX bdl2 ON bioentry_direct_links ( dbxref_id ); 
 ---We can have multiple references per bioentry, but one reference 
 ---can also be used for the same bioentry. 
 CREATE SEQUENCE reference_pkey_seq;
@@ -134,6 +149,10 @@ CREATE TABLE bioentry_reference (
 	 FOREIGN KEY ( reference_id ) REFERENCES reference ( reference_id ) ); 
 
 CREATE INDEX reference_rank_idx ON bioentry_reference ( reference_rank ); 
+CREATE INDEX reference_rank_idx2 ON bioentry_reference ( bioentry_id ); 
+CREATE INDEX reference_rank_idx3 ON bioentry_reference ( reference_id ); 
+CREATE INDEX reference_rank_idx4 ON bioentry_reference ( reference_rank ); 
+CREATE INDEX reference_rank_idx5 ON bioentry_reference ( bioentry_id , reference_rank ); 
 --- We can have multiple comments per seqentry, and 
 --- comments can have embedded '\n' characters 
 CREATE SEQUENCE comment_pkey_seq;
@@ -144,6 +163,7 @@ CREATE TABLE comment (
 	 comment_rank int NOT NULL , 
 	 FOREIGN KEY ( bioentry_id ) REFERENCES bioentry ( bioentry_id ) ); 
 
+CREATE INDEX cmtidx1 ON comment ( bioentry_id ); 
 --- separate description table separate to save on space when we 
 --- do not store descriptions 
 --- this table replaces the old 
@@ -155,6 +175,9 @@ CREATE TABLE bioentry_qualifier_value (
 	 FOREIGN KEY ( ontology_term_id ) REFERENCES ontology_term ( ontology_term_id ) , 
 	 qualifier_value text ); 
 
+CREATE INDEX bqv1 ON bioentry_qualifier_value ( bioentry_id ); 
+CREATE INDEX bqv2 ON bioentry_qualifier_value ( ontology_term_id ); 
+CREATE INDEX bqv3 ON bioentry_qualifier_value ( bioentry_id , ontology_term_id ); 
 --- feature table. We cleanly handle 
 ---   - simple locations 
 ---   - split locations 
@@ -176,6 +199,9 @@ CREATE TABLE seqfeature (
 	 FOREIGN KEY ( seqfeature_source_id ) REFERENCES seqfeature_source ( seqfeature_source_id ) , 
 	 FOREIGN KEY ( bioentry_id ) REFERENCES bioentry ( bioentry_id ) ); 
 
+CREATE INDEX sf1 ON seqfeature ( seqfeature_key_id ); 
+CREATE INDEX sf2 ON seqfeature ( seqfeature_source_id ); 
+CREATE INDEX sf3 ON seqfeature ( bioentry_id ); 
 CREATE TABLE seqfeature_qualifier_value ( 
 	 seqfeature_id int NOT NULL , 
 	 ontology_term_id int NOT NULL , 
@@ -184,69 +210,4 @@ CREATE TABLE seqfeature_qualifier_value (
 	 FOREIGN KEY ( ontology_term_id ) REFERENCES ontology_term ( ontology_term_id ) , 
 	 PRIMARY KEY ( seqfeature_id , ontology_term_id , qualifier_rank ) ); 
 
---- basically we model everything as potentially having 
---- any number of locations, ie, a split location. SimpleLocations 
---- just have one location. We need to have a location id so for remote 
---- split locations we can specify the start/end point 
---- please do not try to model complex assemblies with this thing. It wont 
---- work. Check out the ensembl schema for this. 
---- we allow nulls for start/end - this is useful for fuzzies as 
---- standard range queries will not be included 
-CREATE SEQUENCE seqfeature_location_pkey_seq;
-CREATE TABLE seqfeature_location ( 
-	 seqfeature_location_id integer primary key default (nextval ( 'seqfeature_location_pkey_seq' )) , 
-	 seqfeature_id int NOT NULL , 
-	 seq_start int , 
-	 seq_end int , 
-	 seq_strand int NOT NULL , 
-	 location_rank int NOT NULL , 
-	 FOREIGN KEY ( seqfeature_id ) REFERENCES seqfeature ( seqfeature_id ) ); 
-
---- for remote locations, this is the join to make. 
---- beware - in the object layer it has to make a double SQL query to figure out 
---- whether this is remote location or not 
---- like DR links, we do not link directly to a bioentry_id - we have to do 
---- this run-time 
-CREATE TABLE remote_seqfeature_name ( 
-	 seqfeature_location_id int NOT NULL PRIMARY KEY , 
-	 accession varchar ( 40 ) NOT NULL , 
-	 version int NOT NULL , 
-	 FOREIGN KEY ( seqfeature_location_id ) REFERENCES seqfeature_location ( seqfeature_location_id ) ); 
-
---- location qualifiers - mainly intended for fuzzies but anything 
---- can go in here 
---- some controlled vocab terms have slots; 
---- fuzzies could be modeled as min_start(5), max_start(5) 
----  
---- there is no restriction on extending the fuzzy ontology 
---- for your own nefarious aims, although the bio* apis will 
---- most likely ignore these 
-CREATE TABLE location_qualifier_value ( 
-	 seqfeature_location_id int NOT NULL , 
-	 ontology_term_id int NOT NULL , 
-	 qualifier_value char ( 255 ) NOT NULL , 
-	 qualifier_int_value int , 
-	 FOREIGN KEY ( seqfeature_location_id ) REFERENCES seqfeature_location ( seqfeature_location_id ) , 
-	 FOREIGN KEY ( ontology_term_id ) REFERENCES ontology_term ( ontology_term_id ) ); 
-
---- pre-make the fuzzy ontology 
-INSERT INTO ontology_term ( term_name ) VALUES ( 'min_start' ); 
-INSERT INTO ontology_term ( term_name ) VALUES ( 'min_end' ); 
-INSERT INTO ontology_term ( term_name ) VALUES ( 'max_start' ); 
-INSERT INTO ontology_term ( term_name ) VALUES ( 'max_end' ); 
-INSERT INTO ontology_term ( term_name ) VALUES ( 'unknown_start' ); 
-INSERT INTO ontology_term ( term_name ) VALUES ( 'unknown_end' ); 
-INSERT INTO ontology_term ( term_name ) VALUES ( 'end_pos_type' ); 
-INSERT INTO ontology_term ( term_name ) VALUES ( 'start_pos_type' ); 
-INSERT INTO ontology_term ( term_name ) VALUES ( 'location_type' ); 
---- coordinate policies? 
---- 
---- this is a tiny table to allow a cach'ing corba server to 
---- persistently store aspects of the root server - so when/if 
---- the server gets reaped it can reconnect 
---- 
-CREATE TABLE cache_corba_support ( 
-	 biodatabase_id int NOT NULL PRIMARY KEY , 
-	 http_ior_string varchar ( 255 ) , 
-	 direct_ior_string varchar ( 255 ) ); 
-
+CREATE INDEX sqv1 ON seqfeature_qualifier_value ( ontology_term_id ); 
