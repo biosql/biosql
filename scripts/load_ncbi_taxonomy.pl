@@ -64,6 +64,8 @@ of the taxon table.
 --directory  # optional: where to store/look for the data
              # default is ./taxdata
 
+--nodelete   # don't delete retired nodes
+
 --verbose=n  # set the verbosity level, default is 1.
              # 0 = silent, 1 = print current step, 2 = print progress
              # statistics.
@@ -133,6 +135,7 @@ my $pgchunk = 40000;   # the number of rows after which to vacuum in the
                        # nested set rebuilding phase
 our $chunksize;        # dto.
 our $verbose = 1;      # guess what
+our $nodelete = 0;     # whether not to delete retired taxon nodes
 
 # not changeable through command-line:
 my %tablemaps = (
@@ -171,6 +174,7 @@ my $ok = GetOptions("help"       => \$help,
 		    "chunksize=i"=> \$chunksize,
 		    "directory=s"=> \$dir,
 		    "download"   => \$download,
+		    "nodelete"   => \$nodelete,
 		    "verbose=i"  => \$verbose,
 		    );
 
@@ -339,7 +343,7 @@ unconstrain_taxon($driver, $dbh);
     handle_diffs(\@old,
 		 \@new,
 		 sub { return $sth{add_tax}->execute(@_) },
-		 sub { return $sth{upd_tax}->execute(@_[1..4,0]) },
+		 sub { return $sth{upd_tax}->execute(@_[2..5,0]) },
 		 sub { return $sth{del_tax}->execute(@_[0..0]) }
 		);
 
@@ -468,7 +472,10 @@ sub handle_diffs {
 	    $is++; $n++;
 	} elsif ($ndone) {
 	    # only old's left to remove
-	    if(!$delete->(@{$old->[$o]})) {
+	    if($nodelete) {
+		print "note: node (".join(";",@{$old->[$o]}).") is retired\n" 
+		    if $verbose;
+	    } elsif(!$delete->(@{$old->[$o]})) {
 		die "failed to delete node (".join(";",@{$old->[$o]}).
 		    "): ".$dbh->errstr;
 	    }
@@ -501,7 +508,10 @@ sub handle_diffs {
 		$o++; $n++;
 	    } elsif ($oldentry->[0] < $newentry->[0]) {
 		# old entry to be removed
-		if(!$delete->(@{$oldentry})) {
+		if($nodelete) {
+		    print "note: node (".join(";",@{$oldentry}).
+			") is retired\n" if $verbose;
+		} elsif(!$delete->(@{$oldentry})) {
 		    die "failed to delete node (".join(";",@{$oldentry}).
 			"): ".$dbh->errstr;
 		}
