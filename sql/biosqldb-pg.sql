@@ -208,33 +208,33 @@ CREATE INDEX bioentry_tax ON bioentry ( taxon_id );
 CREATE SEQUENCE bioentry_relationship_pk_seq;
 CREATE TABLE bioentry_relationship ( 
 	 bioentry_relationship_id INTEGER DEFAULT nextval ( 'bioentry_relationship_pk_seq' ) NOT NULL , 
-	 parent_bioentry_id INTEGER NOT NULL , 
-	 child_bioentry_id INTEGER NOT NULL , 
+	 object_bioentry_id INTEGER NOT NULL , 
+	 subject_bioentry_id INTEGER NOT NULL , 
 	 term_id INTEGER NOT NULL , 
 	 rank INTEGER , 
 	 PRIMARY KEY ( bioentry_relationship_id ) , 
-	 UNIQUE ( parent_bioentry_id , child_bioentry_id , term_id ) ) ; 
+	 UNIQUE ( object_bioentry_id , subject_bioentry_id , term_id ) ) ; 
 
 CREATE INDEX bioentryrel_ont ON bioentry_relationship ( term_id ); 
-CREATE INDEX bioentryrel_child ON bioentry_relationship ( child_bioentry_id ); 
+CREATE INDEX bioentryrel_child ON bioentry_relationship ( subject_bioentry_id ); 
 -- you may want to add this for mysql because MySQL often is broken with 
 -- respect to using the composite index for the initial keys 
---CREATE INDEX bioentryrel_parent ON bioentry_relationship(parent_bioentry_id);
+--CREATE INDEX bioentryrel_parent ON bioentry_relationship(object_bioentry_id);
 
 -- for deep (depth > 1) bioentry relationship trees we need a transitive 
 -- closure table too 
 CREATE TABLE bioentry_path ( 
-	 parent_bioentry_id INTEGER NOT NULL , 
-	 child_bioentry_id INTEGER NOT NULL , 
+	 object_bioentry_id INTEGER NOT NULL , 
+	 subject_bioentry_id INTEGER NOT NULL , 
 	 term_id INTEGER NOT NULL , 
 	 distance INTEGER,
-	 UNIQUE ( parent_bioentry_id , child_bioentry_id , term_id , distance ) ) ; 
+	 UNIQUE ( object_bioentry_id , subject_bioentry_id , term_id , distance ) ) ; 
 
 CREATE INDEX bioentrypath_ont ON bioentry_path ( term_id ); 
-CREATE INDEX bioentrypath_child ON bioentry_path ( child_bioentry_id ); 
+CREATE INDEX bioentrypath_child ON bioentry_path ( subject_bioentry_id ); 
 -- you may want to add this for mysql because MySQL often is broken with 
 -- respect to using the composite index for the initial keys 
---CREATE INDEX bioentrypath_parent ON bioentry_path(parent_bioentry_id); 
+--CREATE INDEX bioentrypath_parent ON bioentry_path(object_bioentry_id); 
 
 -- some bioentries will have a sequence 
 -- biosequence because sequence is sometimes a reserved word 
@@ -378,33 +378,33 @@ CREATE INDEX seqfeature_fsrc ON seqfeature ( source_term_id );
 CREATE SEQUENCE seqfeature_relationship_pk_seq;
 CREATE TABLE seqfeature_relationship ( 
 	 seqfeature_relationship_id INTEGER DEFAULT nextval ( 'seqfeature_relationship_pk_seq' ) NOT NULL , 
-	 parent_seqfeature_id INTEGER NOT NULL , 
-	 child_seqfeature_id INTEGER NOT NULL , 
+	 object_seqfeature_id INTEGER NOT NULL , 
+	 subject_seqfeature_id INTEGER NOT NULL , 
 	 term_id INTEGER NOT NULL , 
 	 rank INTEGER , 
 	 PRIMARY KEY ( seqfeature_relationship_id ) , 
-	 UNIQUE ( parent_seqfeature_id , child_seqfeature_id , term_id ) ) ; 
+	 UNIQUE ( object_seqfeature_id , subject_seqfeature_id , term_id ) ) ; 
 
 CREATE INDEX seqfeaturerel_ont ON seqfeature_relationship ( term_id ); 
-CREATE INDEX seqfeaturerel_child ON seqfeature_relationship ( child_seqfeature_id ); 
+CREATE INDEX seqfeaturerel_child ON seqfeature_relationship ( subject_seqfeature_id ); 
 -- you may want to add this for mysql because MySQL often is broken with 
 -- respect to using the composite index for the initial keys 
---CREATE INDEX seqfeaturerel_parent ON seqfeature_relationship(parent_seqfeature_id); 
+--CREATE INDEX seqfeaturerel_parent ON seqfeature_relationship(object_seqfeature_id); 
 
 -- for deep (depth > 1) seqfeature relationship trees we need a transitive 
 -- closure table too 
 CREATE TABLE seqfeature_path ( 
-	 parent_seqfeature_id INTEGER NOT NULL , 
-	 child_seqfeature_id INTEGER NOT NULL , 
+	 object_seqfeature_id INTEGER NOT NULL , 
+	 subject_seqfeature_id INTEGER NOT NULL , 
 	 term_id INTEGER NOT NULL , 
 	 distance INTEGER,
-	 UNIQUE ( parent_seqfeature_id , child_seqfeature_id , term_id , distance ) ) ; 
+	 UNIQUE ( object_seqfeature_id , subject_seqfeature_id , term_id , distance ) ) ; 
 
 CREATE INDEX seqfeaturepath_ont ON seqfeature_path ( term_id ); 
-CREATE INDEX seqfeaturepath_child ON seqfeature_path ( child_seqfeature_id ); 
+CREATE INDEX seqfeaturepath_child ON seqfeature_path ( subject_seqfeature_id ); 
 -- you may want to add this for mysql because MySQL often is broken with 
 -- respect to using the composite index for the initial keys 
---CREATE INDEX seqfeaturerel_parent ON seqfeature_path(parent_seqfeature_id); 
+--CREATE INDEX seqfeaturerel_parent ON seqfeature_path(object_seqfeature_id); 
 
 -- tag/value associations - or ontology annotations 
 CREATE TABLE seqfeature_qualifier_value ( 
@@ -546,20 +546,20 @@ ALTER TABLE bioentry ADD CONSTRAINT FKbiodatabase_bioentry
 ALTER TABLE bioentry_relationship ADD CONSTRAINT FKterm_bioentryrel
       FOREIGN KEY ( term_id ) REFERENCES term ( term_id ) ; 
 ALTER TABLE bioentry_relationship ADD CONSTRAINT FKparentent_bioentryrel
-      FOREIGN KEY ( parent_bioentry_id ) REFERENCES bioentry ( bioentry_id )
+      FOREIGN KEY ( object_bioentry_id ) REFERENCES bioentry ( bioentry_id )
       ON DELETE CASCADE ;
 ALTER TABLE bioentry_relationship ADD CONSTRAINT FKchildent_bioentryrel
-      FOREIGN KEY ( child_bioentry_id ) REFERENCES bioentry ( bioentry_id )
+      FOREIGN KEY ( subject_bioentry_id ) REFERENCES bioentry ( bioentry_id )
       ON DELETE CASCADE ;
 
 -- bioentry_path 
 ALTER TABLE bioentry_path ADD CONSTRAINT FKterm_bioentrypath
       FOREIGN KEY ( term_id ) REFERENCES term ( term_id ) ; 
 ALTER TABLE bioentry_path ADD CONSTRAINT FKparentent_bioentrypath
-      FOREIGN KEY ( parent_bioentry_id ) REFERENCES bioentry ( bioentry_id )
+      FOREIGN KEY ( object_bioentry_id ) REFERENCES bioentry ( bioentry_id )
       ON DELETE CASCADE ;
 ALTER TABLE bioentry_path ADD CONSTRAINT FKchildent_bioentrypath
-      FOREIGN KEY ( child_bioentry_id ) REFERENCES bioentry ( bioentry_id )
+      FOREIGN KEY ( subject_bioentry_id ) REFERENCES bioentry ( bioentry_id )
       ON DELETE CASCADE ;
 
 -- biosequence 
@@ -613,20 +613,20 @@ ALTER TABLE seqfeature ADD CONSTRAINT FKbioentry_seqfeature FOREIGN KEY ( bioent
 ALTER TABLE seqfeature_relationship ADD CONSTRAINT FKterm_seqfeatrel
       FOREIGN KEY ( term_id ) REFERENCES term ( term_id ) ;
 ALTER TABLE seqfeature_relationship ADD CONSTRAINT FKparentfeat_seqfeatrel
-      FOREIGN KEY ( parent_seqfeature_id ) REFERENCES seqfeature ( seqfeature_id )
+      FOREIGN KEY ( object_seqfeature_id ) REFERENCES seqfeature ( seqfeature_id )
       ON DELETE CASCADE ;
 ALTER TABLE seqfeature_relationship ADD CONSTRAINT FKchildfeat_seqfeatrel
-      FOREIGN KEY ( child_seqfeature_id ) REFERENCES seqfeature ( seqfeature_id )
+      FOREIGN KEY ( subject_seqfeature_id ) REFERENCES seqfeature ( seqfeature_id )
       ON DELETE CASCADE ;
 
 -- seqfeature_path 
 ALTER TABLE seqfeature_path ADD CONSTRAINT FKterm_seqfeatpath
       FOREIGN KEY ( term_id ) REFERENCES term ( term_id ) ;
 ALTER TABLE seqfeature_path ADD CONSTRAINT FKparentfeat_seqfeatpath
-      FOREIGN KEY ( parent_seqfeature_id ) REFERENCES seqfeature ( seqfeature_id )
+      FOREIGN KEY ( object_seqfeature_id ) REFERENCES seqfeature ( seqfeature_id )
       ON DELETE CASCADE ;
 ALTER TABLE seqfeature_path ADD CONSTRAINT FKchildfeat_seqfeatpath
-      FOREIGN KEY ( child_seqfeature_id ) REFERENCES seqfeature ( seqfeature_id )
+      FOREIGN KEY ( subject_seqfeature_id ) REFERENCES seqfeature ( seqfeature_id )
       ON DELETE CASCADE ;
 
 -- seqfeature_qualifier_value 
@@ -724,8 +724,8 @@ CREATE RULE rule_bioentry_path_i
        AS ON INSERT TO bioentry_path
        WHERE (
        	     SELECT oid FROM bioentry_relationship 
-	     WHERE parent_bioentry_id = new.parent_bioentry_id
-	     AND   child_bioentry_id  = new.child_bioentry_id
+	     WHERE object_bioentry_id = new.object_bioentry_id
+	     AND   subject_bioentry_id= new.subject_bioentry_id
 	     AND   term_id	      = new.term_id
 	     )
 	     IS NOT NULL
@@ -760,8 +760,8 @@ CREATE RULE rule_bioentry_relationship_i
        AS ON INSERT TO bioentry_relationship
        WHERE (
        	     SELECT oid FROM bioentry_relationship 
-	     WHERE parent_bioentry_id = new.parent_bioentry_id
-	     AND   child_bioentry_id  = new.child_bioentry_id
+	     WHERE object_bioentry_id = new.object_bioentry_id
+	     AND   subject_bioentry_id= new.subject_bioentry_id
 	     AND   term_id	      = new.term_id
 	     )
 	     IS NOT NULL
@@ -880,8 +880,8 @@ CREATE RULE rule_seqfeature_path_i
        AS ON INSERT TO seqfeature_path
        WHERE (
        	     SELECT oid FROM seqfeature_path
-	     WHERE parent_seqfeature_id = new.parent_seqfeature_id
-	     AND   child_seqfeature_id	= new.child_seqfeature_id
+	     WHERE object_seqfeature_id = new.object_seqfeature_id
+	     AND   subject_seqfeature_id= new.subject_seqfeature_id
 	     AND   term_id		= new.term_id
 	     )
 	     IS NOT NULL
@@ -904,8 +904,8 @@ CREATE RULE rule_seqfeature_relationship_i
        AS ON INSERT TO seqfeature_relationship
        WHERE (
        	     SELECT oid FROM seqfeature_relationship
-	     WHERE parent_seqfeature_id = new.parent_seqfeature_id
-	     AND   child_seqfeature_id	= new.child_seqfeature_id
+	     WHERE object_seqfeature_id = new.object_seqfeature_id
+	     AND   subject_seqfeature_id= new.subject_seqfeature_id
 	     AND   term_id		= new.term_id
 	     )
 	     IS NOT NULL
