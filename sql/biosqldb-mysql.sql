@@ -85,13 +85,21 @@ CREATE TABLE term (
        	name	   	   VARCHAR(255) NOT NULL,
        	definition	   TEXT,
 	identifier	   VARCHAR(40),
+	is_obsolete	   CHAR(1),
 	ontology_id	   INT(10) UNSIGNED NOT NULL,
 	PRIMARY KEY (term_id),
 	UNIQUE (name,ontology_id),
 	UNIQUE (identifier)
 ) TYPE=INNODB;
 
-CREATE INDEX ont_cat ON term(ontology_id);
+CREATE INDEX term_ont ON term(ontology_id);
+
+-- ontology terms have synonyms, here is how to store them
+CREATE TABLE term_synonym (
+       synonym		  VARCHAR(255) NOT NULL,
+       term_id		  INT(10) UNSIGNED NOT NULL,
+       PRIMARY KEY (term_id,synonym)
+) TYPE=INNODB;
 
 -- ontology terms to dbxref association: ontology terms have dbxrefs
 CREATE TABLE term_dbxref (
@@ -164,13 +172,20 @@ CREATE INDEX ontpath_ontid ON term_path(ontology_id);
 
 -- we can be a bioentry without a biosequence, but not visa-versa
 -- most things are going to be keyed off bioentry_id
-
+--
 -- accession is the stable id, display_id is a potentially volatile,
 -- human readable name.
-
+--
+-- Version may be unknown, may be undefined, or may not exist for a certain
+-- accession or database (namespace). We require it here to avoid RDBMS-
+-- dependend enforcement variants (version is in a compound alternative key),
+-- and to simplify query construction for UK look-ups. If there is no version
+-- the convention is to put 0 (zero) here. Likewise, a record with a version
+-- of zero means the version is to be interpreted as NULL.
+--
 -- not all entries have a taxon, but many do.
 -- one bioentry only has one taxon! (weirdo chimerias are not handled. tough)
-
+--
 -- Name maps to display_id in bioperl. We have a different column name
 -- here to avoid confusion with the naming convention for foreign keys.
 
@@ -183,7 +198,7 @@ CREATE TABLE bioentry (
   	identifier   	VARCHAR(40),
 	division	VARCHAR(6),
   	description  	TEXT,
-  	version 	SMALLINT UNSIGNED, 
+  	version 	SMALLINT UNSIGNED NOT NULL, 
 	PRIMARY KEY (bioentry_id),
   	UNIQUE (accession,biodatabase_id,version),
   	UNIQUE (identifier)
@@ -200,7 +215,7 @@ CREATE TABLE bioentry_relationship (
         bioentry_relationship_id INT(10) UNSIGNED NOT NULL auto_increment,
    	parent_bioentry_id 	INT(10) UNSIGNED NOT NULL,
    	child_bioentry_id 	INT(10) UNSIGNED NOT NULL,
-   	term_id 	INT(10) UNSIGNED NOT NULL,
+   	term_id 		INT(10) UNSIGNED NOT NULL,
    	rank 			INT(5),
    	PRIMARY KEY (bioentry_relationship_id),
 	UNIQUE (parent_bioentry_id,child_bioentry_id,term_id)
@@ -245,11 +260,19 @@ CREATE TABLE biosequence (
 -- ALTER TABLE biosequence ADD COLUMN ( perc_gc DOUBLE PRECISION );
 
 -- database cross-references (e.g., GenBank:AC123456.1)
+--
+-- Version may be unknown, may be undefined, or may not exist for a certain
+-- accession or database (namespace). We require it here to avoid RDBMS-
+-- dependend enforcement variants (version is in a compound alternative key),
+-- and to simplify query construction for UK look-ups. If there is no version
+-- the convention is to put 0 (zero) here. Likewise, a record with a version
+-- of zero means the version is to be interpreted as NULL.
+--
 CREATE TABLE dbxref (
         dbxref_id	INT(10) UNSIGNED NOT NULL auto_increment,
         dbname          VARCHAR(40) NOT NULL,
         accession       VARCHAR(40) NOT NULL,
-	version		SMALLINT UNSIGNED,
+	version		SMALLINT UNSIGNED NOT NULL,
 	PRIMARY KEY (dbxref_id),
         UNIQUE(accession, dbname, version)
 ) TYPE=INNODB;
@@ -269,8 +292,8 @@ CREATE INDEX dbxref_db  ON dbxref(dbname);
 CREATE TABLE dbxref_qualifier_value (
 	dbxref_qualifier_value_id  INT(10) UNSIGNED NOT NULL auto_increment,
        	dbxref_id 		INT(10) UNSIGNED NOT NULL,
-       	term_id 	INT(10) UNSIGNED NOT NULL,
-  	rank  		   	SMALLINT,
+       	term_id 		INT(10) UNSIGNED NOT NULL,
+  	rank  		   	SMALLINT NOT NULL DEFAULT 0,
        	value			TEXT,
 	PRIMARY KEY (dbxref_qualifier_value_id),
 	UNIQUE (dbxref_id,term_id,rank)
@@ -318,7 +341,7 @@ CREATE TABLE bioentry_reference (
   	reference_id 	INT(10) UNSIGNED NOT NULL,
   	start_pos	INT(10),
   	end_pos	  	INT(10),
-  	rank  		SMALLINT NOT NULL,
+  	rank  		SMALLINT NOT NULL DEFAULT 0,
   	PRIMARY KEY(bioentry_id,reference_id,rank)
 ) TYPE=INNODB;
 
@@ -332,20 +355,18 @@ CREATE TABLE comment (
   	comment_id  	INT(10) UNSIGNED NOT NULL auto_increment,
   	bioentry_id    	INT(10) UNSIGNED NOT NULL,
   	comment_text   	TEXT NOT NULL,
-  	rank   		SMALLINT NOT NULL,
+  	rank   		SMALLINT NOT NULL DEFAULT 0,
 	PRIMARY KEY (comment_id),
   	UNIQUE(bioentry_id, rank)
 ) TYPE=INNODB;
 
 
--- this table replaces the old bioentry_description and bioentry_keywords
--- tables
-
+-- tag/value and ontology term annotation for bioentries goes here
 CREATE TABLE bioentry_qualifier_value (
 	bioentry_id   		INT(10) UNSIGNED NOT NULL,
-   	term_id  	INT(10) UNSIGNED NOT NULL,
+   	term_id  		INT(10) UNSIGNED NOT NULL,
    	value         		TEXT,
-	rank			INT(5),
+	rank			INT(5) NOT NULL DEFAULT 0,
 	UNIQUE (bioentry_id,term_id,rank)
 ) TYPE=INNODB;
 
@@ -362,7 +383,7 @@ CREATE TABLE seqfeature (
    	type_term_id		INT(10) UNSIGNED NOT NULL,
    	source_term_id  	INT(10) UNSIGNED,
 	display_name		VARCHAR(64),
-   	rank 			SMALLINT UNSIGNED NOT NULL,
+   	rank 			SMALLINT UNSIGNED NOT NULL DEFAULT 0,
 	PRIMARY KEY (seqfeature_id),
 	UNIQUE (bioentry_id,type_term_id,source_term_id,rank)
 ) TYPE=INNODB;
@@ -398,7 +419,7 @@ CREATE INDEX seqfeaturerel_child ON seqfeature_relationship(child_seqfeature_id)
 CREATE TABLE seqfeature_path (
    	parent_seqfeature_id	INT(10) UNSIGNED NOT NULL,
    	child_seqfeature_id 	INT(10) UNSIGNED NOT NULL,
-   	term_id 	INT(10) UNSIGNED NOT NULL,
+   	term_id 		INT(10) UNSIGNED NOT NULL,
 	PRIMARY KEY (parent_seqfeature_id,child_seqfeature_id,term_id)
 ) TYPE=INNODB;
 
@@ -411,8 +432,8 @@ CREATE INDEX seqfeaturepath_child ON seqfeature_path(child_seqfeature_id);
 -- tag/value associations - or ontology annotations
 CREATE TABLE seqfeature_qualifier_value (
 	seqfeature_id 		INT(10) UNSIGNED NOT NULL,
-   	term_id 	INT(10) UNSIGNED NOT NULL,
-   	rank 			SMALLINT NOT NULL,
+   	term_id 		INT(10) UNSIGNED NOT NULL,
+   	rank 			SMALLINT NOT NULL DEFAULT 0,
    	value  			TEXT NOT NULL,
    	PRIMARY KEY (seqfeature_id,term_id,rank)
 ) TYPE=INNODB;
@@ -449,14 +470,14 @@ CREATE INDEX feadblink_dbx  ON seqfeature_dbxref(dbxref_id);
 -- location for determining in one hit whether it's a fuzzy or not
 
 CREATE TABLE location (
-	location_id 	INT(10) UNSIGNED NOT NULL auto_increment,
+	location_id		INT(10) UNSIGNED NOT NULL auto_increment,
    	seqfeature_id		INT(10) UNSIGNED NOT NULL,
 	dbxref_id		INT(10) UNSIGNED,
-	term_id	INT(10) UNSIGNED,
+	term_id			INT(10) UNSIGNED,
    	start_pos              	INT(10),
    	end_pos                	INT(10),
    	strand             	TINYINT NOT NULL,
-   	rank          		SMALLINT,
+   	rank          		SMALLINT NOT NULL DEFAULT 0,
 	PRIMARY KEY (location_id),
    	UNIQUE (seqfeature_id, rank)
 ) TYPE=INNODB;
@@ -475,8 +496,8 @@ CREATE INDEX seqfeatureloc_ont   ON location(term_id);
 -- for your own nefarious aims, although the bio* apis will
 -- most likely ignore these
 CREATE TABLE location_qualifier_value (
-	location_id	INT(10) UNSIGNED NOT NULL,
-   	term_id 	INT(10) UNSIGNED NOT NULL,
+	location_id		INT(10) UNSIGNED NOT NULL,
+   	term_id 		INT(10) UNSIGNED NOT NULL,
    	value  			VARCHAR(255) NOT NULL,
    	int_value 		INT(10),
 	PRIMARY KEY (location_id,term_id)
@@ -500,9 +521,14 @@ CREATE TABLE cache_corba_support (
 -- Create the foreign key constraints
 --
 
--- ontology
-ALTER TABLE term ADD CONSTRAINT FKterm
+-- ontology term
+ALTER TABLE term ADD CONSTRAINT FKont_term
 	FOREIGN KEY (ontology_id) REFERENCES ontology(ontology_id)
+	ON DELETE CASCADE;
+
+-- term synonyms
+ALTER TABLE term_synonym ADD CONSTRAINT FKterm_syn
+	FOREIGN KEY (term_id) REFERENCES term(term_id)
 	ON DELETE CASCADE;
 
 -- term_dbxref
@@ -547,7 +573,7 @@ ALTER TABLE term_path ADD CONSTRAINT FKterm_ontpath
 
 ALTER TABLE taxon ADD CONSTRAINT FKtaxon_taxon
         FOREIGN KEY (parent_taxon_id) REFERENCES taxon(taxon_id)
-        ON DELETE CASCADE; 
+        ON DELETE CASCADE;
 ALTER TABLE taxon_name ADD CONSTRAINT FKtaxon_taxonname
         FOREIGN KEY (taxon_id) REFERENCES taxon(taxon_id)
         ON DELETE CASCADE;
