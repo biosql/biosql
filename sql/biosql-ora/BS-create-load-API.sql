@@ -2,7 +2,7 @@
 -- SQL script to create the views of the load API for SYMGENE/BioSQL.
 --
 --
--- $GNF: projects/gi/symgene/src/DB/BS-create-load-API.sql,v 1.13 2003/05/23 17:42:27 hlapp Exp $
+-- $GNF: projects/gi/symgene/src/DB/BS-create-load-API.sql,v 1.14 2003/06/14 02:53:05 hlapp Exp $
 --
 
 --
@@ -38,6 +38,7 @@ SELECT
 	DB.Oid			DB_Oid,
 	DB.Name			DB_Name,
 	DB.Authority		DB_Authority,
+	DB.Description		DB_Description,
 	DB.Acronym		DB_Acronym,
 	DB.URI			DB_URI
 FROM SG_Biodatabase DB

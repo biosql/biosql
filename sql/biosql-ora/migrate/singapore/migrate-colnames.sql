@@ -13,7 +13,7 @@
 -- WARRANTIES WHATSOEVER. Please read the license under which you may use
 -- this script and those that come with it.
 --
--- $GNF: projects/gi/symgene/src/sql/migrate/singapore/migrate-colnames.sql,v 1.2 2003/05/21 06:47:24 hlapp Exp $
+-- $GNF: projects/gi/symgene/src/sql/migrate/singapore/migrate-colnames.sql,v 1.3 2003/06/25 00:14:33 hlapp Exp $
 --
 
 --
@@ -42,6 +42,36 @@ ALTER TABLE SG_Seqfeature MODIFY (Source_Trm_Oid NOT NULL);
 ALTER TABLE SG_Seqfeature ADD (
 	Display_Name		VARCHAR2(64) NULL
 );
+
+-- we rename the existing index using a spool file to make sure there is
+-- no error if it was renamed before
+set timing off
+set heading off
+set termout off
+set feedback off
+
+spool _rename_idx.sql
+
+SELECT 'ALTER INDEX ' || index_name || ' RENAME TO XIF1Seqfeature;'
+FROM user_indexes 
+WHERE table_name = 'SG_SEQFEATURE' AND index_name LIKE 'XIF%';
+
+spool off
+
+set timing on
+set heading on
+set termout on
+set feedback on
+
+-- we didn't have this one before; its primary use case is to speed up the
+-- look up when deleting terms (Oracle does this to make sure the FK
+-- constraint isn't violated)
+CREATE INDEX XIF2Seqfeature ON SG_Seqfeature
+(
+       Source_Trm_Oid
+)
+    	 TABLESPACE &biosql_index
+;
 
 -- Bioentry: 
 PROMPT     - Bioentry

@@ -2,7 +2,7 @@
 -- SQL script to create the procedures used for context indexes.
 --
 --
--- $GNF: projects/gi/symgene/src/DB/BS-create-ctx-proc.sql,v 1.6 2003/05/23 17:42:27 hlapp Exp $
+-- $GNF: projects/gi/symgene/src/DB/BS-create-ctx-proc.sql,v 1.7 2003/06/25 00:14:33 hlapp Exp $
 --
 
 --
@@ -32,7 +32,7 @@ IS
 	       Obj_Trm_Oid_	IN SG_TERM.OID%TYPE,
 	       Pred_Trm_Oid_	IN SG_TERM.OID%TYPE)
 	IS
-		SELECT Obj.Name, EntTrmA.Value
+		SELECT REPLACE(Obj.Name,' ','-') Name, EntTrmA.Value
 		FROM SG_Bioentry_Qualifier_Assoc EntTrmA, SG_Bioentry Ent,
 		     SG_Term_Assoc TrmA, SG_Term Obj
 		WHERE
