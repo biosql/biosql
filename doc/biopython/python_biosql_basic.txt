@@ -15,6 +15,28 @@ Table of Contents
 
    
   
+ - 1  Other BioSQL documentation 
+ - 2  Installing python database packages 
+     
+    - 2.1  MySQL 
+        
+       - 2.1.1  MySQLdb 
+     
+    - 2.2  PostgreSQL 
+        
+       - 2.2.1  psycopg 
+     
+  
+ - 3  Getting Started 
+     
+    - 3.1  Prerequisites 
+    - 3.2  Connecting to a BioSQL database 
+    - 3.3  Loading a GenBank file into the database 
+    - 3.4  Retrieving SeqRecord objects 
+  
+ - 4  Python Cookbook Code 
+   
+  
 
 1  Other BioSQL documentation
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*
