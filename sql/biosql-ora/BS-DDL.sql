@@ -88,7 +88,7 @@ CREATE TABLE SG_Biodatabase (
        Name                 VARCHAR2(32) NOT NULL,
        Authority            VARCHAR2(32) NULL,
        Description	    VARCHAR2(256) NULL,
-       Acronym              VARCHAR2(6) NULL,
+       Acronym              VARCHAR2(12) NULL,
        URI                  VARCHAR2(128) NULL,
        CONSTRAINT XPKBiodatabase 
               PRIMARY KEY (Oid)
@@ -132,7 +132,7 @@ DROP TABLE SG_Taxon CASCADE CONSTRAINTS;
 
 CREATE TABLE SG_Taxon (
 	Oid			INTEGER NOT NULL , 
-	NCBI_Taxon_ID		NUMBER(8), 
+	NCBI_Taxon_ID		INTEGER, 
 	Node_Rank		VARCHAR2(32), 
 	Genetic_Code		NUMBER(2), 
 	Mito_Genetic_Code 	NUMBER(2), 
@@ -206,7 +206,7 @@ DROP TABLE SG_Ontology CASCADE CONSTRAINTS ;
 
 CREATE TABLE SG_Ontology (
 	Oid  		 INTEGER NOT NULL, 
-	Name		 VARCHAR2(32) NOT NULL,
+	Name		 VARCHAR2(64) NOT NULL,
 	Definition	 VARCHAR2(4000),
 	CONSTRAINT XPKOntology
 		PRIMARY KEY (Oid)
@@ -230,7 +230,7 @@ CREATE TABLE SG_Term (
        Oid                  INTEGER NOT NULL,
        Name                 VARCHAR2(256) NOT NULL,
        Identifier           VARCHAR2(16) NULL,
-       Definition           VARCHAR2(2000) NULL,
+       Definition           VARCHAR2(4000) NULL,
        Is_Obsolete	    VARCHAR2(1) NULL
        			    	CONSTRAINT IsObsolete1
        			    		CHECK (Is_Obsolete = 'X'),
@@ -289,7 +289,7 @@ CREATE INDEX XIF1Term_DBXRef_Assoc ON SG_Term_DBXRef_Assoc
 DROP TABLE SG_Term_Synonym CASCADE CONSTRAINTS ;
 
 CREATE TABLE SG_Term_Synonym (
-	Name			VARCHAR2(128) NOT NULL,
+	Name			VARCHAR2(256) NOT NULL,
 	Trm_Oid			INTEGER NOT NULL,
        	CONSTRAINT XPKTerm_Synonym
 		PRIMARY KEY (Name, Trm_Oid)
@@ -315,6 +315,10 @@ CREATE TABLE SG_Term_Assoc (
        Pred_Trm_Oid         INTEGER NOT NULL,
        Obj_Trm_Oid          INTEGER NOT NULL,
        Ont_Oid		    INTEGER NOT NULL,
+       -- This lets one associate a single term with a term_relationship 
+       -- effecively allowing us to treat triples as 1st class terms.
+       -- http://www.open-bio.org/pipermail/biosql-l/2003-October/000455.html
+       Trm_Oid              INTEGER NULL,
        CONSTRAINT XPKTerm_Assoc 
               PRIMARY KEY (Oid)
        USING INDEX
@@ -322,6 +326,11 @@ CREATE TABLE SG_Term_Assoc (
        ,
        CONSTRAINT XAK1Term_Assoc
               UNIQUE (Subj_Trm_Oid, Pred_Trm_Oid, Obj_Trm_Oid, Ont_Oid)
+       USING INDEX
+       TABLESPACE &biosql_index
+       ,
+       CONSTRAINT XAK2Term_Assoc
+              UNIQUE (Trm_Oid)
        USING INDEX
        TABLESPACE &biosql_index
        --
@@ -585,6 +594,7 @@ CREATE TABLE SG_Biosequence (
                                    CONSTRAINT Alphabet4
                                           CHECK (Alphabet IN ('dna', 'protein', 'rna')),
        Seq                  CLOB NULL,
+       CRC                  VARCHAR2(32) NULL,
        CONSTRAINT XPKBiosequence 
               PRIMARY KEY (Ent_Oid)
        USING INDEX
@@ -602,7 +612,7 @@ DROP TABLE SG_DBXRef CASCADE CONSTRAINTS;
 CREATE TABLE SG_DBXRef (
        Oid                  INTEGER NOT NULL,
        DBName               VARCHAR2(32) NOT NULL,
-       Accession            VARCHAR2(32) NOT NULL,
+       Accession            VARCHAR2(64) NOT NULL,
        Version              NUMBER(2) DEFAULT 0 NOT NULL,
        CONSTRAINT XPKDBXRef 
               PRIMARY KEY (Oid)
@@ -746,7 +756,7 @@ DROP TABLE SG_Bioentry_Ref_Assoc CASCADE CONSTRAINTS;
 CREATE TABLE SG_Bioentry_Ref_Assoc (
        Ent_Oid              INTEGER NOT NULL,
        Ref_Oid              INTEGER NOT NULL,
-       Rank                 NUMBER(2) NOT NULL,
+       Rank                 NUMBER(4) NOT NULL,
        Start_Pos            NUMBER(10) NULL,
        End_Pos              NUMBER(10) NULL,
        CONSTRAINT XPKBioentry_Ref_Assoc 
@@ -1100,6 +1110,13 @@ ALTER TABLE SG_Term_Assoc
               FOREIGN KEY (Ont_Oid)
                              REFERENCES SG_Ontology (Oid)
 			     ON DELETE CASCADE ) ;
+
+ALTER TABLE SG_Term_Assoc
+       ADD  ( CONSTRAINT FKTrm_TrmA
+              FOREIGN KEY (Trm_Oid)
+                             REFERENCES SG_Term (Oid)
+			     ON DELETE SET NULL ) ;
+
 
 --
 -- Term to Term associations transitive closure table
