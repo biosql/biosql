@@ -1,0 +1,326 @@
+<html><head><title>Index for genbank3</title></head><body><a name="index"><h1>Index</h1><ul><li><a href="#table_biodatabase">biodatabase</a></li><li><a href="#table_bioentry">bioentry</a></li><li><a href="#table_bioentry_direct_links">bioentry_direct_links</a></li><li><a href="#table_bioentry_qualifier_value">bioentry_qualifier_value</a></li><li><a href="#table_bioentry_reference">bioentry_reference</a></li><li><a href="#table_bioentry_taxa">bioentry_taxa</a></li><li><a href="#table_biosequence">biosequence</a></li><li><a href="#table_cache_corba_support">cache_corba_support</a></li><li><a href="#table_comment">comment</a></li><li><a href="#table_dbxref">dbxref</a></li><li><a href="#table_dbxref_qualifier_value">dbxref_qualifier_value</a></li><li><a href="#table_location_qualifier_value">location_qualifier_value</a></li><li><a href="#table_ontology_term">ontology_term</a></li><li><a href="#table_reference">reference</a></li><li><a href="#table_remote_seqfeature_name">remote_seqfeature_name</a></li><li><a href="#table_seqfeature">seqfeature</a></li><li><a href="#table_seqfeature_location">seqfeature_location</a></li><li><a href="#table_seqfeature_qualifier_value">seqfeature_qualifier_value</a></li><li><a href="#table_seqfeature_relationship">seqfeature_relationship</a></li><li><a href="#table_seqfeature_source">seqfeature_source</a></li><li><a href="#table_taxa">taxa</a></li></ul><hr><h2>Table: <a name="table_biodatabase">biodatabase</a></h2>
+                <p></p>
+                <table width="100%" cellspacing="0" cellpadding="3" border="1">
+                <caption>biodatabase Structure</caption>
+                <tr bgcolor="#E0E0EE">
+                <th>F-Key</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+                </tr><tr><td></td><td>biodatabase_id</td>
+                  <td>SERIAL</td><td><i>NOT NULL PRIMARY KEY </i></td></tr><tr><td></td><td>name</td>
+                  <td>VARCHAR(40)</td><td><i>NOT NULL</i></td></tr></table><p>Tables referencing this one via Foreign Key Constraints:<ul><li><a href="#table_bioentry">bioentry</a></li></ul></p><a href="#index">Index</a><hr><h2>Table: <a name="table_bioentry">bioentry</a></h2>
+                <p></p>
+                <table width="100%" cellspacing="0" cellpadding="3" border="1">
+                <caption>bioentry Structure</caption>
+                <tr bgcolor="#E0E0EE">
+                <th>F-Key</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+                </tr><tr><td></td><td>accession</td>
+                  <td>VARCHAR(40)</td><td><i>NOT NULL</i></td></tr><tr><td><a href="#table_biodatabase">biodatabase</a>
+                    </td><td>biodatabase_id</td>
+                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>bioentry_id</td>
+                  <td>SERIAL</td><td><i>NOT NULL PRIMARY KEY </i></td></tr><tr><td></td><td>display_id</td>
+                  <td>VARCHAR(40)</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>division</td>
+                  <td>VARCHAR(3)</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>entry_version</td>
+                  <td>INT4</td><td></td></tr></table><br><table  width="100%" cellspacing="0" cellpadding="3" border="1">
+                    <caption>bioentry Constraints</caption>
+                    <tr bgcolor="#E0E0EE">
+                    <th>Name</th>
+                    <th>Constraint</th>
+                    </tr><tr><td>bioentry_biodatabase_id_key</td>
+                      <td>UNIQUE (biodatabase_id, accession, entry_version, division)</td></tr></table><p>Tables referencing this one via Foreign Key Constraints:<ul><li><a href="#table_bioentry_direct_links">bioentry_direct_links</a></li><li><a href="#table_bioentry_qualifier_value">bioentry_qualifier_value</a></li><li><a href="#table_bioentry_reference">bioentry_reference</a></li><li><a href="#table_bioentry_taxa">bioentry_taxa</a></li><li><a href="#table_biosequence">biosequence</a></li><li><a href="#table_comment">comment</a></li><li><a href="#table_seqfeature">seqfeature</a></li></ul></p><a href="#index">Index</a><hr><h2>Table: <a name="table_bioentry_direct_links">bioentry_direct_links</a></h2>
+                <p></p>
+                <table width="100%" cellspacing="0" cellpadding="3" border="1">
+                <caption>bioentry_direct_links Structure</caption>
+                <tr bgcolor="#E0E0EE">
+                <th>F-Key</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+                </tr><tr><td></td><td>bio_dblink_id</td>
+                  <td>SERIAL</td><td><i>NOT NULL PRIMARY KEY </i></td></tr><tr><td><a href="#table_dbxref">dbxref</a>
+                    </td><td>dbxref_id</td>
+                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td><a href="#table_bioentry">bioentry</a>
+                    </td><td>source_bioentry_id</td>
+                  <td>INT4</td><td><i>NOT NULL</i></td></tr></table><a href="#index">Index</a><hr><h2>Table: <a name="table_bioentry_qualifier_value">bioentry_qualifier_value</a></h2>
+                <p></p>
+                <table width="100%" cellspacing="0" cellpadding="3" border="1">
+                <caption>bioentry_qualifier_value Structure</caption>
+                <tr bgcolor="#E0E0EE">
+                <th>F-Key</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+                </tr><tr><td><a href="#table_bioentry">bioentry</a>
+                    </td><td>bioentry_id</td>
+                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td><a href="#table_ontology_term">ontology_term</a>
+                    </td><td>ontology_term_id</td>
+                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>qualifier_value</td>
+                  <td>TEXT</td><td></td></tr></table><a href="#index">Index</a><hr><h2>Table: <a name="table_bioentry_reference">bioentry_reference</a></h2>
+                <p></p>
+                <table width="100%" cellspacing="0" cellpadding="3" border="1">
+                <caption>bioentry_reference Structure</caption>
+                <tr bgcolor="#E0E0EE">
+                <th>F-Key</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+                </tr><tr><td><a href="#table_bioentry">bioentry</a>
+                    </td><td>bioentry_id</td>
+                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>reference_end</td>
+                  <td>INT4</td><td></td></tr><tr><td><a href="#table_reference">reference</a>
+                    </td><td>reference_id</td>
+                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>reference_rank</td>
+                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>reference_start</td>
+                  <td>INT4</td><td></td></tr></table><br><table  width="100%" cellspacing="0" cellpadding="3" border="1">
+                    <caption>bioentry_reference Constraints</caption>
+                    <tr bgcolor="#E0E0EE">
+                    <th>Name</th>
+                    <th>Constraint</th>
+                    </tr><tr><td>bioentry_reference_pkey</td>
+                      <td>PRIMARY KEY (bioentry_id, reference_id, reference_rank)</td></tr></table><a href="#index">Index</a><hr><h2>Table: <a name="table_bioentry_taxa">bioentry_taxa</a></h2>
+                <p></p>
+                <table width="100%" cellspacing="0" cellpadding="3" border="1">
+                <caption>bioentry_taxa Structure</caption>
+                <tr bgcolor="#E0E0EE">
+                <th>F-Key</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+                </tr><tr><td><a href="#table_bioentry">bioentry</a>
+                    </td><td>bioentry_id</td>
+                  <td>INT4</td><td><i>NOT NULL PRIMARY KEY </i></td></tr><tr><td></td><td>taxa_id</td>
+                  <td>INT4</td><td><i>NOT NULL</i></td></tr></table><a href="#index">Index</a><hr><h2>Table: <a name="table_biosequence">biosequence</a></h2>
+                <p></p>
+                <table width="100%" cellspacing="0" cellpadding="3" border="1">
+                <caption>biosequence Structure</caption>
+                <tr bgcolor="#E0E0EE">
+                <th>F-Key</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+                </tr><tr><td><a href="#table_bioentry">bioentry</a>
+                    </td><td>bioentry_id</td>
+                  <td>INT4</td><td><i>NOT NULL UNIQUE </i></td></tr><tr><td></td><td>biosequence_id</td>
+                  <td>SERIAL</td><td><i>NOT NULL PRIMARY KEY </i></td></tr><tr><td></td><td>biosequence_str</td>
+                  <td>TEXT</td><td></td></tr><tr><td></td><td>molecule</td>
+                  <td>VARCHAR(10)</td><td></td></tr><tr><td></td><td>seq_length</td>
+                  <td>INT4</td><td></td></tr><tr><td></td><td>seq_version</td>
+                  <td>INT4</td><td></td></tr></table><a href="#index">Index</a><hr><h2>Table: <a name="table_cache_corba_support">cache_corba_support</a></h2>
+                <p></p>
+                <table width="100%" cellspacing="0" cellpadding="3" border="1">
+                <caption>cache_corba_support Structure</caption>
+                <tr bgcolor="#E0E0EE">
+                <th>F-Key</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+                </tr><tr><td></td><td>biodatabase_id</td>
+                  <td>INT4</td><td><i>NOT NULL PRIMARY KEY </i></td></tr><tr><td></td><td>direct_ior_string</td>
+                  <td>VARCHAR(255)</td><td></td></tr><tr><td></td><td>http_ior_string</td>
+                  <td>VARCHAR(255)</td><td></td></tr></table><a href="#index">Index</a><hr><h2>Table: <a name="table_comment">comment</a></h2>
+                <p></p>
+                <table width="100%" cellspacing="0" cellpadding="3" border="1">
+                <caption>comment Structure</caption>
+                <tr bgcolor="#E0E0EE">
+                <th>F-Key</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+                </tr><tr><td><a href="#table_bioentry">bioentry</a>
+                    </td><td>bioentry_id</td>
+                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>comment_id</td>
+                  <td>SERIAL</td><td><i>NOT NULL PRIMARY KEY </i></td></tr><tr><td></td><td>comment_rank</td>
+                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>comment_text</td>
+                  <td>TEXT</td><td><i>NOT NULL</i></td></tr></table><a href="#index">Index</a><hr><h2>Table: <a name="table_dbxref">dbxref</a></h2>
+                <p></p>
+                <table width="100%" cellspacing="0" cellpadding="3" border="1">
+                <caption>dbxref Structure</caption>
+                <tr bgcolor="#E0E0EE">
+                <th>F-Key</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+                </tr><tr><td></td><td>accession</td>
+                  <td>VARCHAR(40)</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>dbname</td>
+                  <td>VARCHAR(40)</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>dbxref_id</td>
+                  <td>SERIAL</td><td><i>NOT NULL PRIMARY KEY </i></td></tr></table><br><table  width="100%" cellspacing="0" cellpadding="3" border="1">
+                    <caption>dbxref Constraints</caption>
+                    <tr bgcolor="#E0E0EE">
+                    <th>Name</th>
+                    <th>Constraint</th>
+                    </tr><tr><td>dbxref_dbname_key</td>
+                      <td>UNIQUE (dbname, accession)</td></tr></table><p>Tables referencing this one via Foreign Key Constraints:<ul><li><a href="#table_bioentry_direct_links">bioentry_direct_links</a></li><li><a href="#table_dbxref_qualifier_value">dbxref_qualifier_value</a></li></ul></p><a href="#index">Index</a><hr><h2>Table: <a name="table_dbxref_qualifier_value">dbxref_qualifier_value</a></h2>
+                <p></p>
+                <table width="100%" cellspacing="0" cellpadding="3" border="1">
+                <caption>dbxref_qualifier_value Structure</caption>
+                <tr bgcolor="#E0E0EE">
+                <th>F-Key</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+                </tr><tr><td><a href="#table_dbxref">dbxref</a>
+                    </td><td>dbxref_id</td>
+                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>dbxref_qualifier_value_id</td>
+                  <td>SERIAL</td><td><i>NOT NULL PRIMARY KEY </i></td></tr><tr><td><a href="#table_ontology_term">ontology_term</a>
+                    </td><td>ontology_term_id</td>
+                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>qualifier_value</td>
+                  <td>TEXT</td><td></td></tr></table><a href="#index">Index</a><hr><h2>Table: <a name="table_location_qualifier_value">location_qualifier_value</a></h2>
+                <p></p>
+                <table width="100%" cellspacing="0" cellpadding="3" border="1">
+                <caption>location_qualifier_value Structure</caption>
+                <tr bgcolor="#E0E0EE">
+                <th>F-Key</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+                </tr><tr><td><a href="#table_ontology_term">ontology_term</a>
+                    </td><td>ontology_term_id</td>
+                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>qualifier_int_value</td>
+                  <td>INT4</td><td></td></tr><tr><td></td><td>qualifier_value</td>
+                  <td></td><td><i>NOT NULL</i></td></tr><tr><td><a href="#table_seqfeature_location">seqfeature_location</a>
+                    </td><td>seqfeature_location_id</td>
+                  <td>INT4</td><td><i>NOT NULL</i></td></tr></table><a href="#index">Index</a><hr><h2>Table: <a name="table_ontology_term">ontology_term</a></h2>
+                <p></p>
+                <table width="100%" cellspacing="0" cellpadding="3" border="1">
+                <caption>ontology_term Structure</caption>
+                <tr bgcolor="#E0E0EE">
+                <th>F-Key</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+                </tr><tr><td></td><td>ontology_term_id</td>
+                  <td>SERIAL</td><td><i>NOT NULL PRIMARY KEY </i></td></tr><tr><td></td><td>term_definition</td>
+                  <td>TEXT</td><td></td></tr><tr><td></td><td>term_name</td>
+                  <td></td><td></td></tr></table><p>Tables referencing this one via Foreign Key Constraints:<ul><li><a href="#table_bioentry_qualifier_value">bioentry_qualifier_value</a></li><li><a href="#table_dbxref_qualifier_value">dbxref_qualifier_value</a></li><li><a href="#table_location_qualifier_value">location_qualifier_value</a></li><li><a href="#table_seqfeature">seqfeature</a></li><li><a href="#table_seqfeature_qualifier_value">seqfeature_qualifier_value</a></li><li><a href="#table_seqfeature_relationship">seqfeature_relationship</a></li></ul></p><a href="#index">Index</a><hr><h2>Table: <a name="table_reference">reference</a></h2>
+                <p></p>
+                <table width="100%" cellspacing="0" cellpadding="3" border="1">
+                <caption>reference Structure</caption>
+                <tr bgcolor="#E0E0EE">
+                <th>F-Key</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+                </tr><tr><td></td><td>reference_authors</td>
+                  <td>TEXT</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>reference_id</td>
+                  <td>SERIAL</td><td><i>NOT NULL PRIMARY KEY </i></td></tr><tr><td></td><td>reference_location</td>
+                  <td>TEXT</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>reference_medline</td>
+                  <td>INT4</td><td></td></tr><tr><td></td><td>reference_title</td>
+                  <td>TEXT</td><td></td></tr></table><p>Tables referencing this one via Foreign Key Constraints:<ul><li><a href="#table_bioentry_reference">bioentry_reference</a></li></ul></p><a href="#index">Index</a><hr><h2>Table: <a name="table_remote_seqfeature_name">remote_seqfeature_name</a></h2>
+                <p></p>
+                <table width="100%" cellspacing="0" cellpadding="3" border="1">
+                <caption>remote_seqfeature_name Structure</caption>
+                <tr bgcolor="#E0E0EE">
+                <th>F-Key</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+                </tr><tr><td></td><td>accession</td>
+                  <td>VARCHAR(40)</td><td><i>NOT NULL</i></td></tr><tr><td><a href="#table_seqfeature_location">seqfeature_location</a>
+                    </td><td>seqfeature_location_id</td>
+                  <td>INT4</td><td><i>NOT NULL PRIMARY KEY </i></td></tr><tr><td></td><td>version</td>
+                  <td>INT4</td><td><i>NOT NULL</i></td></tr></table><a href="#index">Index</a><hr><h2>Table: <a name="table_seqfeature">seqfeature</a></h2>
+                <p></p>
+                <table width="100%" cellspacing="0" cellpadding="3" border="1">
+                <caption>seqfeature Structure</caption>
+                <tr bgcolor="#E0E0EE">
+                <th>F-Key</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+                </tr><tr><td><a href="#table_bioentry">bioentry</a>
+                    </td><td>bioentry_id</td>
+                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>seqfeature_id</td>
+                  <td>SERIAL</td><td><i>NOT NULL PRIMARY KEY </i></td></tr><tr><td><a href="#table_ontology_term">ontology_term</a>
+                    </td><td>seqfeature_key_id</td>
+                  <td>INT4</td><td></td></tr><tr><td></td><td>seqfeature_rank</td>
+                  <td>INT4</td><td></td></tr><tr><td><a href="#table_seqfeature_source">seqfeature_source</a>
+                    </td><td>seqfeature_source_id</td>
+                  <td>INT4</td><td></td></tr></table><p>Tables referencing this one via Foreign Key Constraints:<ul><li><a href="#table_seqfeature_location">seqfeature_location</a></li><li><a href="#table_seqfeature_qualifier_value">seqfeature_qualifier_value</a></li><li><a href="#table_seqfeature_relationship">seqfeature_relationship</a></li><li><a href="#table_seqfeature_relationship">seqfeature_relationship</a></li></ul></p><a href="#index">Index</a><hr><h2>Table: <a name="table_seqfeature_location">seqfeature_location</a></h2>
+                <p></p>
+                <table width="100%" cellspacing="0" cellpadding="3" border="1">
+                <caption>seqfeature_location Structure</caption>
+                <tr bgcolor="#E0E0EE">
+                <th>F-Key</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+                </tr><tr><td></td><td>location_rank</td>
+                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>seq_end</td>
+                  <td>INT4</td><td></td></tr><tr><td></td><td>seq_start</td>
+                  <td>INT4</td><td></td></tr><tr><td></td><td>seq_strand</td>
+                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td><a href="#table_seqfeature">seqfeature</a>
+                    </td><td>seqfeature_id</td>
+                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>seqfeature_location_id</td>
+                  <td>SERIAL</td><td><i>NOT NULL PRIMARY KEY </i></td></tr></table><p>Tables referencing this one via Foreign Key Constraints:<ul><li><a href="#table_location_qualifier_value">location_qualifier_value</a></li><li><a href="#table_remote_seqfeature_name">remote_seqfeature_name</a></li></ul></p><a href="#index">Index</a><hr><h2>Table: <a name="table_seqfeature_qualifier_value">seqfeature_qualifier_value</a></h2>
+                <p></p>
+                <table width="100%" cellspacing="0" cellpadding="3" border="1">
+                <caption>seqfeature_qualifier_value Structure</caption>
+                <tr bgcolor="#E0E0EE">
+                <th>F-Key</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+                </tr><tr><td><a href="#table_ontology_term">ontology_term</a>
+                    </td><td>ontology_term_id</td>
+                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>qualifier_rank</td>
+                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>qualifier_value</td>
+                  <td>TEXT</td><td><i>NOT NULL</i></td></tr><tr><td><a href="#table_seqfeature">seqfeature</a>
+                    </td><td>seqfeature_id</td>
+                  <td>INT4</td><td><i>NOT NULL</i></td></tr></table><br><table  width="100%" cellspacing="0" cellpadding="3" border="1">
+                    <caption>seqfeature_qualifier_value Constraints</caption>
+                    <tr bgcolor="#E0E0EE">
+                    <th>Name</th>
+                    <th>Constraint</th>
+                    </tr><tr><td>seqfeature_qualifier_value_pkey</td>
+                      <td>PRIMARY KEY (seqfeature_id, ontology_term_id, qualifier_rank)</td></tr></table><a href="#index">Index</a><hr><h2>Table: <a name="table_seqfeature_relationship">seqfeature_relationship</a></h2>
+                <p></p>
+                <table width="100%" cellspacing="0" cellpadding="3" border="1">
+                <caption>seqfeature_relationship Structure</caption>
+                <tr bgcolor="#E0E0EE">
+                <th>F-Key</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+                </tr><tr><td><a href="#table_seqfeature">seqfeature</a>
+                    </td><td>child_seqfeature_id</td>
+                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td><a href="#table_seqfeature">seqfeature</a>
+                    </td><td>parent_seqfeature_id</td>
+                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>relationship_rank</td>
+                  <td>INT4</td><td></td></tr><tr><td><a href="#table_ontology_term">ontology_term</a>
+                    </td><td>relationship_type_id</td>
+                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>seqfeature_relationship_id</td>
+                  <td>SERIAL</td><td><i>NOT NULL PRIMARY KEY </i></td></tr></table><br><table  width="100%" cellspacing="0" cellpadding="3" border="1">
+                    <caption>seqfeature_relationship Constraints</caption>
+                    <tr bgcolor="#E0E0EE">
+                    <th>Name</th>
+                    <th>Constraint</th>
+                    </tr><tr><td>seqfeature_re_parent_seqfea_key</td>
+                      <td>UNIQUE (parent_seqfeature_id, child_seqfeature_id, relationship_type_id)</td></tr></table><a href="#index">Index</a><hr><h2>Table: <a name="table_seqfeature_source">seqfeature_source</a></h2>
+                <p></p>
+                <table width="100%" cellspacing="0" cellpadding="3" border="1">
+                <caption>seqfeature_source Structure</caption>
+                <tr bgcolor="#E0E0EE">
+                <th>F-Key</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+                </tr><tr><td></td><td>seqfeature_source_id</td>
+                  <td>SERIAL</td><td><i>NOT NULL PRIMARY KEY </i></td></tr><tr><td></td><td>source_name</td>
+                  <td>VARCHAR(255)</td><td><i>NOT NULL</i></td></tr></table><p>Tables referencing this one via Foreign Key Constraints:<ul><li><a href="#table_seqfeature">seqfeature</a></li></ul></p><a href="#index">Index</a><hr><h2>Table: <a name="table_taxa">taxa</a></h2>
+                <p></p>
+                <table width="100%" cellspacing="0" cellpadding="3" border="1">
+                <caption>taxa Structure</caption>
+                <tr bgcolor="#E0E0EE">
+                <th>F-Key</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+                </tr><tr><td></td><td>common_name</td>
+                  <td>VARCHAR(255)</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>full_lineage</td>
+                  <td>TEXT</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>ncbi_taxa_id</td>
+                  <td>INT4</td><td></td></tr><tr><td></td><td>taxa_id</td>
+                  <td>SERIAL</td><td><i>NOT NULL PRIMARY KEY </i></td></tr></table><a href="#index">Index</a></ul></body></html>
