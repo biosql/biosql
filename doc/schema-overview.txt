@@ -67,7 +67,7 @@ bioentries.  biodatabase entities can be identified by their name:
 further identified by an authority, the organization under which this
 database name is officially mandated.
 
-SQL example: Fetch the accessions of all sequences from SwissProt:
+SQL example - fetch the accessions of all sequences from SwissProt:
 
 SELECT DISTINCT bioentry.accession
 FROM   bioentry JOIN biodatabase USING (biodatabase_id)
@@ -81,18 +81,19 @@ FROM   bioentry JOIN biodatabase USING (biodatabase_id)
 WHERE  bioentry.identifier = '386456'
   AND  biodatabase.name IN ('genbank', 'genpept')
 
-SQL example: How many unique entries are there in GenBank:
+SQL example - how many unique entries are there in GenBank:
 
 SELECT COUNT(DISTINCT bioentry.accession)
 FROM   bioentry JOIN biodatabase USING (biodatabase_id)
 WHERE  biodatabase.name = 'genbank'
 
-SQL example: Fetch the locus names for the latest versions of all
+SQL example - fetch the locus names for the latest versions of all
 entries where the biodatabase name is 'swiss' (Mysql syntax):
 
-SELECT MID(MAX(CONCAT(RPAD(LPAD(bioentry.version,5,'?'),10,'?'),bioentry.name)),11)
-FROM     bioentry JOIN biodatabase USING (biodatabase_id)
-WHERE    biodatabase.name = 'swiss'
+SELECT MID(MAX(CONCAT(RPAD(LPAD(bioentry.version,5,'?'),10,'?'),
+       bioentry.name)),11)
+       FROM bioentry JOIN biodatabase USING (biodatabase_id)
+WHERE  biodatabase.name = 'swiss'
 GROUP BY bioentry.name
 
 
@@ -115,17 +116,17 @@ the bioentry_id foreign key present in the biosequence table is
 constrained to be unique, thus enforcing the one-to-one relationship
 between the two tables.
 
-Example SQL: What is the description of the longest sequence in GenBank?
+Example SQL - what is the description of the longest sequence in GenBank?
 
 SELECT   bioentry.description
 FROM     bioentry
-JOIN     biodatabase ON biodatabase.biodatabase_id = bioentry.biodatabase_id
-JOIN     biosequence ON bioentry.bioentry_id = biosequence.bioentry_id
+         JOIN biodatabase using (biodatabase_id)
+         JOIN biosequence using (bioentry_id)
 WHERE    biodatabase.name = 'genbank'
 ORDER BY biosequence.length DESC
 LIMIT 1
 
-Example SQL: Find all protein sequences containing "ELVIS":
+Example SQL - find all bioentries with protein sequences containing "ELVIS":
 
 SELECT  bioentry.*
 FROM    bioentry JOIN biosequence USING (bioentry_id)
@@ -136,26 +137,48 @@ WHERE   biosequence.seq LIKE "%ELVIS%"
 TAXON, TAXON_NAME
 
 These are tables to store basic taxonomic information about
-the organism to which a given bioentry refers.  Each bioentry can be
+the organism to which a given bioentry refers, and they reflect the 
+structure of NCBI's taxonomy database. Each bioentry can be
 associated with only one taxon, but many bioentries can be associated
-with the same taxon. The organism's binomial name are stored in the 
-taxon_name.name field. The ubiquitous NCBI taxon_id is kept for each
-organism, and is required to be unique.
+with the same taxon. In order to get the most value from these tables
+it's recommended that you use the BioSQL script load_taxonomy.pl
+to populate them.
 
-The taxon table makes no explicit attempt to
-store the taxonomic relationship between species (although some
-information can be gleaned implicitly from the full_lineage field).
+The taxon_name.taxon_id field is meant to store an NCBI
+taxon id. The name_class field stores tags to describe taxonomic names
+(e.g. "scientific name") and the name field stores the value (e.g 
+"Homo sapien"). This flexibility allows us to store such things as 
+synonyms and common names as well as the expected binomial.
+
+The taxon table is designed to store the taxonomic relationship
+between taxons found in the taxon_name table. The node_rank field
+stores the class of the taxon (e.g. "species", "kingdom"). The 
+parent_taxon_id contains the taxon id of the parent taxon, since there
+should only be one parent in the taxonomic tree. The right_value and
+left_value fields are used to store the surrogate keys (taxon.taxon_id)
+of child taxons for any given taxon - these values can be calculated by
+the load_taxonomy.pl script.
 
 Note: Taxon is optional for bioentries. This is because certain
 bioentries may not have a clearly identified taxon, or because the
 concept of taxon may not be meaningful for the bioentry.
 
-Example SQL: Find all human sequences:
+Example SQL - find the taxon id of the parent taxon for 'Homo sapiens'
+using a self-join.
 
-SELECT biosequence.*
-FROM   biosequence
+SELECT parent.ncbi_taxon_id
+FROM   taxon AS parent
+       JOIN taxon AS child
+       ON child.parent_taxon_id = parent.ncbi_taxon_id
+       JOIN taxon_name
+       ON taxon_name.taxon_id = child.ncbi_taxon_id
+WHERE  taxon_name.name = 'Homo sapiens';
+
+Example SQL - find all human sequences:
+
+SELECT * FROM biosequence
        JOIN bioentry USING (bioentry_id)
-       JOIN taxon USING (taxon_id)
+       JOIN taxon_name USING (taxon_id)
 WHERE  taxon_name.name = 'Homo sapiens'
 
 
@@ -166,10 +189,10 @@ The reference table stores each journal article, book chapter,
 etc. that may be associated with a bioentry (or multiple bioentries).
 A reference's location refers to the journal (including volume, index,
 and possibly pages) or book in which the reference is found.  Neither
-the location nor author fields have any canonical format; they are as
+the location nor the authors fields have any canonical format, they are as
 found in the bioentry record.  To help ensure uniqueness, a calculated
-checksum (reference_crc) is kept over the author, location, title
-fields. Also, if provided by the data source, reference_identifier
+checksum (crc) is kept over the author, location, title
+fields. Also, if provided by the data source, dbxref_id
 will contain the MEDLINE number, or any other identifier if the
 reference is indexed in another resource than MEDLINE.
 
@@ -178,18 +201,18 @@ BIOENTRY_REFERENCE
 
 A given literature reference may be associated with many bioentries,
 and a given bioentry may be associated with multiple references (thus
-calling for the intermediate "bioentry_reference" table to map the
-associations between each).  Furthermore, the "reference_rank" field
+calling for the linking "bioentry_reference" table to map the
+associations between each).  Furthermore, the rank field
 may be used to define the order of the references for each associated
-bioentry.  Lastly, "reference_start" and "reference_end" may be used
+bioentry.  Lastly, start_pos and end_pos fields may be used
 to associate references with specific locations on the bioentry.
 
 
 COMMENT
 
 Each bioentry can have one or more simple textual comments associated
-with it; the order of the comments may be specified by the
-"comment_rank" field.
+with it, and the order of the comments may be specified by the
+rank field.
 
 
 DBXREF, BIOENTRY_DBXREF
@@ -206,10 +229,10 @@ II. Sequence Features: everything else about a biosequence
 
 SEQFEATURE
 
-Any and all other information pertaining to a bioentry is stored as a
+More information pertaining to a bioentry is stored as a
 generic "feature" of the sequence, the semantics of which are defined
 by associations with a specific "source" term and optional qualifiers
-(see below under "ontology_term").
+(see below under TERM).
 
 
 LOCATION
@@ -220,7 +243,7 @@ and strand.  A seqfeature may have multiple locations (i.e. split
 locations are handled).  Start and stop coordinates may be left NULL
 to accomodate some forms of "fuzzy" locations.  Additionally, a
 location may refer to a "remote" sequence, i.e. not the sequence
-associated with the bioentry; this is accomplished by a dbxref link.
+associated with the bioentry, this is accomplished by a dbxref_id link.
 
 
 III. Ontology Terms: adding meaning to entities and relationships
@@ -243,27 +266,26 @@ BIOENTRY_QUALIFIER_VALUE, DBXREF_QUALIFIER_VALUE,
 LOCATION_QUALIFIER_VALUE, SEQFEATURE_QUALIFIER_VALUE
 
 Furthermore, ontology terms may be used to qualify dbxrefs,
-bioentries, seqfeatures, and locations (via dbxref_qualifier_value,
-bioentry_qualifier_value, etc); multiple qualifier values can be
+bioentries, seqfeatures, and locations.  Multiple qualifier values can be
 associated with each entity.  Together, this allows one to put
 meaningful "labelled" data on these otherwise generic objects.  For
 example, a SwissProt dbxref might have an additional qualifier value
 that was the SwissProt name (GTM1_HUMAN) of the dbxref.
 
-An alternative design philosophy is to breakout overtly common
+An alternative design philosophy is to break out overtly common
 entities into their own entity table with explicitly named fields (as
 has been done for literature references and taxa).  While an
-ontology-driven seqfeature "metatable" is theoretically capable of
+ontology-driven seqfeature "meta-table" is theoretically capable of
 storing any information about a bioentry, it is sometimes more useful
 to have extraordinarily common entities represented by their own
-tables; in a "views"-capable relational database, precomputed SQL
+tables. In a "view-capable" relational database, pre-computed SQL
 SELECT statements may be used to generate a read-only view to obtain
 entity-specific tables.  For example, a "SwissProt_dbxref" view could
 be made that had all the dbxref fields plus a "SwissProt_name" field
 containing the qualifier value discussed previously.
 
 
-TERM_RELATIONSHIP
+TERM_RELATIONSHIP, TERM_DBXREF
 
 However, the powerful utility of ontology terms is that they can be
 associated with each other in hierarchies; e.g. a "sequence similarity
@@ -274,14 +296,14 @@ to further qualify these relationships by putting names on them: a
 "BLAST result" is a "result from" a "sequence similarity search" and a
 "example of" a "pairwise sequence alignment".  We refer to these as
 "subject", "predicate", "object" (or, "parent", "relationship type",
-"child").  The ontology_relationship table performs this mapping
+"child").  The term_relationship table performs this mapping
 between terms, using the subject/predicate/object terminology.  This
 mapping (or "rule set") must itself be given an ontological namespace
 (ontology_id), as the mapping may relate terms between separate
 ontologies; we must keep track of where each "rule" comes from.
 
 Finally, ontology terms themselves can be linked to external databases
-via a many-to-many relationship with dbxrefs.
+via a many-to-many relationship using the term_dbxref table.
 
 
 BIOENTRY_RELATIONSHIP
@@ -289,14 +311,15 @@ BIOENTRY_RELATIONSHIP
 Bioentries may themselves be related to one another (e.g., a PDB
 record may be composed of multiple subrecords for separate chains, or
 multiple SwissProt records may be associated with a given PFAM domain
-entry).  These relationships are "typed" via links to ontology terms.
+entry).  These relationships are "typed" via links to ontology terms
+using the term_id field.
 
 
 SEQFEATURE_RELATIONSHIP
 
-seqfeatures may also have associated sub-seqfeatures (with potentially
+Sequence features may also have associated sub-seqfeatures (with potentially
 many-to-many parent-child relationships).  These relationships are
-also "typed" via links to ontology terms.
+also "typed" via links to ontology terms using the term_id fields.
 
 
 TERM_PATH, BIOENTRY_PATH, SEQFEATURE_PATH
@@ -311,7 +334,7 @@ aren't actually related by any meaningful type, and should therefore
 not appear in the table).  We leave it to individual implementors to
 define the policy for building these paths.
 
-A very generic "policy" is to use the ontology of relationship types
+A very generic policy would be to use the ontology of relationship types
 involved between A and B and B and C, and choose the greatest common
 denominator between the two relationship types (e.g. when the two
 relationship types are the same, then A and C are related by the same
@@ -330,7 +353,7 @@ CREATE TABLE bioentry_history (
   enddate DATE NULL
 );
 
-Example SQL: Give me all the entries from GenBank as they existed on
+Example SQL - give me all the entries from GenBank as they existed on
 Jan 1, 2002
 
 SELECT bioentry.*
@@ -367,7 +390,7 @@ ALTER TABLE bioentry_history ADD CONSTRAINT check_entered_removed (
  <> bioentry_history.removed
 );
 
-Example SQL: same as before, retrieve all bioentries from GenBank as
+Example SQL - same as before, retrieve all bioentries from GenBank as
 they were on Jan 1, 2002
 
 SELECT bioentry.*
@@ -422,5 +445,3 @@ Feature set versioning:
 
 Could already be accomplished with "dated" source ontology terms, but
 that seems like a bastardization.  Suggestions welcome.
-
-
