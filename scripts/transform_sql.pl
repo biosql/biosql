@@ -78,12 +78,14 @@ my $parser = new Parse::RecDescent
    coltype: maintype size(?) qualifs
    coltype: maintype size(?)
    qualifs: qualif(s)
-   maintype: inttype | chartype | varchartype | texttype
+   maintype: inttype | fixedprec | floattype | chartype | varchartype | texttype
    inttype: 'int' | 'integer' | 'smallint' | 'tinyint' | 'INT' | 'INTEGER' | 'SMALLINT' | 'TINYINT'
+   fixedprec: 'decimal' | 'numeric' | 'NUMERIC' | 'DECIMAL'
+   floattype: 'float' | 'double precision' | 'double' | 'FLOAT' | 'DOUBLE PRECISION' | 'DOUBLE'
    chartype: 'char' | 'CHAR'
    varchartype: 'varchar' | 'VARCHAR'
    texttype: 'text' | 'longtext' | 'mediumtext' | 'TEXT' | 'LONGTEXT' | 'MEDIUMTEXT'
-   size: '(' /\d+/ ')'
+   size: '(' /\d+/ ')' | '(' /\d+/ ',' /\d+/ ')'
    qualif: 'unsigned' | 'not' 'null' | 'auto_increment' | pk
    qualif: 'UNSIGNED' | 'NOT' 'NULL' | 'AUTO_INCREMENT' | pk
    k: 'key' | 'KEY'
