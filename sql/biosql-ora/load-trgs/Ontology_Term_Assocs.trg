@@ -3,7 +3,7 @@
 -- SGLD_Ontology_Term_Assocs.
 --
 --
--- $Id: Ontology_Term_Assocs.trg,v 1.1.1.2 2003-01-29 08:54:36 lapp Exp $
+-- $GNF: projects/gi/symgene/src/DB/load-trgs/Ontology_Term_Assocs.trg,v 1.5 2003/05/02 02:24:46 hlapp Exp $
 --
 
 --

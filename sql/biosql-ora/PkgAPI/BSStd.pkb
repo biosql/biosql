@@ -1,7 +1,7 @@
 -- Package body for standard functions used throughout other packages.
 --
 --
--- $Id: BSStd.pkb,v 1.1.1.2 2003-01-29 08:54:38 lapp Exp $
+-- $GNF: projects/gi/symgene/src/DB/PkgAPI/BSStd.pkb,v 1.3 2003/05/02 02:24:44 hlapp Exp $
 --
 
 --

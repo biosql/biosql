@@ -1,7 +1,7 @@
 --
 -- SQL script to create the SYMGENE/BioSQL schema owner.
 --
--- $Id$
+-- $GNF: projects/gi/symgene/src/DB/BS-create-schema-user.sql,v 1.4 2003/05/02 02:24:44 hlapp Exp $
 --
 
 --

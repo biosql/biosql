@@ -1,7 +1,7 @@
 --
 -- SQL script to create the warehouse materialized views for SYMGENE/BioSQL
 --
--- $GNF: projects/gi/symgene/src/DB/BS-create-mviews.sql,v 1.4 2003/01/29 09:00:11 hlapp Exp $
+-- $GNF: projects/gi/symgene/src/DB/BS-create-mviews.sql,v 1.7 2003/05/21 06:50:13 hlapp Exp $
 --
 
 --
@@ -18,9 +18,9 @@
 -- MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 --
 
-@BS-defs
+@BS-defs-local
 
-define mview_index=&biosql_data
+define mview_index=&biosql_index
 
 --
 -- Entity-chromosome mappings
@@ -29,103 +29,73 @@ PROMPT
 PROMPT Creating materialized view SG_Ent_Chr_Map
 
 CREATE MATERIALIZED VIEW SG_Ent_Chr_Map
-BUILD DEFERRED
-USING INDEX TABLESPACE &mview_index
-REFRESH FORCE ON DEMAND
-ENABLE QUERY REWRITE
+	BUILD DEFERRED
+	USING INDEX TABLESPACE &mview_index
+	REFRESH FORCE ON DEMAND
+	ENABLE QUERY REWRITE
 AS
 SELECT
-	EntLoc.Start_Pos	EntSeg_Start_Pos,
-	EntLoc.End_Pos		EntSeg_End_Pos,
-	SUBSTR(NumA.Value,1,5)	EntSeg_Num,
-	ChrLoc.Start_Pos	ChrSeg_Start_Pos,
-	ChrLoc.End_Pos		ChrSeg_End_Pos,
-	ChrLoc.Strand		ChrSeg_Strand,
-	SUBSTR(FeaOntA.Value,1,5) ChrSeg_Pct_Identity,
-	FType.Name		FType_Name,
-	FSrc.Name		FSrc_Name,
-	Ent.Accession		Ent_Accession,
-	Ent.Version		Ent_Version,
-	Ent.Identifier		Ent_Identifier,
-	DB.Name			DB_Name,
-	DB.Acronym		DB_Acronym,
---	EntTax.Name		Ent_Tax_Name,
---	EntTax.Variant		Ent_Tax_Variant,
---	EntTax.NCBI_Taxon_ID	Ent_Tax_NCBI_Taxon_ID,
-	Chr.Display_ID		Chr_Name,
-	Chr.Accession		Chr_Accession,
-	Asm.Name		Asm_Name,
-	Asm.Acronym		Asm_Acronym,
-	Tax.Name		Asm_Tax_Name,
-	Tax.Variant		Asm_Tax_Variant,
-	Tax.NCBI_Taxon_ID	Asm_Tax_NCBI_Taxon_ID,
-	HSP.Oid			EntSeg_Oid,
-	Ent.Oid			Ent_Oid,
-	Ent.Tax_Oid		Ent_Tax_Oid,
-	Ent.DB_Oid		DB_Oid,
-	Exon.Oid		ChrSeg_Oid,
-	Chr.Oid			Chr_Oid,
-	Chr.DB_Oid		Asm_Oid,
-	Chr.Tax_Oid		Asm_Tax_Oid,
-	FType.Oid		FType_Oid,
-	FSrc.Oid		FSrc_Oid
+	EntLoc.Start_Pos	EntSeg_Start_Pos
+	, EntLoc.End_Pos	EntSeg_End_Pos
+	, SUBSTR(NumA.Value,1,5) EntSeg_Num
+	, ChrLoc.Start_Pos	ChrSeg_Start_Pos
+	, ChrLoc.End_Pos	ChrSeg_End_Pos
+	, ChrLoc.Strand		ChrSeg_Strand
+	, SUBSTR(FeaTrmA.Value,1,5) ChrSeg_Pct_Identity
+	, EntLoc.Oid		EntSeg_Loc_Oid
+	, EntSeg.Oid		EntSeg_Oid
+	, EntSeg.Type_Trm_Oid	EntSeg_Type_Oid
+	, EntSeg.Source_Trm_Oid	EntSeg_Source_Oid
+	, Ent.Oid		Ent_Oid
+	, Ent.Tax_Oid		Ent_Tax_Oid
+	, Ent.DB_Oid		DB_Oid
+	, ChrLoc.Oid		ChrSeg_Loc_Oid
+	, ChrSeg.Oid		ChrSeg_Oid
+	, Chr.Oid		Chr_Oid
+	, Chr.Tax_Oid		Chr_Tax_Oid
+	, Chr.DB_Oid		Asm_Oid
 FROM SG_Bioentry Ent, SG_Bioentry Chr,
-     SG_Seqfeature HSP, SG_Seqfeature Exon,
-     SG_Seqfeature_Location EntLoc, SG_Seqfeature_Location ChrLoc,
-     SG_Biodatabase DB, SG_Biodatabase Asm,
-     SG_Seqfeature_Qualifier_Assoc FeaOntA,
+     SG_Seqfeature EntSeg, SG_Seqfeature ChrSeg,
+     SG_Location EntLoc, SG_Location ChrLoc,
+     SG_Seqfeature_Qualifier_Assoc FeaTrmA,
      SG_Seqfeature_Qualifier_Assoc NumA,
-     SG_Seqfeature_Assoc Sim,
-     SG_Ontology_Term FType,
-     SG_Ontology_Term FSrc,
-     SG_Ontology_Term RelType,
-     SG_Ontology_Term Qual,
-     SG_Ontology_Term NumQual,
-     SG_Taxon Tax --, SG_Taxon EntTax
+     SG_Seqfeature_Assoc HSP,
+     SG_Term RelType,
+     SG_Term Qual,
+     SG_Term NumQual
 WHERE
-     Ent.DB_Oid      = DB.Oid
-AND  HSP.Ent_Oid     = Ent.Oid
-AND  EntLoc.Fea_Oid  = HSP.Oid
-AND  EntLoc.Rank     = 1
-AND  HSP.Ont_Oid     = FType.Oid
-AND  HSP.FSrc_Oid    = FSrc.Oid
-AND  Chr.DB_Oid      = Asm.Oid
-AND  Exon.Ent_Oid    = Chr.Oid
-AND  ChrLoc.Fea_Oid  = Exon.Oid
-AND  ChrLoc.Rank     = 1
-AND  Sim.Src_Fea_Oid = HSP.Oid
-AND  Sim.Tgt_Fea_Oid = Exon.Oid
-AND  Sim.Ont_Oid     = RelType.Oid
-AND  Sim.Rank	     = 0
-AND  RelType.Name    = 'Genome Alignment'
-AND  FeaOntA.Fea_Oid = HSP.Oid
-AND  FeaOntA.Ont_Oid = Qual.Oid
-AND  FeaOntA.Rank    = 1
-AND  Qual.Name       = 'Pct_Identity'
-AND  NumA.Fea_Oid    = HSP.Oid
-AND  NumA.Ont_Oid    = NumQual.Oid
-AND  NumA.Rank	     = 1
-AND  NumQual.Name    = 'Exon_Num'
-AND  Chr.Tax_Oid     = Tax.Oid
---AND  Ent.Tax_Oid     = EntTax.Oid
+     EntSeg.Ent_Oid   = Ent.Oid
+AND  EntLoc.Fea_Oid   = EntSeg.Oid
+AND  EntLoc.Rank      = 1
+AND  ChrSeg.Ent_Oid   = Chr.Oid
+AND  ChrLoc.Fea_Oid   = ChrSeg.Oid
+AND  ChrLoc.Rank      = 1
+AND  HSP.Subj_Fea_Oid = EntSeg.Oid
+AND  HSP.Obj_Fea_Oid  = ChrSeg.Oid
+AND  HSP.Trm_Oid      = RelType.Oid
+AND  HSP.Rank	      = 0
+AND  RelType.Name     = 'Genome Alignment'
+AND  FeaTrmA.Fea_Oid  = EntSeg.Oid
+AND  FeaTrmA.Trm_Oid  = Qual.Oid
+AND  FeaTrmA.Rank     = 1
+AND  Qual.Name        = 'Pct_Identity'
+AND  NumA.Fea_Oid     = EntSeg.Oid
+AND  NumA.Trm_Oid     = NumQual.Oid
+AND  NumA.Rank	      = 1
+AND  NumQual.Name     = 'Exon_Num'
 ;
 
 --
 -- create the indexes
 --
-CREATE INDEX ecm_ent_oid ON SG_Ent_Chr_Map 
+CREATE INDEX ECM_Ent_Oid ON SG_Ent_Chr_Map 
 (
 	Ent_Oid 
 ) TABLESPACE &mview_index
 ;
-CREATE INDEX ecm_acc     ON SG_Ent_Chr_Map
-(
-	Ent_Accession 
-) TABLESPACE &mview_index
-;
-CREATE INDEX ecm_chr     ON SG_Ent_Chr_Map
+CREATE INDEX ECM_Chr     ON SG_Ent_Chr_Map
 ( 
-	Chr_Name,
+	Chr_Oid,
 	ChrSeg_Start_Pos,
 	ChrSeg_End_Pos
 ) TABLESPACE &mview_index
@@ -133,74 +103,52 @@ CREATE INDEX ecm_chr     ON SG_Ent_Chr_Map
 
 
 --
--- Name searching for Bioentries
+-- Name searching for Bioentries. We warehouse all of accession, identifier,
+-- display_id (name), and term associations where the term is linked to
+-- indicate a bioentry name.
 --
 PROMPT
 PROMPT Creating materialized view SG_Bioentry_Name
 
 CREATE MATERIALIZED VIEW SG_Bioentry_Name
-BUILD IMMEDIATE
-USING INDEX TABLESPACE &mview_index
-REFRESH FORCE 
-START WITH TRUNC(SYSDATE)+1+5/24 
-      NEXT TRUNC(SYSDATE)+2+5/24 
-ENABLE QUERY REWRITE
+	BUILD DEFERRED
+       	USING INDEX TABLESPACE &mview_index
+       	REFRESH FORCE 
+       	START WITH TRUNC(SYSDATE)+1+4/24 
+       	NEXT TRUNC(SYSDATE)+2+4/24 
+	ENABLE QUERY REWRITE
 AS
+-- accessions as the name
 SELECT
 	Ent.Accession	Ent_Name,
-	DB.Name	     	DB_Name, 
-	Tax.Name     	Tax_Name,
-	Tax.Variant	Tax_Variant,
-	Ent.Oid	     	Ent_Oid  
-FROM SG_Bioentry Ent, SG_Biodatabase DB, SG_Taxon Tax
-WHERE
-     Ent.DB_Oid	 = DB.Oid
-AND  Ent.Tax_Oid = Tax.Oid (+)
+	Ent.Oid	     	Ent_Oid
+FROM SG_Bioentry Ent
 UNION
+-- identifiers as the name
 SELECT
-	Ent.Identifier	Ent_Name, 
-	DB.Name      	DB_Name, 
-	Tax.Name     	Tax_Name,
-	Tax.Variant	Tax_Variant,
-	Ent.Oid	      	Ent_Oid  
-FROM SG_Bioentry Ent, SG_Biodatabase DB, SG_Taxon Tax
-WHERE
-     Ent.DB_Oid	 = DB.Oid
-AND  Ent.Identifier IS NOT NULL
-AND  Ent.Tax_Oid = Tax.Oid (+)
+	Ent.Identifier			Ent_Name, 
+	Ent.Oid	      			Ent_Oid
+FROM SG_Bioentry Ent
 UNION
+-- capitalized name (display_id) as name
 SELECT
-	UPPER(Ent.Display_ID)	Ent_Name,
-	DB.Name      	DB_Name, 
-	Tax.Name     	Tax_Name,
-	Tax.Variant	Tax_Variant,
-	Ent.Oid	      	Ent_Oid  
-FROM SG_Bioentry Ent, SG_Biodatabase DB, SG_Taxon Tax
-WHERE
-     Ent.DB_Oid	 = DB.Oid
-AND  Ent.Display_ID IS NOT NULL
-AND  Ent.Tax_Oid = Tax.Oid (+)
+	UPPER(Ent.Name)			Ent_Name,
+	Ent.Oid				Ent_Oid
+FROM SG_Bioentry Ent
 UNION
+-- capitalized symbols as names (these are in term-bioentry associations)
 SELECT
-	UPPER(SUBSTR(EntOntA.Value,1,32))	Ent_Name,
-	DB.Name 		  	DB_Name, 
-	Tax.Name		  	Tax_Name,
-	Tax.Variant			Tax_Variant,
-	EntOntA.Ent_Oid		  	Ent_Oid  
-FROM SG_Bioentry_Qualifier_Assoc EntOntA,
-     SG_Bioentry Ent, SG_Biodatabase DB, SG_Taxon Tax,
-     SG_Ontology_Term Ont, SG_Ontology_Term Type, SG_Ontology_Term Tgt, 
-     SG_Ontology_Term_Assoc OntA
+	UPPER(SUBSTR(EntTrmA.Value,1,32)) Ent_Name,
+	EntTrmA.Ent_Oid	     		Ent_Oid
+FROM SG_Bioentry_Qualifier_Assoc EntTrmA,
+     SG_Term Trm, SG_Term Type, SG_Term Obj, SG_Term_Assoc TrmA
 WHERE
-     EntOntA.Ont_Oid	= Ont.Oid
-AND  OntA.Src_Ont_Oid	= Ont.Oid
-AND  OntA.Type_Ont_Oid	= Type.Oid
-AND  OntA.Tgt_Ont_Oid	= Tgt.Oid
-AND  EntOntA.Ent_Oid    = Ent.Oid
-AND  Ent.DB_Oid		= DB.Oid
-AND  Ent.Tax_Oid	= Tax.Oid (+)
+     EntTrmA.Trm_Oid	= Trm.Oid
+AND  TrmA.Subj_Trm_Oid	= Trm.Oid
+AND  TrmA.Pred_Trm_Oid	= Type.Oid
+AND  TrmA.Obj_Trm_Oid	= Obj.Oid
 AND  Type.Identifier 	= 'REO:1000008'  -- is-a
-AND  Tgt.Identifier	= 'QUO:1000001'  -- 'bioentry name'
+AND  Obj.Identifier	= 'QUO:1000001'  -- 'bioentry name'
 ;
 
 --
@@ -210,6 +158,12 @@ AND  Tgt.Identifier	= 'QUO:1000001'  -- 'bioentry name'
 CREATE INDEX XIE1Bioentry_Name ON SG_Bioentry_Name
 (
 	Ent_Name
+) 
+	TABLESPACE &mview_index
+;
+CREATE INDEX XIE2Bioentry_Name ON SG_Bioentry_Name
+(
+	Ent_Oid
 ) 
 	TABLESPACE &mview_index
 ;

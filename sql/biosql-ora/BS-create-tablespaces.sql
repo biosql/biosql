@@ -3,7 +3,7 @@
 --
 -- H.Lapp, GNF, 2002.
 --
--- $Id$
+-- $GNF: projects/gi/symgene/src/DB/BS-create-tablespaces.sql,v 1.4 2003/05/02 02:24:44 hlapp Exp $
 --
 
 --

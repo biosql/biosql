@@ -2,7 +2,7 @@
 -- SQL script to create the context indexes.
 --
 --
--- $GNF: projects/gi/symgene/src/DB/BS-create-ctx.sql,v 1.1 2002/11/17 05:53:13 hlapp Exp $
+-- $GNF: projects/gi/symgene/src/DB/BS-create-ctx.sql,v 1.3 2003/05/15 23:01:30 hlapp Exp $
 --
 
 --
@@ -20,7 +20,7 @@
 --
 
 -- load settings
-@BS-defs
+@BS-defs-local
 
 --
 -- create the procedure(s)
@@ -45,4 +45,4 @@ connect &biosql_owner/&biosql_pwd
 -- note: you may want to comment this out - on full content it takes a while
 -- and on no content it doesn't help, since the index doesn't sync
 -- automatically
-@BS-create-ctx-indexes
+--@BS-create-ctx-indexes

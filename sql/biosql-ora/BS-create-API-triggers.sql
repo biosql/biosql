@@ -2,7 +2,7 @@
 -- SQL script to create the triggers enabling the load API.
 --
 --
--- $Id$
+-- $GNF: projects/gi/symgene/src/DB/BS-create-API-triggers.sql,v 1.8 2003/05/23 17:42:27 hlapp Exp $
 --
 
 --
@@ -19,13 +19,13 @@
 -- MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 --
 
-prompt Trigger for SGLD_Ontology_Terms API
+prompt Trigger for SGLD_Terms API
 
-@load-trgs/Ontology_Terms.trg
+@load-trgs/Terms.trg
 
-prompt Trigger for SGLD_Ontology_Term_Assocs API
+prompt Trigger for SGLD_Term_Assocs API
 
-@load-trgs/Ontology_Term_Assocs.trg
+@load-trgs/Term_Assocs.trg
 
 prompt Trigger for SGLD_Bioentries API
 

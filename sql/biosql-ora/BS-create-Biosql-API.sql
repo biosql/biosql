@@ -3,7 +3,7 @@
 -- schema.
 --
 --
--- $Id$
+-- $GNF: projects/gi/symgene/src/DB/BS-create-Biosql-API.sql,v 1.6 2003/05/14 07:10:58 hlapp Exp $
 --
 
 --
@@ -20,6 +20,9 @@
 -- MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 --
 
+-- load definitions
+@BS-defs-local
+
 --
 -- The prefix for all objects (tables, views, etc). This will be used
 -- literally without further delimiter, so include a trailing underscore
@@ -29,10 +32,51 @@
 -- DO NOT USE THE SYMGENE PREFIX here (SG_), because otherwise possibly
 -- created synonyms will be circular.
 --
-define biosql=BS_
+-- Note that when the variables are substituted, '.' terminates the variable
+-- name and does not translate as a literal dot. I.e., &biosql.bla becomes
+-- <prefix>bla, not <prefix>.bla.
+--
+define biosql=''
+
+--
+-- Names of sequences used.
+--
+-- If you want to change this make sure you refer to the correct sequence
+-- for each table. (Check BS-DDL.sql for what it defines.)
+--
 define seqname=SG_SEQUENCE
 define locseqname=SG_SEQUENCE_FEA
-define entaseqname=SG_SEQUENCE_ENTA
+define entaseqname=SG_SEQUENCE_EntA
+define feaaseqname=SG_SEQUENCE_FeaA
+define trmaseqname=SG_SEQUENCE_TrmA
+
+--
+-- delete existing synonyms
+--
+set timing off
+set heading off
+set termout off
+set feedback off
+
+spool _delsyns.sql
+
+SELECT 'DROP SYNONYM ' || synonym_name || ';' 
+FROM user_synonyms
+WHERE synonym_name NOT LIKE 'SG%' 
+;
+
+spool off
+
+set timing on
+set heading on
+set termout on
+set feedback on
+
+@_delsyns
+
+--
+-- Create the API from scratch.
+--
 
 --
 -- Table Taxon
@@ -41,6 +85,12 @@ define entaseqname=SG_SEQUENCE_ENTA
 CREATE SYNONYM &biosql.taxon FOR SG_Taxon;
 -- also, create a synonym for a table-specific sequence
 CREATE SYNONYM &biosql.taxon_pk_seq FOR &seqname;
+
+--
+-- Table Taxon_Name
+--
+-- this is identical to Symgene, hence a synonym does it
+CREATE SYNONYM &biosql.taxon_name FOR SG_Taxon_Name;
 
 --
 -- Table Biodatabase
@@ -62,27 +112,27 @@ CREATE SYNONYM &biosql.bioentry_pk_seq FOR &seqname;
 -- Table Bioentry_Assoc
 --
 -- this is identical to Symgene, hence a synonym does it
-CREATE SYNONYM &biosql.bioentry_assoc FOR SG_BIOENTRY_ASSOC;
+CREATE SYNONYM &biosql.bioentry_relationship FOR SG_BIOENTRY_ASSOC;
 -- also, create a synonym for a table-specific sequence
-CREATE SYNONYM &biosql.bioentry_assoc_pk_seq FOR &entaseqname;
+CREATE SYNONYM &biosql.bioentry_relationship_pk_seq FOR &entaseqname;
 
 --
 -- Table Bioentry_DBXRef_Assoc
 --
 -- this is identical to Symgene, hence a synonym does it
-CREATE SYNONYM &biosql.bioentry_dbxref_assoc FOR SG_BIOENTRY_DBXREF_ASSOC;
+CREATE SYNONYM &biosql.bioentry_dbxref FOR SG_BIOENTRY_DBXREF_ASSOC;
 
 --
 -- Table Bioentry_Qualifier_Assoc
 --
 -- this is identical to Symgene, hence a synonym does it
-CREATE SYNONYM &biosql.bioentry_qualifier_assoc FOR SG_BIOENTRY_QUALIFIER_ASSOC;
+CREATE SYNONYM &biosql.bioentry_qualifier_value FOR SG_BIOENTRY_QUALIFIER_ASSOC;
 
 --
 -- Table Bioentry_Ref_Assoc
 --
 -- this is identical to Symgene, hence a synonym does it
-CREATE SYNONYM &biosql.bioentry_ref_assoc FOR SG_BIOENTRY_REF_ASSOC;
+CREATE SYNONYM &biosql.bioentry_reference FOR SG_BIOENTRY_REF_ASSOC;
 
 --
 -- Table Biosequence
@@ -96,9 +146,9 @@ CREATE SYNONYM &biosql.biosequence_pk_seq FOR &seqname;
 -- Table Comment
 --
 -- this is identical to Symgene, hence a synonym does it
-CREATE SYNONYM &biosql.comment FOR SG_COMMENT;
+CREATE SYNONYM &biosql.anncomment FOR SG_COMMENT;
 -- also, create a synonym for a table-specific sequence
-CREATE SYNONYM &biosql.comment_pk_seq FOR &seqname;
+CREATE SYNONYM &biosql.anncomment_pk_seq FOR &seqname;
 
 --
 -- Table Reference
@@ -117,18 +167,48 @@ CREATE SYNONYM &biosql.dbxref FOR SG_DBXREF;
 CREATE SYNONYM &biosql.dbxref_pk_seq FOR &seqname;
 
 --
--- Table Ontology_Term
+-- Table Ontology
 --
 -- this is identical to Symgene, hence a synonym does it
-CREATE SYNONYM &biosql.ontology_term FOR SG_ONTOLOGY_TERM;
+CREATE SYNONYM &biosql.ontology FOR SG_ONTOLOGY;
 -- also, create a synonym for a table-specific sequence
-CREATE SYNONYM &biosql.ontology_term_pk_seq FOR &seqname;
+CREATE SYNONYM &biosql.ontology_pk_seq FOR &seqname;
 
 --
--- Table Ontology_Term_Assoc
+-- Table Term
 --
 -- this is identical to Symgene, hence a synonym does it
-CREATE SYNONYM &biosql.ontology_term_assoc FOR SG_ONTOLOGY_TERM_ASSOC;
+CREATE SYNONYM &biosql.term FOR SG_TERM;
+-- also, create a synonym for a table-specific sequence
+CREATE SYNONYM &biosql.term_pk_seq FOR &seqname;
+
+--
+-- Table Term_Synonym
+--
+-- this is identical to Symgene, hence a synonym does it
+CREATE SYNONYM &biosql.term_synonym FOR SG_TERM_SYNONYM;
+
+--
+-- Table Term_DBXref_Assoc
+--
+-- this is identical to Symgene, hence a synonym does it
+CREATE SYNONYM &biosql.term_dbxref FOR SG_TERM_DBXREF_ASSOC;
+
+--
+-- Table Term_Assoc
+--
+-- this is identical to Symgene, hence a synonym does it
+CREATE SYNONYM &biosql.term_relationship FOR SG_TERM_ASSOC;
+-- also, create a synonym for a table-specific sequence
+CREATE SYNONYM &biosql.term_relationship_pk_seq FOR &trmaseqname;
+
+--
+-- Table Term_Path
+--
+-- this is identical to Symgene, hence a synonym does it
+CREATE SYNONYM &biosql.term_path FOR SG_TERM_PATH;
+-- also, create a synonym for a table-specific sequence
+CREATE SYNONYM &biosql.term_path_pk_seq FOR &trmaseqname;
 
 --
 -- Table Seqfeature
@@ -142,30 +222,37 @@ CREATE SYNONYM &biosql.seqfeature_pk_seq FOR &seqname;
 -- Table Seqfeature_Assoc
 --
 -- this is identical to Symgene, hence a synonym does it
-CREATE SYNONYM &biosql.seqfeature_assoc FOR SG_SEQFEATURE_ASSOC;
+CREATE SYNONYM &biosql.seqfeature_relationship FOR SG_SEQFEATURE_ASSOC;
+-- also, create a synonym for a table-specific sequence
+CREATE SYNONYM &biosql.seqfeature_relationship_pk_seq FOR &feaaseqname;
 
 --
 -- Table Seqfeature_Qualifier_Assoc
 --
 -- this is identical to Symgene, hence a synonym does it
-CREATE SYNONYM &biosql.seqfeature_qualifier_assoc FOR SG_SEQFEATURE_QUALIFIER_ASSOC;
+CREATE SYNONYM &biosql.seqfeature_qualifier_value FOR SG_SEQFEATURE_QUALIFIER_ASSOC;
 
 --
--- Table Seqfeature_Location
+-- Table Seqfeature_DBXref_Assoc
 --
 -- this is identical to Symgene, hence a synonym does it
-CREATE SYNONYM &biosql.seqfeature_location FOR SG_SEQFEATURE_LOCATION;
+CREATE SYNONYM &biosql.seqfeature_dbxref FOR SG_SEQFEATURE_DBXref_Assoc;
+
+--
+-- Table Location
+--
+-- this is identical to Symgene, hence a synonym does it
+CREATE SYNONYM &biosql.location FOR SG_LOCATION;
 -- also, create a synonym for a table-specific sequence
-CREATE SYNONYM &biosql.seqfeature_location_pk_seq FOR &locseqname;
+CREATE SYNONYM &biosql.location_pk_seq FOR &locseqname;
 
 --
 -- Table Location_Qualifier_Assoc
 --
 -- this is identical to Symgene, hence a synonym does it
-CREATE SYNONYM &biosql.location_qualifier_assoc FOR SG_LOCATION_QUALIFIER_ASSOC;
+CREATE SYNONYM &biosql.location_qualifier_value FOR SG_LOCATION_QUALIFIER_ASSOC;
 
 --
 -- We don't have these yet in Biosql
---CREATE SYNONYM &biosql.CHROMOSOME FOR SG_CHROMOSOME;
 --CREATE SYNONYM &biosql.CHR_MAP_ASSOC FOR SG_CHR_MAP_ASSOC;
 --CREATE SYNONYM &biosql.SIMILARITY FOR SG_SIMILARITY;

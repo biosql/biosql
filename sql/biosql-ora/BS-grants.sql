@@ -1,7 +1,7 @@
 --
 -- SQL script to assign grants to roles as needed.
 -- 
--- $Id$
+-- $GNF: projects/gi/symgene/src/DB/BS-grants.sql,v 1.7 2003/05/02 02:24:44 hlapp Exp $
 --
 
 --
@@ -18,7 +18,7 @@
 -- MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 --
 
-@BS-defs
+@BS-defs-local
 
 set timing off
 set heading off

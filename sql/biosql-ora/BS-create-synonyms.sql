@@ -1,7 +1,7 @@
 --
 -- SQL script to create public synonyms for the schema objects.
 -- 
--- $Id$
+-- $GNF: projects/gi/symgene/src/DB/BS-create-synonyms.sql,v 1.6 2003/05/02 02:24:44 hlapp Exp $
 --
 
 --
@@ -18,7 +18,7 @@
 -- MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 --
 
-@BS-defs
+@BS-defs-local
 
 set timing off
 set heading off

@@ -2,7 +2,7 @@
 -- SQL script to create the preferences used for context indexes.
 --
 --
--- $GNF: projects/gi/symgene/src/DB/BS-create-ctx-prefs.sql,v 1.3 2002/11/26 10:07:17 hlapp Exp $
+-- $GNF: projects/gi/symgene/src/DB/BS-create-ctx-prefs.sql,v 1.4 2003/05/15 23:01:30 hlapp Exp $
 --
 
 --
@@ -24,7 +24,7 @@ BEGIN
 	-- datastore parameter
 	--
 	-- ent_desc user datastore
-	CTX_DDL.drop_preference('ent_desc_ud');
+	--CTX_DDL.drop_preference('ent_desc_ud');
 	CTX_DDL.create_preference('ent_desc_ud', 'USER_DATASTORE');
 	CTX_DDL.set_attribute('ent_desc_ud', 
 			      'procedure', 'sg_wctx_ent_desc');
@@ -32,15 +32,16 @@ BEGIN
 	--
 	-- lexer parameter
 	--
-	CTX_DDL.drop_preference('ent_desc_lx');
+	--CTX_DDL.drop_preference('ent_desc_lx');
 	CTX_DDL.create_preference('ent_desc_lx', 'BASIC_LEXER');
 	CTX_DDL.set_attribute('ent_desc_lx', 'skipjoins', '-');
 	--CTX_DDL.set_attribute('ent_desc_lx', 'index_stems', 1);
 	--CTX_DDL.set_attribute('ent_desc_lx', 'index_text', 'YES');
 	--
 	-- section group parameter
-	CTX_DDL.drop_section_group('tagsections');
+	--CTX_DDL.drop_section_group('tagsections');
 	CTX_DDL.create_section_group('tagsections','AUTO_SECTION_GROUP');
+	--
 	-- for multi-col sg_reference:
 	--CTX_DDL.drop_section_group('refsections');
 	CTX_DDL.create_section_group('refsections','BASIC_SECTION_GROUP');

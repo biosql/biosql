@@ -1,8 +1,9 @@
+-- -*-Sql-*- mode (to keep my emacs happy)
 --
 -- Package for standard functions and constants used throughout other packages.
 --
 --
--- $Id: BSStd.pkg,v 1.1.1.2 2003-01-29 08:54:38 lapp Exp $
+-- $GNF: projects/gi/symgene/src/DB/PkgAPI/BSStd.pkg,v 1.4 2003/05/21 01:34:07 hlapp Exp $
 --
 
 --

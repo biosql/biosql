@@ -1,7 +1,7 @@
 --
 -- SQL script to create the CLONETRAILS users.
 --
--- $Id$
+-- $GNF: projects/gi/symgene/src/DB/BS-create-users.sql,v 1.6 2003/05/02 02:24:44 hlapp Exp $
 --
 
 --
@@ -18,7 +18,7 @@
 -- MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 --
 
-@BS-defs
+@BS-defs-local
 
 --
 -- The Biosql-db reader/loader user for the schema. Note that this is the
@@ -46,7 +46,7 @@ CREATE USER biosqltest
        QUOTA UNLIMITED ON &biosql_index
        QUOTA UNLIMITED ON &biosql_lob
 ;
-GRANT &biosql_loader TO biosql;
+GRANT &biosql_loader TO biosqltest;
 
 --
 -- This is the default read-only user.

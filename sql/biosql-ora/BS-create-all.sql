@@ -3,7 +3,7 @@
 -- scratch.
 --
 --
--- $Id$
+-- $GNF: projects/gi/symgene/src/DB/BS-create-all.sql,v 1.7 2003/05/15 23:01:30 hlapp Exp $
 --
 
 --
@@ -21,7 +21,7 @@
 --
 
 -- load definitions
-@BS-defs
+@BS-defs-local
 
 -- 1) login as DBA
 --connect &sysdba/&dbapwd
@@ -45,9 +45,9 @@
 @BS-create-API
 
 -- 8) Security: create roles and synonyms, issue grants
---@BS-create-roles
---@BS-create-synonyms
---@BS-grants
+@BS-create-roles
+@BS-create-synonyms
+@BS-grants
 
 -- 9) create additional users
 --connect &sysdba/&dbapwd

@@ -2,7 +2,7 @@
 -- SQL script to create the procedures used for context indexes.
 --
 --
--- $GNF: projects/gi/symgene/src/DB/BS-create-ctx-proc.sql,v 1.4 2002/11/26 10:07:17 hlapp Exp $
+-- $GNF: projects/gi/symgene/src/DB/BS-create-ctx-proc.sql,v 1.6 2003/05/23 17:42:27 hlapp Exp $
 --
 
 --
@@ -28,27 +28,25 @@ CREATE OR REPLACE PROCEDURE Ctx_Ent_Desc(rid IN ROWID,
 -- RETURN CLOB
 IS
 	CURSOR entqual_c (
-	       rid		   IN ROWID, 
-	       Tgt_Term_Identifier IN SG_Ontology_Term.Identifier%TYPE)
+	       rid		IN ROWID, 
+	       Obj_Trm_Oid_	IN SG_TERM.OID%TYPE,
+	       Pred_Trm_Oid_	IN SG_TERM.OID%TYPE)
 	IS
-		SELECT Tgt.Name, EntOntA.Value
-		FROM SG_Bioentry_Qualifier_Assoc EntOntA, SG_Bioentry Ent,
-     		     SG_Ontology_Term Ont, SG_Ontology_Term Type, 
-		     SG_Ontology_Term Tgt, SG_Ontology_Term_Assoc OntA
+		SELECT Obj.Name, EntTrmA.Value
+		FROM SG_Bioentry_Qualifier_Assoc EntTrmA, SG_Bioentry Ent,
+		     SG_Term_Assoc TrmA, SG_Term Obj
 		WHERE
-     		     EntOntA.Ont_Oid	= Ont.Oid
-		AND  EntOntA.Value IS NOT NULL
-		AND  OntA.Src_Ont_Oid	= Ont.Oid
-		AND  OntA.Type_Ont_Oid	= Type.Oid
-		AND  OntA.Tgt_Ont_Oid	= Tgt.Oid
-		AND  EntOntA.Ent_Oid    = Ent.Oid
+     		     EntTrmA.Trm_Oid	= TrmA.Subj_Trm_Oid
+		AND  EntTrmA.Value IS NOT NULL
+		AND  TrmA.Pred_Trm_Oid	= Pred_Trm_Oid_
+		AND  TrmA.Obj_Trm_Oid	= Obj.Oid
+		AND  Obj.Oid		= Obj_Trm_Oid_
+		AND  EntTrmA.Ent_Oid    = Ent.Oid
 		AND  Ent.Rowid		= rid
-		AND  Type.Identifier 	= 'REO:1000008'
-		AND  Tgt.Identifier	= Tgt_Term_Identifier
 		;
 	CURSOR entcmt_c (rid IN ROWID)
 	IS
-		SELECT c.* FROM SG_Bioentry e, SG_Comment c
+		SELECT c.comment_text FROM SG_Bioentry e, SG_Comment c
 		WHERE 
 		      c.ent_oid = e.oid
 		AND   e.rowid = rid
@@ -83,7 +81,11 @@ BEGIN
 	-- descriptive gene names, function descriptions, and phenotype
 	-- descriptions
 	--
-	FOR gene_c IN entqual_c(rid, 'QUO:1000002')
+	FOR gene_c IN entqual_c(rid,
+				Trm.get_oid(Trm_Identifier => 'QUO:1000002',
+					    cache_By_Id	   => 1),
+				Trm.get_oid(Trm_Identifier => 'REO:1000008',
+					    cache_By_Id	   => 1))
 	LOOP
 		buf := '<' || gene_c.Name || '>';
 		DBMS_LOB.WriteAppend(doc, LENGTH(buf), buf);
@@ -91,7 +93,11 @@ BEGIN
 		buf := '</' || gene_c.Name || '>';
 		DBMS_LOB.WriteAppend(doc, LENGTH(buf), buf);
 	END LOOP;
-	FOR gene_c IN entqual_c(rid, 'QUO:1000003')
+	FOR gene_c IN entqual_c(rid,
+				Trm.get_oid(Trm_Identifier => 'QUO:1000003',
+					    cache_By_Id	   => 1),
+				Trm.get_oid(Trm_Identifier => 'REO:1000008',
+					    cache_By_Id	   => 1))
 	LOOP
 		buf := '<' || gene_c.Name || '>';
 		DBMS_LOB.WriteAppend(doc, LENGTH(buf), buf);
@@ -99,7 +105,11 @@ BEGIN
 		buf := '</' || gene_c.Name || '>';
 		DBMS_LOB.WriteAppend(doc, LENGTH(buf), buf);
 	END LOOP;
-	FOR gene_c IN entqual_c(rid, 'QUO:1000004')
+	FOR gene_c IN entqual_c(rid,
+				Trm.get_oid(Trm_Identifier => 'QUO:1000004',
+					    cache_By_Id	   => 1),
+				Trm.get_oid(Trm_Identifier => 'REO:1000008',
+					    cache_By_Id	   => 1))
 	LOOP
 		buf := '<' || gene_c.Name || '>';
 		DBMS_LOB.WriteAppend(doc, LENGTH(buf), buf);
@@ -122,6 +132,7 @@ BEGIN
 		buf := '</comment>';
 		DBMS_LOB.WriteAppend(doc, LENGTH(buf), buf);
 	END LOOP;
+--	RETURN doc;
 END;
 /
 
