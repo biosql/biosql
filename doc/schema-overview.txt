@@ -1,5 +1,17 @@
 
-bioSQL Primary Datatypes or "Entities"
+bioSQL Schema Overview
+
+This document attempts to describe the tables and fields in the bioSQL
+schema.  It also aims to demonstrate functional capabilities by
+example SQL usages.  Design philosophies and expectations are
+presented with reasoning.
+
+The bioSQL schema is described in three sections: Primary Datatypes,
+Sequence Features and Ontology Terms.  A fourth section demonstrates
+possible extensions to the schema that may be useful under some
+circumstances.
+
+I. Primary Datatypes: "core" bioSQL entities
 
 bioentry
 
@@ -171,16 +183,6 @@ Note: Taxon is optional for bioentries. This is because certain
 bioentries may not have a clearly identified taxon, or because the
 concept of taxon may not be meaningful for the bioentry.
 
-Note: currently, taxon information is as provided by the bioentry
-(e.g. the GenBank SOURCE field), and therefore may be mildly incorrect
-(misspelled scientific and/or common names are the main culprits);
-this may mean that the same taxon has differring names under different
-bioSQL instantiations.  In the future this problem should probably be
-resolved by prepopulating this table with canonical data from the NCBI
-taxonomy database, which would also allow richer taxonomical
-operations.  "Round-tripping" is already theoretically broken by the
-current implementation, so no concerns there.
-
 Example SQL: Find all human sequences:
 
 SELECT biosequence.*
@@ -215,12 +217,6 @@ may be used to define the order of the references for each associated
 bioentry.  Lastly, "reference_start" and "reference_end" may be used
 to associate references with specific locations on the bioentry.
 
-Note: the start/end paradigm here seems like a job better suited for a
-location table (seqFeatureLocation could be co-opted to simply be a
-Location table - there's nothing inherently seqFeature-ish about it,
-although one could argue that you'd need proper entity subtyping to
-make it work with the current constraints).
-
 
 comments
 
@@ -238,17 +234,14 @@ associated dbxrefs, and one dbxref may be associated with many
 bioentries.  
 
 
-Beyond primary entities: everything else about a biosequence
-
+II. Sequence Features: everything else about a biosequence
 
 seqfeature
 
 Any and all other information pertaining to a bioentry is stored as a
 generic "feature" of the sequence, the semantics of which are defined
 by associations with a specific "source" term and optional qualifiers
-(see below under "ontology_term").  seqfeatures may themselves have
-sub-seqfeatures (with potentially many-to-many parent-child relationships
-stored in the seqfeature_relationship table).
+(see below under "ontology_term").
 
 
 seqfeature_location
@@ -262,7 +255,7 @@ location may refer to a "remote" sequence, i.e. not the sequence
 associated with the bioentry; this is accomplished by a dbxref link.
 
 
-Adding meaning to entities and relationships:
+III. Ontology Terms: adding meaning to entities and relationships
 
 ontology_term
 
@@ -271,10 +264,11 @@ terms in a somewhat-controlled vocabulary.  An ontology_term is used
 to "label" a seqfeature's name ("exon", "CDS", "5' UTR", etc), as well
 as its source ("GeneWise", "Glimmer", etc), and to define the types of
 relationships between seqfeatures and their sub-seqfeatures (e.g. "is
-composed of", "gives rise to", "transmembrane segments of").  While a
-seqfeature may have only one term to describe its name and source,
-relationships between seqfeatures and sub-seqfeatures may have
-multiple terms associated with them.
+composed of", "gives rise to", "transmembrane segments of" - see
+seqfeature_relationship below).  While a seqfeature may have only one
+term to describe its type and source, relationships between
+seqfeatures and sub-seqfeatures may have multiple terms associated
+with them.
 
 *_qualifier_value
 
@@ -310,32 +304,51 @@ to further qualify these relationships by putting names on them: a
 "example of" a "pairwise sequence alignment".  We refer to these as
 "subject", "predicate", "object" (or, "parent", "relationship type",
 "child").  The ontology_relationship table performs this mapping
-between terms, using the subject/predicate/object terminology.
+between terms, using the subject/predicate/object terminology.  This
+mapping (or "rule set") must itself be given an ontological namespace
+(ontology_id), as the mapping may relate terms between separate
+ontologies; we must keep track of where each "rule" comes from.
+
 Finally, ontology terms themselves can be linked to external databases
 via a many-to-many relationship with dbxrefs.
 
+bioentry_relationship
 
-Overall notes:
+Bioentries may themselves be related to one another (e.g., a PDB
+record may be composed of multiple subrecords for separate chains, or
+multiple SwissProt records may be associated with a given PFAM domain
+entry).  These relationships are "typed" via links to ontology terms.
 
-* TODO: add more Example SQL bits, especially for seqfeatures with
-  sub-seqfeatures, and ontology terms (nested terms would be good too,
-  but I refuse to do this without a transitive closure accessory
-  table).
+seqfeature_relationship
 
-* consistency issues: some entities get rich ontology qualifiers and
-  dbxref functionality, others don't; e.g., instead of
-  reference_identifier, why isn't there a reference_dbxref
-  relationship?  Instead of a database authority, why not an
-  "authority" qualifier value (especially if we expect authority to be
-  little-used)?
+seqfeatures may also have associated sub-seqfeatures (with potentially
+many-to-many parent-child relationships).  These relationships are
+also "typed" via links to ontology terms.
 
-* more consistency issues: table_field prefix naming - need to be
-  consistent (suggest getting rid of them, e.g. reference.reference_crc).
+ontology_path
+bioentry_path
+seqfeature_path
 
-* GenBank-specific "hacks" feel dirty (e.g. reference start/end
-  location)
+All three of these tables are meant to store the "transitive closure"
+of the respective *_relationship data; that is, if A is related to B,
+and B is related to C, then A is related to C, and will have a row in
+the table.  The definition of the type of relationship between A and C
+depends greatly on the semantics of the individual relationships
+between A and B and B and C (including the possibility that A and C
+aren't actually related by any meaningful type, and should therefore
+not appear in the table).  We leave it to individual implementors to
+define the policy for building these paths.
 
-* db versioning: suggest a simple "date in - date out" 1-many table
+A very generic "policy" is to use the ontology of relationship types
+involved between A and B and B and C, and choose the greatest common
+denominator between the two relationship types (e.g. when the two
+relationship types are the same, then A and C are related by the same
+type; when the two relationship types differ, then A and C are related
+by the first "supertype" that includes both relationship types).
+
+IV. Possible add-ons to the core bioSQL schema
+
+Bioentry date stamping:
 
 CREATE TABLE bioentry_history (
   bioentry_history_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -399,11 +412,14 @@ ones that are no longer "current" - simple SELECTs must specify
 enddate IS NULL (optionally, a "is_current" flag can be added to
 bioentry) - again, a bioentry_current VIEW may be the best solution.
 
-* there is no utility here for handling biosequence redundancy;
-  i.e. the biosequence table cannot be easily used to generate
-  non-redundant sequence views.  An accessory table
-  "biosequence_redundancy" could be used to store redundant pairs
-  (including a self-self pair) for those who need it.
+
+Sequence redundancy:
+
+There is no utility here for handling biosequence redundancy; i.e. the
+biosequence table cannot be easily used to generate non-redundant
+sequence views.  An accessory table "biosequence_redundancy" could be
+used to store redundant pairs (including a self-self pair) for those
+who need it.
 
 CREATE TABLE biosequence_redundancy (
   biosequence_redundancy_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -421,16 +437,10 @@ Example SQL: Give me all nonredundant biosequences from GenPept
 
 [ Nasty cross joining SQL to be delivered ... ]
 
-* feature set versioning - could already be accomplished with "dated"
-  source ontology terms, but that seems like a bastardization.
 
-* qualifier's should probably have ranks (default = 0) on them, for ordering.
+Feature set versioning:
 
-* taxon suggestions as made previously
+Could already be accomplished with "dated" source ontology terms, but
+that seems like a bastardization.  Suggestions welcome.
 
-* seqfeature name and source could have greater cardinality (although
-  the use case currently escapes me)
-
-These small additions would make bioSQL much more useful in an
-ongoing, dynamic research environment.
 
