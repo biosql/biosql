@@ -37,31 +37,28 @@ CREATE TABLE rule_conditions (
 
 #removed class, added index to analysis
 
-CREATE TABLE input_dba(
-   input_dba_id             int(10) unsigned DEFAULT '0' NOT NULL auto_increment,
+CREATE TABLE iohandler (
+   iohandler_id         int(10) unsigned DEFAULT '0' NOT NULL auto_increment,
    dbadaptor_id         int(10) DEFAULT '0' NOT NULL,
-   biodbadaptor         varchar(100) DEFAULT '' NOT NULL,
-   biodbname            varchar(40) DEFAULT '' NOT NULL,
-   data_adaptor         varchar(40) DEFAULT '' NOT NULL,
-   data_adaptor_method  varchar(40) DEFAULT '' NOT NULL,
+   type                 enum ('INPUT','OUTPUT') NOT NULL,
 
-   PRIMARY KEY (input_dba_id),
-   KEY (dbadaptor_id)
+   PRIMARY KEY (iohandler_id),
+   KEY dbadaptor (dbadaptor_id)
+);
+# note-  the column type is meant for differentiating the input adaptors from the output adaptors
+#        each analysis should only have ONE output adaptor.
+
+CREATE TABLE datahandler(
+    datahandler_id     int(10) unsigned NOT NULL auto_increment,
+    iohandler_id        int(10) DEFAULT '0' NOT NULL,
+    method              varchar(60) DEFAULT '' NOT NULL,
+    argument            varchar(40) DEFAULT '' ,
+    rank                int(10) DEFAULT 1 NOT NULL,
+
+    PRIMARY KEY (datahandler_id),
+    KEY iohandler (iohandler_id)
 );
 
-CREATE TABLE output_dba (
-   output_dba_id        int(10) unsigned DEFAULT '0' NOT NULL auto_increment,
-   analysis_id          int(10) unsigned DEFAULT '0' NOT NULL,
-   dbadaptor_id         int(10) unsigned DEFAULT '0' NOT NULL,
-   biodbadaptor         varchar(100) DEFAULT '' NOT NULL,
-   biodbname            varchar(40) DEFAULT '' NOT NULL,
-   data_adaptor         varchar(40) DEFAULT '' NOT NULL,
-   data_adaptor_method  varchar(40) DEFAULT '' NOT NULL,
-
-   PRIMARY KEY (output_dba_id),
-   KEY (dbadaptor_id),
-   KEY (analysis_id)
-);
 
 CREATE TABLE dbadaptor (
    dbadaptor_id   int(10) unsigned DEFAULT '0' NOT NULL auto_increment,
@@ -76,20 +73,22 @@ CREATE TABLE dbadaptor (
 );
 
 CREATE TABLE input (
-   input_id    int(10) unsigned DEFAULT '0' NOT NULL auto_increment,
-   input_dba_id  int(10) unsigned NOT NULL,
-   job_id            int(10) unsigned NOT NULL,
-   name              varchar(40) DEFAULT '' NOT NULL,
+   input_id         int(10) unsigned DEFAULT '0' NOT NULL auto_increment,
+   iohandler_id     int(10) unsigned NOT NULL,
+   job_id           int(10) unsigned NOT NULL,
+   name             varchar(40) DEFAULT '' NOT NULL,
 
    PRIMARY KEY (input_id),
-   KEY (input_dba_id),
-   KEY (job_id)
+   KEY iohandler (iohandler_id),
+   KEY job (job_id)
 );
+
 
 CREATE TABLE analysis (
   analysis_id      int(10) unsigned DEFAULT '0' NOT NULL auto_increment,
   created          datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
   logic_name       varchar(40) not null,
+  runnable         varchar(80),
   db               varchar(120),
   db_version       varchar(40),
   db_file          varchar(120),
@@ -97,25 +96,23 @@ CREATE TABLE analysis (
   program_version  varchar(40),
   program_file     varchar(80),
   parameters       varchar(80),
-  runnable         varchar(80),
   gff_source       varchar(40),
   gff_feature      varchar(40),
 
   PRIMARY KEY (analysis_id)
 );
 
+# created new table to relect the fact that many analysis can share an io 
+# and that an analysis can have more than 1 io
 
-# created new table to relect the fact that many analysis can share an input_dba
-# and that an analysis can have more than 1 input_dba
-
-CREATE TABLE analysis_input_dba(
-  analysis_input_dba_id     int(10) unsigned DEFAULT'0' NOT NULL auto_increment,
+CREATE TABLE analysis_iohandler(
+  analysis_iohandler_id     int(10) unsigned DEFAULT'0' NOT NULL auto_increment,
   analysis_id               int(10) NOT NULL,
-  input_dba_id              int(10) NOT NULL,
+  iohandler_id              int(10) NOT NULL,
 
-  PRIMARY KEY (analysis_input_dba_id),
+  PRIMARY KEY (analysis_iohandler_id),
   KEY analysis (analysis_id),
-  KEY input_dba (input_dba_id)
+  KEY iohandler (iohandler_id)
 
 );
 
