@@ -54,7 +54,7 @@ CREATE TABLE output_dba (
    output_dba_id        int(10) unsigned DEFAULT '0' NOT NULL auto_increment,
    analysis_id          int(10) unsigned DEFAULT '0' NOT NULL,
    dbadaptor_id         int(10) unsigned DEFAULT '0' NOT NULL,
-   biodbadaptor         varchar(100) DEFAULT '' NOT NULL,
+   biodbadaptor_method  varchar(100) DEFAULT '' NOT NULL,
    biodbname            varchar(40) DEFAULT '' NOT NULL,
    data_adaptor         varchar(40) DEFAULT '' NOT NULL,
    data_adaptor_method  varchar(40) DEFAULT '' NOT NULL,
