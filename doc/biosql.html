@@ -1,326 +1,4544 @@
-<html><head><title>Index for genbank3</title></head><body><a name="index"><h1>Index</h1><ul><li><a href="#table_biodatabase">biodatabase</a></li><li><a href="#table_bioentry">bioentry</a></li><li><a href="#table_bioentry_direct_links">bioentry_direct_links</a></li><li><a href="#table_bioentry_qualifier_value">bioentry_qualifier_value</a></li><li><a href="#table_bioentry_reference">bioentry_reference</a></li><li><a href="#table_bioentry_taxa">bioentry_taxa</a></li><li><a href="#table_biosequence">biosequence</a></li><li><a href="#table_cache_corba_support">cache_corba_support</a></li><li><a href="#table_comment">comment</a></li><li><a href="#table_dbxref">dbxref</a></li><li><a href="#table_dbxref_qualifier_value">dbxref_qualifier_value</a></li><li><a href="#table_location_qualifier_value">location_qualifier_value</a></li><li><a href="#table_ontology_term">ontology_term</a></li><li><a href="#table_reference">reference</a></li><li><a href="#table_remote_seqfeature_name">remote_seqfeature_name</a></li><li><a href="#table_seqfeature">seqfeature</a></li><li><a href="#table_seqfeature_location">seqfeature_location</a></li><li><a href="#table_seqfeature_qualifier_value">seqfeature_qualifier_value</a></li><li><a href="#table_seqfeature_relationship">seqfeature_relationship</a></li><li><a href="#table_seqfeature_source">seqfeature_source</a></li><li><a href="#table_taxa">taxa</a></li></ul><hr><h2>Table: <a name="table_biodatabase">biodatabase</a></h2>
-                <p></p>
-                <table width="100%" cellspacing="0" cellpadding="3" border="1">
+<!-- $Header$ -->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+  <head>
+    <title>Index for bioseqdb</title>
+    <style type="text/css">
+	BODY {
+		color:	#000000; 
+		background-color: #FFFFFF;
+		font-family: Helvetica, sans-serif; 
+	}
+
+	P {
+		margin-top: 5px;
+		margin-bottom: 5px;
+	}
+
+	P.w3ref {
+		font-size: 8pt;
+		font-style: italic;
+		text-align: right;
+	}
+
+	P.detail {
+		font-size: 10pt;
+	}
+
+	.error {
+		color: #FFFFFF;
+		background-color: #FF0000;
+	}
+
+	H1, H2, H3, H4, H5, H6 {
+	}
+
+	OL {
+		list-style-type: upper-alpha;
+	}
+
+	UL.topic {
+		list-style-type: upper-alpha;
+	}
+
+	LI.topic {
+		font-weight : bold;
+	}
+
+	HR {
+		color: #00FF00;
+		background-color: #808080;
+	}
+
+	TABLE {
+		border-width: medium;
+		padding: 3px;
+		background-color: #000000;
+		width: 90%;
+	}
+
+	CAPTION {
+		text-transform: capitalize;
+		font-weight : bold;
+		font-size: 14pt;
+	}
+
+	TH {
+		color: #FFFFFF;
+		background-color: #000000;
+		text-align: left;
+	}
+
+	TR {
+		color: #000000;
+		background-color: #000000;
+		vertical-align: top;
+	}
+
+	TR.tr0 {
+		background-color: #F0F0F0;
+	}
+
+	TR.tr1 {
+		background-color: #D8D8D8;
+	}
+
+	TD {
+		font-size: 12pt;
+	}
+
+	TD.col0 {
+		font-weight : bold;
+		width: 20%;
+	}
+
+	TD.col1 {
+		font-style: italic;
+		width: 15%;
+	}
+
+	TD.col2 {
+		font-size: 12px;
+	}
+    </style>
+    <link rel="stylesheet" type="text/css" media="all" href="all.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="screen.css">
+    <link rel="stylesheet" type="text/css" media="print" href="print.css">
+    <meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+  </head>
+  <body>
+
+    <!-- Primary Index -->
+	<p><br><br>Dumped on 2004-06-04</p>
+<h1><a name="index">Index of database - bioseqdb</a></h1>
+<ul>
+    
+    <li><a name="public.schema">public</a></li><ul>
+    	<li><a href="#public.table.biodatabase">biodatabase</a></li><li><a href="#public.table.bioentry">bioentry</a></li><li><a href="#public.table.bioentry-dbxref">bioentry_dbxref</a></li><li><a href="#public.table.bioentry-path">bioentry_path</a></li><li><a href="#public.table.bioentry-qualifier-value">bioentry_qualifier_value</a></li><li><a href="#public.table.bioentry-reference">bioentry_reference</a></li><li><a href="#public.table.bioentry-relationship">bioentry_relationship</a></li><li><a href="#public.table.biosequence">biosequence</a></li><li><a href="#public.table.comment">comment</a></li><li><a href="#public.table.dbxref">dbxref</a></li><li><a href="#public.table.dbxref-qualifier-value">dbxref_qualifier_value</a></li><li><a href="#public.table.location">location</a></li><li><a href="#public.table.location-qualifier-value">location_qualifier_value</a></li><li><a href="#public.table.ontology">ontology</a></li><li><a href="#public.table.reference">reference</a></li><li><a href="#public.table.seqfeature">seqfeature</a></li><li><a href="#public.table.seqfeature-dbxref">seqfeature_dbxref</a></li><li><a href="#public.table.seqfeature-path">seqfeature_path</a></li><li><a href="#public.table.seqfeature-qualifier-value">seqfeature_qualifier_value</a></li><li><a href="#public.table.seqfeature-relationship">seqfeature_relationship</a></li><li><a href="#public.table.taxon">taxon</a></li><li><a href="#public.table.taxon-name">taxon_name</a></li><li><a href="#public.table.term">term</a></li><li><a href="#public.table.term-dbxref">term_dbxref</a></li><li><a href="#public.table.term-path">term_path</a></li><li><a href="#public.table.term-relationship">term_relationship</a></li><li><a href="#public.table.term-synonym">term_synonym</a></li>
+  	<li><a href="#public.function.constrain-taxon">constrain_taxon(  )</a></li><li><a href="#public.function.unconstrain-taxon">unconstrain_taxon(  )</a></li>
+    </ul>
+    
+</ul>
+
+    <!-- Schema Creation -->
+    <!-- publicpublic -->
+
+		
+		
+        <hr>
+		<h2>Table:
+			<a name="public.table.biodatabase">biodatabase</a>
+		</h2>
+        
+
+
+        <table width="100%" cellspacing="0" cellpadding="3">
                 <caption>biodatabase Structure</caption>
-                <tr bgcolor="#E0E0EE">
+                <tr>
                 <th>F-Key</th>
                 <th>Name</th>
                 <th>Type</th>
                 <th>Description</th>
-                </tr><tr><td></td><td>biodatabase_id</td>
-                  <td>SERIAL</td><td><i>NOT NULL PRIMARY KEY </i></td></tr><tr><td></td><td>name</td>
-                  <td>VARCHAR(40)</td><td><i>NOT NULL</i></td></tr></table><p>Tables referencing this one via Foreign Key Constraints:<ul><li><a href="#table_bioentry">bioentry</a></li></ul></p><a href="#index">Index</a><hr><h2>Table: <a name="table_bioentry">bioentry</a></h2>
-                <p></p>
-                <table width="100%" cellspacing="0" cellpadding="3" border="1">
+                </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>biodatabase_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					PRIMARY KEY
+					
+
+					
+				
+
+				
+				DEFAULT nextval(&#39;biodatabase_pk_seq&#39;::text)
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>name</td>
+            	<td>character varying(128)</td>
+                <td><i>
+				
+					
+
+					
+                       UNIQUE
+                    
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                </td>
+            	<td>authority</td>
+            	<td>character varying(128)</td>
+                <td><i>
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                </td>
+            	<td>description</td>
+            	<td>text</td>
+                <td><i>
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+        </table>
+
+		
+		
+		
+
+        <!-- Constraint List -->
+		
+
+        <!-- Foreign Key Discovery -->
+		
+			<p>Tables referencing this one via Foreign Key Constraints:</p>
+		
+			<ul>	
+				<li><a href="#public.table.bioentry">bioentry</a></li>
+			</ul>
+		
+		
+
+	<!-- View Definition -->
+	
+
+	<!-- List off permissions -->
+	
+
+	<p>
+		<a href="#index">Index</a> -
+		<a href="#public.schema">Schema public</a>
+    </p>
+	
+        <hr>
+		<h2>Table:
+			<a name="public.table.bioentry">bioentry</a>
+		</h2>
+        
+
+
+        <table width="100%" cellspacing="0" cellpadding="3">
                 <caption>bioentry Structure</caption>
-                <tr bgcolor="#E0E0EE">
+                <tr>
                 <th>F-Key</th>
                 <th>Name</th>
                 <th>Type</th>
                 <th>Description</th>
-                </tr><tr><td></td><td>accession</td>
-                  <td>VARCHAR(40)</td><td><i>NOT NULL</i></td></tr><tr><td><a href="#table_biodatabase">biodatabase</a>
-                    </td><td>biodatabase_id</td>
-                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>bioentry_id</td>
-                  <td>SERIAL</td><td><i>NOT NULL PRIMARY KEY </i></td></tr><tr><td></td><td>display_id</td>
-                  <td>VARCHAR(40)</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>division</td>
-                  <td>VARCHAR(3)</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>entry_version</td>
-                  <td>INT4</td><td></td></tr></table><br><table  width="100%" cellspacing="0" cellpadding="3" border="1">
-                    <caption>bioentry Constraints</caption>
-                    <tr bgcolor="#E0E0EE">
-                    <th>Name</th>
-                    <th>Constraint</th>
-                    </tr><tr><td>bioentry_biodatabase_id_key</td>
-                      <td>UNIQUE (biodatabase_id, accession, entry_version, division)</td></tr></table><p>Tables referencing this one via Foreign Key Constraints:<ul><li><a href="#table_bioentry_direct_links">bioentry_direct_links</a></li><li><a href="#table_bioentry_qualifier_value">bioentry_qualifier_value</a></li><li><a href="#table_bioentry_reference">bioentry_reference</a></li><li><a href="#table_bioentry_taxa">bioentry_taxa</a></li><li><a href="#table_biosequence">biosequence</a></li><li><a href="#table_comment">comment</a></li><li><a href="#table_seqfeature">seqfeature</a></li></ul></p><a href="#index">Index</a><hr><h2>Table: <a name="table_bioentry_direct_links">bioentry_direct_links</a></h2>
-                <p></p>
-                <table width="100%" cellspacing="0" cellpadding="3" border="1">
-                <caption>bioentry_direct_links Structure</caption>
-                <tr bgcolor="#E0E0EE">
+                </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>&quot;version&quot;</td>
+            	<td></td>
+                <td><i>
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>bioentry_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					PRIMARY KEY
+					
+
+					
+				
+
+				
+				DEFAULT nextval(&#39;bioentry_pk_seq&#39;::text)
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                
+                  
+                  <a href="#public.table.biodatabase">biodatabase.biodatabase_id</a>
+                  
+                
+                </td>
+            	<td>biodatabase_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+					
+
+					
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                  <a href="#public.table.taxon">taxon.taxon_id</a>
+                  
+                
+                </td>
+            	<td>taxon_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                </td>
+            	<td>name</td>
+            	<td>character varying(40)</td>
+                <td><i>
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>accession</td>
+            	<td>character varying(40)</td>
+                <td><i>
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>identifier</td>
+            	<td>character varying(40)</td>
+                <td><i>
+				
+					
+
+					
+                       UNIQUE
+                    
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                </td>
+            	<td>division</td>
+            	<td>character varying(6)</td>
+                <td><i>
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                </td>
+            	<td>description</td>
+            	<td>text</td>
+                <td><i>
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                </td>
+            	<td>version</td>
+            	<td>integer</td>
+                <td><i>
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+        </table>
+
+		
+		
+		
+
+        <!-- Constraint List -->
+		
+
+        <!-- Foreign Key Discovery -->
+		
+			<p>Tables referencing this one via Foreign Key Constraints:</p>
+		
+			<ul>	
+				<li><a href="#public.table.bioentry-dbxref">bioentry_dbxref</a></li>
+			</ul>
+		
+			<ul>	
+				<li><a href="#public.table.bioentry-path">bioentry_path</a></li>
+			</ul>
+		
+			<ul>	
+				<li><a href="#public.table.bioentry-qualifier-value">bioentry_qualifier_value</a></li>
+			</ul>
+		
+			<ul>	
+				<li><a href="#public.table.bioentry-reference">bioentry_reference</a></li>
+			</ul>
+		
+			<ul>	
+				<li><a href="#public.table.bioentry-relationship">bioentry_relationship</a></li>
+			</ul>
+		
+			<ul>	
+				<li><a href="#public.table.biosequence">biosequence</a></li>
+			</ul>
+		
+			<ul>	
+				<li><a href="#public.table.comment">comment</a></li>
+			</ul>
+		
+			<ul>	
+				<li><a href="#public.table.seqfeature">seqfeature</a></li>
+			</ul>
+		
+		
+
+	<!-- View Definition -->
+	
+
+	<!-- List off permissions -->
+	
+
+	<p>
+		<a href="#index">Index</a> -
+		<a href="#public.schema">Schema public</a>
+    </p>
+	
+        <hr>
+		<h2>Table:
+			<a name="public.table.bioentry-dbxref">bioentry_dbxref</a>
+		</h2>
+        
+
+
+        <table width="100%" cellspacing="0" cellpadding="3">
+                <caption>bioentry_dbxref Structure</caption>
+                <tr>
                 <th>F-Key</th>
                 <th>Name</th>
                 <th>Type</th>
                 <th>Description</th>
-                </tr><tr><td></td><td>bio_dblink_id</td>
-                  <td>SERIAL</td><td><i>NOT NULL PRIMARY KEY </i></td></tr><tr><td><a href="#table_dbxref">dbxref</a>
-                    </td><td>dbxref_id</td>
-                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td><a href="#table_bioentry">bioentry</a>
-                    </td><td>source_bioentry_id</td>
-                  <td>INT4</td><td><i>NOT NULL</i></td></tr></table><a href="#index">Index</a><hr><h2>Table: <a name="table_bioentry_qualifier_value">bioentry_qualifier_value</a></h2>
-                <p></p>
-                <table width="100%" cellspacing="0" cellpadding="3" border="1">
+                </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                
+                  
+                  <a href="#public.table.bioentry">bioentry.bioentry_id</a>
+                  
+                
+                </td>
+            	<td>bioentry_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					PRIMARY KEY
+					
+
+					
+				
+					
+
+					
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                
+                  
+                  <a href="#public.table.dbxref">dbxref.dbxref_id</a>
+                  
+                
+                </td>
+            	<td>dbxref_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					PRIMARY KEY
+					
+
+					
+				
+					
+
+					
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                </td>
+            	<td>rank</td>
+            	<td>integer</td>
+                <td><i>
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+        </table>
+
+		
+		
+		
+
+        <!-- Constraint List -->
+		
+
+        <!-- Foreign Key Discovery -->
+		
+
+	<!-- View Definition -->
+	
+
+	<!-- List off permissions -->
+	
+
+	<p>
+		<a href="#index">Index</a> -
+		<a href="#public.schema">Schema public</a>
+    </p>
+	
+        <hr>
+		<h2>Table:
+			<a name="public.table.bioentry-path">bioentry_path</a>
+		</h2>
+        
+
+
+        <table width="100%" cellspacing="0" cellpadding="3">
+                <caption>bioentry_path Structure</caption>
+                <tr>
+                <th>F-Key</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+                </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                
+                  
+                  <a href="#public.table.bioentry">bioentry.bioentry_id</a>
+                  
+                
+                </td>
+            	<td>object_bioentry_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+					
+
+					
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                
+                  
+                  <a href="#public.table.bioentry">bioentry.bioentry_id</a>
+                  
+                
+                </td>
+            	<td>subject_bioentry_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+					
+
+					
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                
+                  
+                  <a href="#public.table.term">term.term_id</a>
+                  
+                
+                </td>
+            	<td>term_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+					
+
+					
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>distance</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+        </table>
+
+		
+		
+		
+
+        <!-- Constraint List -->
+		
+
+        <!-- Foreign Key Discovery -->
+		
+
+	<!-- View Definition -->
+	
+
+	<!-- List off permissions -->
+	
+
+	<p>
+		<a href="#index">Index</a> -
+		<a href="#public.schema">Schema public</a>
+    </p>
+	
+        <hr>
+		<h2>Table:
+			<a name="public.table.bioentry-qualifier-value">bioentry_qualifier_value</a>
+		</h2>
+        
+
+
+        <table width="100%" cellspacing="0" cellpadding="3">
                 <caption>bioentry_qualifier_value Structure</caption>
-                <tr bgcolor="#E0E0EE">
+                <tr>
                 <th>F-Key</th>
                 <th>Name</th>
                 <th>Type</th>
                 <th>Description</th>
-                </tr><tr><td><a href="#table_bioentry">bioentry</a>
-                    </td><td>bioentry_id</td>
-                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td><a href="#table_ontology_term">ontology_term</a>
-                    </td><td>ontology_term_id</td>
-                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>qualifier_value</td>
-                  <td>TEXT</td><td></td></tr></table><a href="#index">Index</a><hr><h2>Table: <a name="table_bioentry_reference">bioentry_reference</a></h2>
-                <p></p>
-                <table width="100%" cellspacing="0" cellpadding="3" border="1">
+                </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                
+                  
+                  <a href="#public.table.bioentry">bioentry.bioentry_id</a>
+                  
+                
+                </td>
+            	<td>bioentry_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+					
+
+					
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                
+                  
+                  <a href="#public.table.term">term.term_id</a>
+                  
+                
+                </td>
+            	<td>term_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+					
+
+					
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                </td>
+            	<td>value</td>
+            	<td>text</td>
+                <td><i>
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>rank</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+        </table>
+
+		
+		
+		
+
+        <!-- Constraint List -->
+		
+
+        <!-- Foreign Key Discovery -->
+		
+
+	<!-- View Definition -->
+	
+
+	<!-- List off permissions -->
+	
+
+	<p>
+		<a href="#index">Index</a> -
+		<a href="#public.schema">Schema public</a>
+    </p>
+	
+        <hr>
+		<h2>Table:
+			<a name="public.table.bioentry-reference">bioentry_reference</a>
+		</h2>
+        
+
+
+        <table width="100%" cellspacing="0" cellpadding="3">
                 <caption>bioentry_reference Structure</caption>
-                <tr bgcolor="#E0E0EE">
+                <tr>
                 <th>F-Key</th>
                 <th>Name</th>
                 <th>Type</th>
                 <th>Description</th>
-                </tr><tr><td><a href="#table_bioentry">bioentry</a>
-                    </td><td>bioentry_id</td>
-                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>reference_end</td>
-                  <td>INT4</td><td></td></tr><tr><td><a href="#table_reference">reference</a>
-                    </td><td>reference_id</td>
-                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>reference_rank</td>
-                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>reference_start</td>
-                  <td>INT4</td><td></td></tr></table><br><table  width="100%" cellspacing="0" cellpadding="3" border="1">
-                    <caption>bioentry_reference Constraints</caption>
-                    <tr bgcolor="#E0E0EE">
-                    <th>Name</th>
-                    <th>Constraint</th>
-                    </tr><tr><td>bioentry_reference_pkey</td>
-                      <td>PRIMARY KEY (bioentry_id, reference_id, reference_rank)</td></tr></table><a href="#index">Index</a><hr><h2>Table: <a name="table_bioentry_taxa">bioentry_taxa</a></h2>
-                <p></p>
-                <table width="100%" cellspacing="0" cellpadding="3" border="1">
-                <caption>bioentry_taxa Structure</caption>
-                <tr bgcolor="#E0E0EE">
+                </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                
+                  
+                  <a href="#public.table.bioentry">bioentry.bioentry_id</a>
+                  
+                
+                </td>
+            	<td>bioentry_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					PRIMARY KEY
+					
+
+					
+				
+					
+
+					
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                
+                  
+                  <a href="#public.table.reference">reference.reference_id</a>
+                  
+                
+                </td>
+            	<td>reference_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					PRIMARY KEY
+					
+
+					
+				
+					
+
+					
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                </td>
+            	<td>start_pos</td>
+            	<td>integer</td>
+                <td><i>
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                </td>
+            	<td>end_pos</td>
+            	<td>integer</td>
+                <td><i>
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>rank</td>
+            	<td>integer</td>
+                <td><i>
+				
+					PRIMARY KEY
+					
+
+					
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+        </table>
+
+		
+		
+		
+
+        <!-- Constraint List -->
+		
+
+        <!-- Foreign Key Discovery -->
+		
+
+	<!-- View Definition -->
+	
+
+	<!-- List off permissions -->
+	
+
+	<p>
+		<a href="#index">Index</a> -
+		<a href="#public.schema">Schema public</a>
+    </p>
+	
+        <hr>
+		<h2>Table:
+			<a name="public.table.bioentry-relationship">bioentry_relationship</a>
+		</h2>
+        
+
+
+        <table width="100%" cellspacing="0" cellpadding="3">
+                <caption>bioentry_relationship Structure</caption>
+                <tr>
                 <th>F-Key</th>
                 <th>Name</th>
                 <th>Type</th>
                 <th>Description</th>
-                </tr><tr><td><a href="#table_bioentry">bioentry</a>
-                    </td><td>bioentry_id</td>
-                  <td>INT4</td><td><i>NOT NULL PRIMARY KEY </i></td></tr><tr><td></td><td>taxa_id</td>
-                  <td>INT4</td><td><i>NOT NULL</i></td></tr></table><a href="#index">Index</a><hr><h2>Table: <a name="table_biosequence">biosequence</a></h2>
-                <p></p>
-                <table width="100%" cellspacing="0" cellpadding="3" border="1">
+                </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>bioentry_relationship_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					PRIMARY KEY
+					
+
+					
+				
+
+				
+				DEFAULT nextval(&#39;bioentry_relationship_pk_seq&#39;::text)
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                
+                  
+                  <a href="#public.table.bioentry">bioentry.bioentry_id</a>
+                  
+                
+                </td>
+            	<td>object_bioentry_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+					
+
+					
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                
+                  
+                  <a href="#public.table.bioentry">bioentry.bioentry_id</a>
+                  
+                
+                </td>
+            	<td>subject_bioentry_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+					
+
+					
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                
+                  
+                  <a href="#public.table.term">term.term_id</a>
+                  
+                
+                </td>
+            	<td>term_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+					
+
+					
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                </td>
+            	<td>rank</td>
+            	<td>integer</td>
+                <td><i>
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+        </table>
+
+		
+		
+		
+
+        <!-- Constraint List -->
+		
+
+        <!-- Foreign Key Discovery -->
+		
+
+	<!-- View Definition -->
+	
+
+	<!-- List off permissions -->
+	
+
+	<p>
+		<a href="#index">Index</a> -
+		<a href="#public.schema">Schema public</a>
+    </p>
+	
+        <hr>
+		<h2>Table:
+			<a name="public.table.biosequence">biosequence</a>
+		</h2>
+        
+
+
+        <table width="100%" cellspacing="0" cellpadding="3">
                 <caption>biosequence Structure</caption>
-                <tr bgcolor="#E0E0EE">
+                <tr>
                 <th>F-Key</th>
                 <th>Name</th>
                 <th>Type</th>
                 <th>Description</th>
-                </tr><tr><td><a href="#table_bioentry">bioentry</a>
-                    </td><td>bioentry_id</td>
-                  <td>INT4</td><td><i>NOT NULL UNIQUE </i></td></tr><tr><td></td><td>biosequence_id</td>
-                  <td>SERIAL</td><td><i>NOT NULL PRIMARY KEY </i></td></tr><tr><td></td><td>biosequence_str</td>
-                  <td>TEXT</td><td></td></tr><tr><td></td><td>molecule</td>
-                  <td>VARCHAR(10)</td><td></td></tr><tr><td></td><td>seq_length</td>
-                  <td>INT4</td><td></td></tr><tr><td></td><td>seq_version</td>
-                  <td>INT4</td><td></td></tr></table><a href="#index">Index</a><hr><h2>Table: <a name="table_cache_corba_support">cache_corba_support</a></h2>
-                <p></p>
-                <table width="100%" cellspacing="0" cellpadding="3" border="1">
-                <caption>cache_corba_support Structure</caption>
-                <tr bgcolor="#E0E0EE">
-                <th>F-Key</th>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Description</th>
-                </tr><tr><td></td><td>biodatabase_id</td>
-                  <td>INT4</td><td><i>NOT NULL PRIMARY KEY </i></td></tr><tr><td></td><td>direct_ior_string</td>
-                  <td>VARCHAR(255)</td><td></td></tr><tr><td></td><td>http_ior_string</td>
-                  <td>VARCHAR(255)</td><td></td></tr></table><a href="#index">Index</a><hr><h2>Table: <a name="table_comment">comment</a></h2>
-                <p></p>
-                <table width="100%" cellspacing="0" cellpadding="3" border="1">
+                </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                
+                  
+                  <a href="#public.table.bioentry">bioentry.bioentry_id</a>
+                  
+                
+                </td>
+            	<td>bioentry_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					PRIMARY KEY
+					
+
+					
+				
+					
+
+					
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                </td>
+            	<td>version</td>
+            	<td>integer</td>
+                <td><i>
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                </td>
+            	<td>length</td>
+            	<td>integer</td>
+                <td><i>
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                </td>
+            	<td>alphabet</td>
+            	<td>character varying(10)</td>
+                <td><i>
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                </td>
+            	<td>seq</td>
+            	<td>text</td>
+                <td><i>
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+        </table>
+
+		
+		
+		
+
+        <!-- Constraint List -->
+		
+
+        <!-- Foreign Key Discovery -->
+		
+
+	<!-- View Definition -->
+	
+
+	<!-- List off permissions -->
+	
+
+	<p>
+		<a href="#index">Index</a> -
+		<a href="#public.schema">Schema public</a>
+    </p>
+	
+        <hr>
+		<h2>Table:
+			<a name="public.table.comment">comment</a>
+		</h2>
+        
+
+
+        <table width="100%" cellspacing="0" cellpadding="3">
                 <caption>comment Structure</caption>
-                <tr bgcolor="#E0E0EE">
+                <tr>
                 <th>F-Key</th>
                 <th>Name</th>
                 <th>Type</th>
                 <th>Description</th>
-                </tr><tr><td><a href="#table_bioentry">bioentry</a>
-                    </td><td>bioentry_id</td>
-                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>comment_id</td>
-                  <td>SERIAL</td><td><i>NOT NULL PRIMARY KEY </i></td></tr><tr><td></td><td>comment_rank</td>
-                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>comment_text</td>
-                  <td>TEXT</td><td><i>NOT NULL</i></td></tr></table><a href="#index">Index</a><hr><h2>Table: <a name="table_dbxref">dbxref</a></h2>
-                <p></p>
-                <table width="100%" cellspacing="0" cellpadding="3" border="1">
+                </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>comment_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					PRIMARY KEY
+					
+
+					
+				
+
+				
+				DEFAULT nextval(&#39;comment_pk_seq&#39;::text)
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                
+                  
+                  <a href="#public.table.bioentry">bioentry.bioentry_id</a>
+                  
+                
+                </td>
+            	<td>bioentry_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+					
+
+					
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                </td>
+            	<td>comment_text</td>
+            	<td>text</td>
+                <td><i>
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>rank</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+        </table>
+
+		
+		
+		
+
+        <!-- Constraint List -->
+		
+
+        <!-- Foreign Key Discovery -->
+		
+
+	<!-- View Definition -->
+	
+
+	<!-- List off permissions -->
+	
+
+	<p>
+		<a href="#index">Index</a> -
+		<a href="#public.schema">Schema public</a>
+    </p>
+	
+        <hr>
+		<h2>Table:
+			<a name="public.table.dbxref">dbxref</a>
+		</h2>
+        
+
+
+        <table width="100%" cellspacing="0" cellpadding="3">
                 <caption>dbxref Structure</caption>
-                <tr bgcolor="#E0E0EE">
+                <tr>
                 <th>F-Key</th>
                 <th>Name</th>
                 <th>Type</th>
                 <th>Description</th>
-                </tr><tr><td></td><td>accession</td>
-                  <td>VARCHAR(40)</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>dbname</td>
-                  <td>VARCHAR(40)</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>dbxref_id</td>
-                  <td>SERIAL</td><td><i>NOT NULL PRIMARY KEY </i></td></tr></table><br><table  width="100%" cellspacing="0" cellpadding="3" border="1">
-                    <caption>dbxref Constraints</caption>
-                    <tr bgcolor="#E0E0EE">
-                    <th>Name</th>
-                    <th>Constraint</th>
-                    </tr><tr><td>dbxref_dbname_key</td>
-                      <td>UNIQUE (dbname, accession)</td></tr></table><p>Tables referencing this one via Foreign Key Constraints:<ul><li><a href="#table_bioentry_direct_links">bioentry_direct_links</a></li><li><a href="#table_dbxref_qualifier_value">dbxref_qualifier_value</a></li></ul></p><a href="#index">Index</a><hr><h2>Table: <a name="table_dbxref_qualifier_value">dbxref_qualifier_value</a></h2>
-                <p></p>
-                <table width="100%" cellspacing="0" cellpadding="3" border="1">
+                </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>&quot;version&quot;</td>
+            	<td></td>
+                <td><i>
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>dbxref_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					PRIMARY KEY
+					
+
+					
+				
+
+				
+				DEFAULT nextval(&#39;dbxref_pk_seq&#39;::text)
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>dbname</td>
+            	<td>character varying(40)</td>
+                <td><i>
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>accession</td>
+            	<td>character varying(40)</td>
+                <td><i>
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                </td>
+            	<td>version</td>
+            	<td>integer</td>
+                <td><i>
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+        </table>
+
+		
+		
+		
+
+        <!-- Constraint List -->
+		
+
+        <!-- Foreign Key Discovery -->
+		
+			<p>Tables referencing this one via Foreign Key Constraints:</p>
+		
+			<ul>	
+				<li><a href="#public.table.bioentry-dbxref">bioentry_dbxref</a></li>
+			</ul>
+		
+			<ul>	
+				<li><a href="#public.table.dbxref-qualifier-value">dbxref_qualifier_value</a></li>
+			</ul>
+		
+			<ul>	
+				<li><a href="#public.table.location">location</a></li>
+			</ul>
+		
+			<ul>	
+				<li><a href="#public.table.reference">reference</a></li>
+			</ul>
+		
+			<ul>	
+				<li><a href="#public.table.seqfeature-dbxref">seqfeature_dbxref</a></li>
+			</ul>
+		
+			<ul>	
+				<li><a href="#public.table.term-dbxref">term_dbxref</a></li>
+			</ul>
+		
+		
+
+	<!-- View Definition -->
+	
+
+	<!-- List off permissions -->
+	
+
+	<p>
+		<a href="#index">Index</a> -
+		<a href="#public.schema">Schema public</a>
+    </p>
+	
+        <hr>
+		<h2>Table:
+			<a name="public.table.dbxref-qualifier-value">dbxref_qualifier_value</a>
+		</h2>
+        
+
+
+        <table width="100%" cellspacing="0" cellpadding="3">
                 <caption>dbxref_qualifier_value Structure</caption>
-                <tr bgcolor="#E0E0EE">
+                <tr>
                 <th>F-Key</th>
                 <th>Name</th>
                 <th>Type</th>
                 <th>Description</th>
-                </tr><tr><td><a href="#table_dbxref">dbxref</a>
-                    </td><td>dbxref_id</td>
-                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>dbxref_qualifier_value_id</td>
-                  <td>SERIAL</td><td><i>NOT NULL PRIMARY KEY </i></td></tr><tr><td><a href="#table_ontology_term">ontology_term</a>
-                    </td><td>ontology_term_id</td>
-                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>qualifier_value</td>
-                  <td>TEXT</td><td></td></tr></table><a href="#index">Index</a><hr><h2>Table: <a name="table_location_qualifier_value">location_qualifier_value</a></h2>
-                <p></p>
-                <table width="100%" cellspacing="0" cellpadding="3" border="1">
+                </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                
+                  
+                  <a href="#public.table.dbxref">dbxref.dbxref_id</a>
+                  
+                
+                </td>
+            	<td>dbxref_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					PRIMARY KEY
+					
+
+					
+				
+					
+
+					
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                
+                  
+                  <a href="#public.table.term">term.term_id</a>
+                  
+                
+                </td>
+            	<td>term_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					PRIMARY KEY
+					
+
+					
+				
+					
+
+					
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>rank</td>
+            	<td>integer</td>
+                <td><i>
+				
+					PRIMARY KEY
+					
+
+					
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                </td>
+            	<td>value</td>
+            	<td>text</td>
+                <td><i>
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+        </table>
+
+		
+		
+		
+
+        <!-- Constraint List -->
+		
+
+        <!-- Foreign Key Discovery -->
+		
+
+	<!-- View Definition -->
+	
+
+	<!-- List off permissions -->
+	
+
+	<p>
+		<a href="#index">Index</a> -
+		<a href="#public.schema">Schema public</a>
+    </p>
+	
+        <hr>
+		<h2>Table:
+			<a name="public.table.location">location</a>
+		</h2>
+        
+
+
+        <table width="100%" cellspacing="0" cellpadding="3">
+                <caption>location Structure</caption>
+                <tr>
+                <th>F-Key</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+                </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>location_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					PRIMARY KEY
+					
+
+					
+				
+
+				
+				DEFAULT nextval(&#39;location_pk_seq&#39;::text)
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                  <a href="#public.table.seqfeature">seqfeature.seqfeature_id</a>
+                  
+                
+                  
+                
+                </td>
+            	<td>seqfeature_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                  <a href="#public.table.dbxref">dbxref.dbxref_id</a>
+                  
+                
+                </td>
+            	<td>dbxref_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                  <a href="#public.table.term">term.term_id</a>
+                  
+                
+                </td>
+            	<td>term_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                </td>
+            	<td>start_pos</td>
+            	<td>integer</td>
+                <td><i>
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                </td>
+            	<td>end_pos</td>
+            	<td>integer</td>
+                <td><i>
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                </td>
+            	<td>strand</td>
+            	<td>integer</td>
+                <td><i>
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>rank</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+        </table>
+
+		
+		
+		
+
+        <!-- Constraint List -->
+		
+
+        <!-- Foreign Key Discovery -->
+		
+			<p>Tables referencing this one via Foreign Key Constraints:</p>
+		
+			<ul>	
+				<li><a href="#public.table.location-qualifier-value">location_qualifier_value</a></li>
+			</ul>
+		
+		
+
+	<!-- View Definition -->
+	
+
+	<!-- List off permissions -->
+	
+
+	<p>
+		<a href="#index">Index</a> -
+		<a href="#public.schema">Schema public</a>
+    </p>
+	
+        <hr>
+		<h2>Table:
+			<a name="public.table.location-qualifier-value">location_qualifier_value</a>
+		</h2>
+        
+
+
+        <table width="100%" cellspacing="0" cellpadding="3">
                 <caption>location_qualifier_value Structure</caption>
-                <tr bgcolor="#E0E0EE">
+                <tr>
                 <th>F-Key</th>
                 <th>Name</th>
                 <th>Type</th>
                 <th>Description</th>
-                </tr><tr><td><a href="#table_ontology_term">ontology_term</a>
-                    </td><td>ontology_term_id</td>
-                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>qualifier_int_value</td>
-                  <td>INT4</td><td></td></tr><tr><td></td><td>qualifier_value</td>
-                  <td></td><td><i>NOT NULL</i></td></tr><tr><td><a href="#table_seqfeature_location">seqfeature_location</a>
-                    </td><td>seqfeature_location_id</td>
-                  <td>INT4</td><td><i>NOT NULL</i></td></tr></table><a href="#index">Index</a><hr><h2>Table: <a name="table_ontology_term">ontology_term</a></h2>
-                <p></p>
-                <table width="100%" cellspacing="0" cellpadding="3" border="1">
-                <caption>ontology_term Structure</caption>
-                <tr bgcolor="#E0E0EE">
+                </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                  <a href="#public.table.location">location.location_id</a>
+                  
+                
+                  
+                
+                </td>
+            	<td>location_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+				
+					PRIMARY KEY
+					
+
+					
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                  <a href="#public.table.term">term.term_id</a>
+                  
+                
+                  
+                
+                </td>
+            	<td>term_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+				
+					PRIMARY KEY
+					
+
+					
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                </td>
+            	<td>value</td>
+            	<td>character varying(255)</td>
+                <td><i>
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                </td>
+            	<td>int_value</td>
+            	<td>integer</td>
+                <td><i>
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+        </table>
+
+		
+		
+		
+
+        <!-- Constraint List -->
+		
+
+        <!-- Foreign Key Discovery -->
+		
+
+	<!-- View Definition -->
+	
+
+	<!-- List off permissions -->
+	
+
+	<p>
+		<a href="#index">Index</a> -
+		<a href="#public.schema">Schema public</a>
+    </p>
+	
+        <hr>
+		<h2>Table:
+			<a name="public.table.ontology">ontology</a>
+		</h2>
+        
+
+
+        <table width="100%" cellspacing="0" cellpadding="3">
+                <caption>ontology Structure</caption>
+                <tr>
                 <th>F-Key</th>
                 <th>Name</th>
                 <th>Type</th>
                 <th>Description</th>
-                </tr><tr><td></td><td>ontology_term_id</td>
-                  <td>SERIAL</td><td><i>NOT NULL PRIMARY KEY </i></td></tr><tr><td></td><td>term_definition</td>
-                  <td>TEXT</td><td></td></tr><tr><td></td><td>term_name</td>
-                  <td></td><td></td></tr></table><p>Tables referencing this one via Foreign Key Constraints:<ul><li><a href="#table_bioentry_qualifier_value">bioentry_qualifier_value</a></li><li><a href="#table_dbxref_qualifier_value">dbxref_qualifier_value</a></li><li><a href="#table_location_qualifier_value">location_qualifier_value</a></li><li><a href="#table_seqfeature">seqfeature</a></li><li><a href="#table_seqfeature_qualifier_value">seqfeature_qualifier_value</a></li><li><a href="#table_seqfeature_relationship">seqfeature_relationship</a></li></ul></p><a href="#index">Index</a><hr><h2>Table: <a name="table_reference">reference</a></h2>
-                <p></p>
-                <table width="100%" cellspacing="0" cellpadding="3" border="1">
+                </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>ontology_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					PRIMARY KEY
+					
+
+					
+				
+
+				
+				DEFAULT nextval(&#39;ontology_pk_seq&#39;::text)
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>name</td>
+            	<td>character varying(32)</td>
+                <td><i>
+				
+					
+
+					
+                       UNIQUE
+                    
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                </td>
+            	<td>definition</td>
+            	<td>text</td>
+                <td><i>
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+        </table>
+
+		
+		
+		
+
+        <!-- Constraint List -->
+		
+
+        <!-- Foreign Key Discovery -->
+		
+			<p>Tables referencing this one via Foreign Key Constraints:</p>
+		
+			<ul>	
+				<li><a href="#public.table.term">term</a></li>
+			</ul>
+		
+			<ul>	
+				<li><a href="#public.table.term-path">term_path</a></li>
+			</ul>
+		
+			<ul>	
+				<li><a href="#public.table.term-relationship">term_relationship</a></li>
+			</ul>
+		
+		
+
+	<!-- View Definition -->
+	
+
+	<!-- List off permissions -->
+	
+
+	<p>
+		<a href="#index">Index</a> -
+		<a href="#public.schema">Schema public</a>
+    </p>
+	
+        <hr>
+		<h2>Table:
+			<a name="public.table.reference">reference</a>
+		</h2>
+        
+
+
+        <table width="100%" cellspacing="0" cellpadding="3">
                 <caption>reference Structure</caption>
-                <tr bgcolor="#E0E0EE">
+                <tr>
                 <th>F-Key</th>
                 <th>Name</th>
                 <th>Type</th>
                 <th>Description</th>
-                </tr><tr><td></td><td>reference_authors</td>
-                  <td>TEXT</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>reference_id</td>
-                  <td>SERIAL</td><td><i>NOT NULL PRIMARY KEY </i></td></tr><tr><td></td><td>reference_location</td>
-                  <td>TEXT</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>reference_medline</td>
-                  <td>INT4</td><td></td></tr><tr><td></td><td>reference_title</td>
-                  <td>TEXT</td><td></td></tr></table><p>Tables referencing this one via Foreign Key Constraints:<ul><li><a href="#table_bioentry_reference">bioentry_reference</a></li></ul></p><a href="#index">Index</a><hr><h2>Table: <a name="table_remote_seqfeature_name">remote_seqfeature_name</a></h2>
-                <p></p>
-                <table width="100%" cellspacing="0" cellpadding="3" border="1">
-                <caption>remote_seqfeature_name Structure</caption>
-                <tr bgcolor="#E0E0EE">
-                <th>F-Key</th>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Description</th>
-                </tr><tr><td></td><td>accession</td>
-                  <td>VARCHAR(40)</td><td><i>NOT NULL</i></td></tr><tr><td><a href="#table_seqfeature_location">seqfeature_location</a>
-                    </td><td>seqfeature_location_id</td>
-                  <td>INT4</td><td><i>NOT NULL PRIMARY KEY </i></td></tr><tr><td></td><td>version</td>
-                  <td>INT4</td><td><i>NOT NULL</i></td></tr></table><a href="#index">Index</a><hr><h2>Table: <a name="table_seqfeature">seqfeature</a></h2>
-                <p></p>
-                <table width="100%" cellspacing="0" cellpadding="3" border="1">
+                </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>reference_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					PRIMARY KEY
+					
+
+					
+				
+
+				
+				DEFAULT nextval(&#39;reference_pk_seq&#39;::text)
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                  <a href="#public.table.dbxref">dbxref.dbxref_id</a>
+                  
+                
+                  
+                
+                </td>
+            	<td>dbxref_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+				
+					
+
+					
+                       UNIQUE
+                    
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                </td>
+            	<td>location</td>
+            	<td>text</td>
+                <td><i>
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                </td>
+            	<td>title</td>
+            	<td>text</td>
+                <td><i>
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                </td>
+            	<td>authors</td>
+            	<td>text</td>
+                <td><i>
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>crc</td>
+            	<td>character varying(32)</td>
+                <td><i>
+				
+					
+
+					
+                       UNIQUE
+                    
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+        </table>
+
+		
+		
+		
+
+        <!-- Constraint List -->
+		
+
+        <!-- Foreign Key Discovery -->
+		
+			<p>Tables referencing this one via Foreign Key Constraints:</p>
+		
+			<ul>	
+				<li><a href="#public.table.bioentry-reference">bioentry_reference</a></li>
+			</ul>
+		
+		
+
+	<!-- View Definition -->
+	
+
+	<!-- List off permissions -->
+	
+
+	<p>
+		<a href="#index">Index</a> -
+		<a href="#public.schema">Schema public</a>
+    </p>
+	
+        <hr>
+		<h2>Table:
+			<a name="public.table.seqfeature">seqfeature</a>
+		</h2>
+        
+
+
+        <table width="100%" cellspacing="0" cellpadding="3">
                 <caption>seqfeature Structure</caption>
-                <tr bgcolor="#E0E0EE">
+                <tr>
                 <th>F-Key</th>
                 <th>Name</th>
                 <th>Type</th>
                 <th>Description</th>
-                </tr><tr><td><a href="#table_bioentry">bioentry</a>
-                    </td><td>bioentry_id</td>
-                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>seqfeature_id</td>
-                  <td>SERIAL</td><td><i>NOT NULL PRIMARY KEY </i></td></tr><tr><td><a href="#table_ontology_term">ontology_term</a>
-                    </td><td>seqfeature_key_id</td>
-                  <td>INT4</td><td></td></tr><tr><td></td><td>seqfeature_rank</td>
-                  <td>INT4</td><td></td></tr><tr><td><a href="#table_seqfeature_source">seqfeature_source</a>
-                    </td><td>seqfeature_source_id</td>
-                  <td>INT4</td><td></td></tr></table><p>Tables referencing this one via Foreign Key Constraints:<ul><li><a href="#table_seqfeature_location">seqfeature_location</a></li><li><a href="#table_seqfeature_qualifier_value">seqfeature_qualifier_value</a></li><li><a href="#table_seqfeature_relationship">seqfeature_relationship</a></li><li><a href="#table_seqfeature_relationship">seqfeature_relationship</a></li></ul></p><a href="#index">Index</a><hr><h2>Table: <a name="table_seqfeature_location">seqfeature_location</a></h2>
-                <p></p>
-                <table width="100%" cellspacing="0" cellpadding="3" border="1">
-                <caption>seqfeature_location Structure</caption>
-                <tr bgcolor="#E0E0EE">
+                </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>seqfeature_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					PRIMARY KEY
+					
+
+					
+				
+
+				
+				DEFAULT nextval(&#39;seqfeature_pk_seq&#39;::text)
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                  <a href="#public.table.bioentry">bioentry.bioentry_id</a>
+                  
+                
+                  
+                
+                </td>
+            	<td>bioentry_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                  <a href="#public.table.term">term.term_id</a>
+                  
+                
+                  
+                
+                </td>
+            	<td>type_term_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                  <a href="#public.table.term">term.term_id</a>
+                  
+                
+                  
+                
+                </td>
+            	<td>source_term_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                </td>
+            	<td>display_name</td>
+            	<td>character varying(64)</td>
+                <td><i>
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>rank</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+        </table>
+
+		
+		
+		
+
+        <!-- Constraint List -->
+		
+
+        <!-- Foreign Key Discovery -->
+		
+			<p>Tables referencing this one via Foreign Key Constraints:</p>
+		
+			<ul>	
+				<li><a href="#public.table.location">location</a></li>
+			</ul>
+		
+			<ul>	
+				<li><a href="#public.table.seqfeature-dbxref">seqfeature_dbxref</a></li>
+			</ul>
+		
+			<ul>	
+				<li><a href="#public.table.seqfeature-path">seqfeature_path</a></li>
+			</ul>
+		
+			<ul>	
+				<li><a href="#public.table.seqfeature-qualifier-value">seqfeature_qualifier_value</a></li>
+			</ul>
+		
+			<ul>	
+				<li><a href="#public.table.seqfeature-relationship">seqfeature_relationship</a></li>
+			</ul>
+		
+		
+
+	<!-- View Definition -->
+	
+
+	<!-- List off permissions -->
+	
+
+	<p>
+		<a href="#index">Index</a> -
+		<a href="#public.schema">Schema public</a>
+    </p>
+	
+        <hr>
+		<h2>Table:
+			<a name="public.table.seqfeature-dbxref">seqfeature_dbxref</a>
+		</h2>
+        
+
+
+        <table width="100%" cellspacing="0" cellpadding="3">
+                <caption>seqfeature_dbxref Structure</caption>
+                <tr>
                 <th>F-Key</th>
                 <th>Name</th>
                 <th>Type</th>
                 <th>Description</th>
-                </tr><tr><td></td><td>location_rank</td>
-                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>seq_end</td>
-                  <td>INT4</td><td></td></tr><tr><td></td><td>seq_start</td>
-                  <td>INT4</td><td></td></tr><tr><td></td><td>seq_strand</td>
-                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td><a href="#table_seqfeature">seqfeature</a>
-                    </td><td>seqfeature_id</td>
-                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>seqfeature_location_id</td>
-                  <td>SERIAL</td><td><i>NOT NULL PRIMARY KEY </i></td></tr></table><p>Tables referencing this one via Foreign Key Constraints:<ul><li><a href="#table_location_qualifier_value">location_qualifier_value</a></li><li><a href="#table_remote_seqfeature_name">remote_seqfeature_name</a></li></ul></p><a href="#index">Index</a><hr><h2>Table: <a name="table_seqfeature_qualifier_value">seqfeature_qualifier_value</a></h2>
-                <p></p>
-                <table width="100%" cellspacing="0" cellpadding="3" border="1">
+                </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                  <a href="#public.table.seqfeature">seqfeature.seqfeature_id</a>
+                  
+                
+                  
+                
+                </td>
+            	<td>seqfeature_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+				
+					PRIMARY KEY
+					
+
+					
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                  <a href="#public.table.dbxref">dbxref.dbxref_id</a>
+                  
+                
+                  
+                
+                </td>
+            	<td>dbxref_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+				
+					PRIMARY KEY
+					
+
+					
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                </td>
+            	<td>rank</td>
+            	<td>integer</td>
+                <td><i>
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+        </table>
+
+		
+		
+		
+
+        <!-- Constraint List -->
+		
+
+        <!-- Foreign Key Discovery -->
+		
+
+	<!-- View Definition -->
+	
+
+	<!-- List off permissions -->
+	
+
+	<p>
+		<a href="#index">Index</a> -
+		<a href="#public.schema">Schema public</a>
+    </p>
+	
+        <hr>
+		<h2>Table:
+			<a name="public.table.seqfeature-path">seqfeature_path</a>
+		</h2>
+        
+
+
+        <table width="100%" cellspacing="0" cellpadding="3">
+                <caption>seqfeature_path Structure</caption>
+                <tr>
+                <th>F-Key</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+                </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                  <a href="#public.table.seqfeature">seqfeature.seqfeature_id</a>
+                  
+                
+                  
+                
+                </td>
+            	<td>object_seqfeature_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                  <a href="#public.table.seqfeature">seqfeature.seqfeature_id</a>
+                  
+                
+                  
+                
+                </td>
+            	<td>subject_seqfeature_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                  <a href="#public.table.term">term.term_id</a>
+                  
+                
+                  
+                
+                </td>
+            	<td>term_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>distance</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+        </table>
+
+		
+		
+		
+
+        <!-- Constraint List -->
+		
+
+        <!-- Foreign Key Discovery -->
+		
+
+	<!-- View Definition -->
+	
+
+	<!-- List off permissions -->
+	
+
+	<p>
+		<a href="#index">Index</a> -
+		<a href="#public.schema">Schema public</a>
+    </p>
+	
+        <hr>
+		<h2>Table:
+			<a name="public.table.seqfeature-qualifier-value">seqfeature_qualifier_value</a>
+		</h2>
+        
+
+
+        <table width="100%" cellspacing="0" cellpadding="3">
                 <caption>seqfeature_qualifier_value Structure</caption>
-                <tr bgcolor="#E0E0EE">
+                <tr>
                 <th>F-Key</th>
                 <th>Name</th>
                 <th>Type</th>
                 <th>Description</th>
-                </tr><tr><td><a href="#table_ontology_term">ontology_term</a>
-                    </td><td>ontology_term_id</td>
-                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>qualifier_rank</td>
-                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>qualifier_value</td>
-                  <td>TEXT</td><td><i>NOT NULL</i></td></tr><tr><td><a href="#table_seqfeature">seqfeature</a>
-                    </td><td>seqfeature_id</td>
-                  <td>INT4</td><td><i>NOT NULL</i></td></tr></table><br><table  width="100%" cellspacing="0" cellpadding="3" border="1">
-                    <caption>seqfeature_qualifier_value Constraints</caption>
-                    <tr bgcolor="#E0E0EE">
-                    <th>Name</th>
-                    <th>Constraint</th>
-                    </tr><tr><td>seqfeature_qualifier_value_pkey</td>
-                      <td>PRIMARY KEY (seqfeature_id, ontology_term_id, qualifier_rank)</td></tr></table><a href="#index">Index</a><hr><h2>Table: <a name="table_seqfeature_relationship">seqfeature_relationship</a></h2>
-                <p></p>
-                <table width="100%" cellspacing="0" cellpadding="3" border="1">
+                </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                  <a href="#public.table.seqfeature">seqfeature.seqfeature_id</a>
+                  
+                
+                  
+                
+                </td>
+            	<td>seqfeature_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+				
+					PRIMARY KEY
+					
+
+					
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                  <a href="#public.table.term">term.term_id</a>
+                  
+                
+                  
+                
+                </td>
+            	<td>term_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+				
+					PRIMARY KEY
+					
+
+					
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>rank</td>
+            	<td>integer</td>
+                <td><i>
+				
+					PRIMARY KEY
+					
+
+					
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                </td>
+            	<td>value</td>
+            	<td>text</td>
+                <td><i>
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+        </table>
+
+		
+		
+		
+
+        <!-- Constraint List -->
+		
+
+        <!-- Foreign Key Discovery -->
+		
+
+	<!-- View Definition -->
+	
+
+	<!-- List off permissions -->
+	
+
+	<p>
+		<a href="#index">Index</a> -
+		<a href="#public.schema">Schema public</a>
+    </p>
+	
+        <hr>
+		<h2>Table:
+			<a name="public.table.seqfeature-relationship">seqfeature_relationship</a>
+		</h2>
+        
+
+
+        <table width="100%" cellspacing="0" cellpadding="3">
                 <caption>seqfeature_relationship Structure</caption>
-                <tr bgcolor="#E0E0EE">
+                <tr>
                 <th>F-Key</th>
                 <th>Name</th>
                 <th>Type</th>
                 <th>Description</th>
-                </tr><tr><td><a href="#table_seqfeature">seqfeature</a>
-                    </td><td>child_seqfeature_id</td>
-                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td><a href="#table_seqfeature">seqfeature</a>
-                    </td><td>parent_seqfeature_id</td>
-                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>relationship_rank</td>
-                  <td>INT4</td><td></td></tr><tr><td><a href="#table_ontology_term">ontology_term</a>
-                    </td><td>relationship_type_id</td>
-                  <td>INT4</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>seqfeature_relationship_id</td>
-                  <td>SERIAL</td><td><i>NOT NULL PRIMARY KEY </i></td></tr></table><br><table  width="100%" cellspacing="0" cellpadding="3" border="1">
-                    <caption>seqfeature_relationship Constraints</caption>
-                    <tr bgcolor="#E0E0EE">
-                    <th>Name</th>
-                    <th>Constraint</th>
-                    </tr><tr><td>seqfeature_re_parent_seqfea_key</td>
-                      <td>UNIQUE (parent_seqfeature_id, child_seqfeature_id, relationship_type_id)</td></tr></table><a href="#index">Index</a><hr><h2>Table: <a name="table_seqfeature_source">seqfeature_source</a></h2>
-                <p></p>
-                <table width="100%" cellspacing="0" cellpadding="3" border="1">
-                <caption>seqfeature_source Structure</caption>
-                <tr bgcolor="#E0E0EE">
+                </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>seqfeature_relationship_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					PRIMARY KEY
+					
+
+					
+				
+
+				
+				DEFAULT nextval(&#39;seqfeature_relationship_pk_seq&#39;::text)
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                  <a href="#public.table.seqfeature">seqfeature.seqfeature_id</a>
+                  
+                
+                  
+                
+                </td>
+            	<td>object_seqfeature_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                  <a href="#public.table.seqfeature">seqfeature.seqfeature_id</a>
+                  
+                
+                  
+                
+                </td>
+            	<td>subject_seqfeature_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                  <a href="#public.table.term">term.term_id</a>
+                  
+                
+                  
+                
+                </td>
+            	<td>term_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                </td>
+            	<td>rank</td>
+            	<td>integer</td>
+                <td><i>
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+        </table>
+
+		
+		
+		
+
+        <!-- Constraint List -->
+		
+
+        <!-- Foreign Key Discovery -->
+		
+
+	<!-- View Definition -->
+	
+
+	<!-- List off permissions -->
+	
+
+	<p>
+		<a href="#index">Index</a> -
+		<a href="#public.schema">Schema public</a>
+    </p>
+	
+        <hr>
+		<h2>Table:
+			<a name="public.table.taxon">taxon</a>
+		</h2>
+        
+
+
+        <table width="100%" cellspacing="0" cellpadding="3">
+                <caption>taxon Structure</caption>
+                <tr>
                 <th>F-Key</th>
                 <th>Name</th>
                 <th>Type</th>
                 <th>Description</th>
-                </tr><tr><td></td><td>seqfeature_source_id</td>
-                  <td>SERIAL</td><td><i>NOT NULL PRIMARY KEY </i></td></tr><tr><td></td><td>source_name</td>
-                  <td>VARCHAR(255)</td><td><i>NOT NULL</i></td></tr></table><p>Tables referencing this one via Foreign Key Constraints:<ul><li><a href="#table_seqfeature">seqfeature</a></li></ul></p><a href="#index">Index</a><hr><h2>Table: <a name="table_taxa">taxa</a></h2>
-                <p></p>
-                <table width="100%" cellspacing="0" cellpadding="3" border="1">
-                <caption>taxa Structure</caption>
-                <tr bgcolor="#E0E0EE">
+                </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>taxon_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					PRIMARY KEY
+					
+
+					
+				
+
+				
+				DEFAULT nextval(&#39;taxon_pk_seq&#39;::text)
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>ncbi_taxon_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+                       UNIQUE
+                    
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                </td>
+            	<td>parent_taxon_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                </td>
+            	<td>node_rank</td>
+            	<td>character varying(32)</td>
+                <td><i>
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                </td>
+            	<td>genetic_code</td>
+            	<td>smallint</td>
+                <td><i>
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                </td>
+            	<td>mito_genetic_code</td>
+            	<td>smallint</td>
+                <td><i>
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>left_value</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+                       UNIQUE
+                    
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>right_value</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+                       UNIQUE
+                    
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+        </table>
+
+		
+		
+		
+
+        <!-- Constraint List -->
+		
+
+        <!-- Foreign Key Discovery -->
+		
+			<p>Tables referencing this one via Foreign Key Constraints:</p>
+		
+			<ul>	
+				<li><a href="#public.table.bioentry">bioentry</a></li>
+			</ul>
+		
+			<ul>	
+				<li><a href="#public.table.taxon-name">taxon_name</a></li>
+			</ul>
+		
+		
+
+	<!-- View Definition -->
+	
+
+	<!-- List off permissions -->
+	
+
+	<p>
+		<a href="#index">Index</a> -
+		<a href="#public.schema">Schema public</a>
+    </p>
+	
+        <hr>
+		<h2>Table:
+			<a name="public.table.taxon-name">taxon_name</a>
+		</h2>
+        
+
+
+        <table width="100%" cellspacing="0" cellpadding="3">
+                <caption>taxon_name Structure</caption>
+                <tr>
                 <th>F-Key</th>
                 <th>Name</th>
                 <th>Type</th>
                 <th>Description</th>
-                </tr><tr><td></td><td>common_name</td>
-                  <td>VARCHAR(255)</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>full_lineage</td>
-                  <td>TEXT</td><td><i>NOT NULL</i></td></tr><tr><td></td><td>ncbi_taxa_id</td>
-                  <td>INT4</td><td></td></tr><tr><td></td><td>taxa_id</td>
-                  <td>SERIAL</td><td><i>NOT NULL PRIMARY KEY </i></td></tr></table><a href="#index">Index</a></ul></body></html>
+                </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                  <a href="#public.table.taxon">taxon.taxon_id</a>
+                  
+                
+                  
+                
+                </td>
+            	<td>taxon_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>name</td>
+            	<td>character varying(255)</td>
+                <td><i>
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>name_class</td>
+            	<td>character varying(32)</td>
+                <td><i>
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+        </table>
+
+		
+		
+		
+
+        <!-- Constraint List -->
+		
+
+        <!-- Foreign Key Discovery -->
+		
+
+	<!-- View Definition -->
+	
+
+	<!-- List off permissions -->
+	
+
+	<p>
+		<a href="#index">Index</a> -
+		<a href="#public.schema">Schema public</a>
+    </p>
+	
+        <hr>
+		<h2>Table:
+			<a name="public.table.term">term</a>
+		</h2>
+        
+
+
+        <table width="100%" cellspacing="0" cellpadding="3">
+                <caption>term Structure</caption>
+                <tr>
+                <th>F-Key</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+                </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>term_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					PRIMARY KEY
+					
+
+					
+				
+
+				
+				DEFAULT nextval(&#39;term_pk_seq&#39;::text)
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>name</td>
+            	<td>character varying(255)</td>
+                <td><i>
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                </td>
+            	<td>definition</td>
+            	<td>text</td>
+                <td><i>
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>identifier</td>
+            	<td>character varying(40)</td>
+                <td><i>
+				
+					
+
+					
+                       UNIQUE
+                    
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                </td>
+            	<td>is_obsolete</td>
+            	<td>character(1)</td>
+                <td><i>
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                  <a href="#public.table.ontology">ontology.ontology_id</a>
+                  
+                
+                  
+                
+                </td>
+            	<td>ontology_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+        </table>
+
+		
+		
+		
+
+        <!-- Constraint List -->
+		
+
+        <!-- Foreign Key Discovery -->
+		
+			<p>Tables referencing this one via Foreign Key Constraints:</p>
+		
+			<ul>	
+				<li><a href="#public.table.bioentry-path">bioentry_path</a></li>
+			</ul>
+		
+			<ul>	
+				<li><a href="#public.table.bioentry-qualifier-value">bioentry_qualifier_value</a></li>
+			</ul>
+		
+			<ul>	
+				<li><a href="#public.table.bioentry-relationship">bioentry_relationship</a></li>
+			</ul>
+		
+			<ul>	
+				<li><a href="#public.table.dbxref-qualifier-value">dbxref_qualifier_value</a></li>
+			</ul>
+		
+			<ul>	
+				<li><a href="#public.table.location">location</a></li>
+			</ul>
+		
+			<ul>	
+				<li><a href="#public.table.location-qualifier-value">location_qualifier_value</a></li>
+			</ul>
+		
+			<ul>	
+				<li><a href="#public.table.seqfeature">seqfeature</a></li>
+			</ul>
+		
+			<ul>	
+				<li><a href="#public.table.seqfeature-path">seqfeature_path</a></li>
+			</ul>
+		
+			<ul>	
+				<li><a href="#public.table.seqfeature-qualifier-value">seqfeature_qualifier_value</a></li>
+			</ul>
+		
+			<ul>	
+				<li><a href="#public.table.seqfeature-relationship">seqfeature_relationship</a></li>
+			</ul>
+		
+			<ul>	
+				<li><a href="#public.table.term-dbxref">term_dbxref</a></li>
+			</ul>
+		
+			<ul>	
+				<li><a href="#public.table.term-path">term_path</a></li>
+			</ul>
+		
+			<ul>	
+				<li><a href="#public.table.term-relationship">term_relationship</a></li>
+			</ul>
+		
+			<ul>	
+				<li><a href="#public.table.term-synonym">term_synonym</a></li>
+			</ul>
+		
+		
+
+	<!-- View Definition -->
+	
+
+	<!-- List off permissions -->
+	
+
+	<p>
+		<a href="#index">Index</a> -
+		<a href="#public.schema">Schema public</a>
+    </p>
+	
+        <hr>
+		<h2>Table:
+			<a name="public.table.term-dbxref">term_dbxref</a>
+		</h2>
+        
+
+
+        <table width="100%" cellspacing="0" cellpadding="3">
+                <caption>term_dbxref Structure</caption>
+                <tr>
+                <th>F-Key</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+                </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                  <a href="#public.table.term">term.term_id</a>
+                  
+                
+                  
+                
+                </td>
+            	<td>term_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+				
+					PRIMARY KEY
+					
+
+					
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                  <a href="#public.table.dbxref">dbxref.dbxref_id</a>
+                  
+                
+                  
+                
+                </td>
+            	<td>dbxref_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+				
+					PRIMARY KEY
+					
+
+					
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                </td>
+            	<td>rank</td>
+            	<td>integer</td>
+                <td><i>
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+        </table>
+
+		
+		
+		
+
+        <!-- Constraint List -->
+		
+
+        <!-- Foreign Key Discovery -->
+		
+
+	<!-- View Definition -->
+	
+
+	<!-- List off permissions -->
+	
+
+	<p>
+		<a href="#index">Index</a> -
+		<a href="#public.schema">Schema public</a>
+    </p>
+	
+        <hr>
+		<h2>Table:
+			<a name="public.table.term-path">term_path</a>
+		</h2>
+        
+
+
+        <table width="100%" cellspacing="0" cellpadding="3">
+                <caption>term_path Structure</caption>
+                <tr>
+                <th>F-Key</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+                </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>term_path_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					PRIMARY KEY
+					
+
+					
+				
+
+				
+				DEFAULT nextval(&#39;term_path_pk_seq&#39;::text)
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                  <a href="#public.table.term">term.term_id</a>
+                  
+                
+                  
+                
+                </td>
+            	<td>subject_term_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                  <a href="#public.table.term">term.term_id</a>
+                  
+                
+                  
+                
+                </td>
+            	<td>predicate_term_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                  <a href="#public.table.term">term.term_id</a>
+                  
+                
+                  
+                
+                </td>
+            	<td>object_term_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                  <a href="#public.table.ontology">ontology.ontology_id</a>
+                  
+                
+                  
+                
+                </td>
+            	<td>ontology_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>distance</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+        </table>
+
+		
+		
+		
+
+        <!-- Constraint List -->
+		
+
+        <!-- Foreign Key Discovery -->
+		
+
+	<!-- View Definition -->
+	
+
+	<!-- List off permissions -->
+	
+
+	<p>
+		<a href="#index">Index</a> -
+		<a href="#public.schema">Schema public</a>
+    </p>
+	
+        <hr>
+		<h2>Table:
+			<a name="public.table.term-relationship">term_relationship</a>
+		</h2>
+        
+
+
+        <table width="100%" cellspacing="0" cellpadding="3">
+                <caption>term_relationship Structure</caption>
+                <tr>
+                <th>F-Key</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+                </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>term_relationship_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					PRIMARY KEY
+					
+
+					
+				
+
+				
+				DEFAULT nextval(&#39;term_relationship_pk_seq&#39;::text)
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                  <a href="#public.table.term">term.term_id</a>
+                  
+                
+                  
+                
+                </td>
+            	<td>subject_term_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                  <a href="#public.table.term">term.term_id</a>
+                  
+                
+                  
+                
+                </td>
+            	<td>predicate_term_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                  <a href="#public.table.term">term.term_id</a>
+                  
+                
+                  
+                
+                </td>
+            	<td>object_term_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                  <a href="#public.table.ontology">ontology.ontology_id</a>
+                  
+                
+                  
+                
+                </td>
+            	<td>ontology_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+				
+					
+
+					
+                       UNIQUE#1
+                    
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+        </table>
+
+		
+		
+		
+
+        <!-- Constraint List -->
+		
+
+        <!-- Foreign Key Discovery -->
+		
+
+	<!-- View Definition -->
+	
+
+	<!-- List off permissions -->
+	
+
+	<p>
+		<a href="#index">Index</a> -
+		<a href="#public.schema">Schema public</a>
+    </p>
+	
+        <hr>
+		<h2>Table:
+			<a name="public.table.term-synonym">term_synonym</a>
+		</h2>
+        
+
+
+        <table width="100%" cellspacing="0" cellpadding="3">
+                <caption>term_synonym Structure</caption>
+                <tr>
+                <th>F-Key</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+                </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                
+                </td>
+            	<td>synonym</td>
+            	<td>character varying(255)</td>
+                <td><i>
+				
+					PRIMARY KEY
+					
+
+					
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                  <a href="#public.table.term">term.term_id</a>
+                  
+                
+                  
+                
+                </td>
+            	<td>term_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+				
+					PRIMARY KEY
+					
+
+					
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+        </table>
+
+		
+		
+		
+
+        <!-- Constraint List -->
+		
+
+        <!-- Foreign Key Discovery -->
+		
+
+	<!-- View Definition -->
+	
+
+	<!-- List off permissions -->
+	
+
+	<p>
+		<a href="#index">Index</a> -
+		<a href="#public.schema">Schema public</a>
+    </p>
+	
+
+	<!-- We've gone through the table structure, now lets take a look at user functions -->
+	
+		<hr>
+		<h2>Function: 
+			<a href="#public.schema"><a name="public.function.constrain-taxon">constrain_taxon(  )</a>
+		</h2>
+<h3>Returns: integer</h3>
+<h3>Language: SQL</h3>
+        
+        <pre>
+CREATE RULE rule_taxon_i
+       AS ON INSERT TO taxon
+       WHERE (SELECT oid FROM taxon WHERE ncbi_taxon_id = new.ncbi_taxon_id)
+       	     IS NOT NULL
+       DO INSTEAD NOTHING
+;
+SELECT 1;
+</pre>
+	
+		<hr>
+		<h2>Function: 
+			<a href="#public.schema"><a name="public.function.unconstrain-taxon">unconstrain_taxon(  )</a>
+		</h2>
+<h3>Returns: integer</h3>
+<h3>Language: SQL</h3>
+        
+        <pre>
+DROP RULE rule_taxon_i ON taxon;
+SELECT 1;
+</pre>
+	
+
+
+<p class="w3ref">Generated by <a href="http://www.rbt.ca/autodoc/">PostgreSQL Autodoc</a></p>
+<p class="w3ref"><a href="http://validator.w3.org/check/referer">W3C HTML 4.01 Strict</a></p>
+</body></html>
