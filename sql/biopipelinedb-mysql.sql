@@ -18,23 +18,6 @@ CREATE TABLE job (
 );
 
 
-CREATE TABLE rule_goal (
-  rule_id       int(10) unsigned default '0' not null auto_increment,
-  analysis_id   int(10) unsigned,
- 
-  PRIMARY KEY (rule_id),
-  KEY(analysis_id)
-);
-
-CREATE TABLE rule_conditions (
-  rule_id       int(10) unsigned not null,
-  analysis_id   varchar(20),
- 
-  PRIMARY KEY (rule_id),
-  KEY(analysis_id)
-
-);
-
 #removed class, added index to analysis
 
 CREATE TABLE iohandler (
@@ -77,12 +60,40 @@ CREATE TABLE input (
    iohandler_id     int(10) unsigned NOT NULL,
    job_id           int(10) unsigned NOT NULL,
    name             varchar(40) DEFAULT '' NOT NULL,
+   analysis_id      int(10) unsigned NOT NULL,
 
    PRIMARY KEY (input_id),
    KEY iohandler (iohandler_id),
    KEY job (job_id)
 );
 
+CREATE TABLE new_input (
+  job_id           int(10) unsigned DEFAULT '0' NOT NULL,
+  name             varchar(40) DEFAULT '' NOT NULL,
+  new_input_ioh_id int(10) unsigned NOT NULL,
+
+  PRIMARY KEY (job_id,name,new_input_ioh_id)
+  
+);
+
+CREATE TABLE new_input_ioh (
+  new_input_ioh_id int(10) unsigned DEFAULT '0' NOT NULL auto_increment,
+  analysis_id      int(10) unsigned NOT NULL,
+  iohandler_id     int(10) unsigned NOT NULL,
+
+  PRIMARY KEY (new_input_ioh_id)
+
+);
+
+
+CREATE TABLE rule (
+  rule_id          int(10) unsigned DEFAULT'0' NOT NULL auto_increment,
+  current          int(10) unsigned NOT NULL,
+  next             int(10) unsigned NOT NULL,
+  action           enum('WAITFORALL','UPDATE','UPDATECOPY','NOTHING'),
+  
+  PRIMARY KEY (rule_id)
+);
 
 CREATE TABLE analysis (
   analysis_id      int(10) unsigned DEFAULT '0' NOT NULL auto_increment,
@@ -98,6 +109,7 @@ CREATE TABLE analysis (
   parameters       varchar(80),
   gff_source       varchar(40),
   gff_feature      varchar(40),
+  node_group_id    int(10) unsigned DEFAULT '0' NOT NULL,
 
   PRIMARY KEY (analysis_id)
 );
@@ -105,14 +117,11 @@ CREATE TABLE analysis (
 # created new table to relect the fact that many analysis can share an io 
 # and that an analysis can have more than 1 io
 
-CREATE TABLE analysis_iohandler(
-  analysis_iohandler_id     int(10) unsigned DEFAULT'0' NOT NULL auto_increment,
+CREATE TABLE output_handler(
   analysis_id               int(10) NOT NULL,
   iohandler_id              int(10) NOT NULL,
 
-  PRIMARY KEY (analysis_iohandler_id),
-  KEY analysis (analysis_id),
-  KEY iohandler (iohandler_id)
+  PRIMARY KEY (analysis_id,iohandler_id)
 
 );
 
@@ -133,3 +142,23 @@ CREATE TABLE completed_jobs (
   PRIMARY KEY (completed_job_id),
   KEY analysis (analysis_id)
 );
+
+#Added tables for node groups for use in Analysis-based allocation of jobs
+
+CREATE TABLE node (
+  node_id               int(10) unsigned DEFAULT '0' NOT NULL auto_increment,
+  node_name             varchar(40) DEFAULT '' NOT NULL,
+  group_id              int(10) unsigned DEFAULT '0' NOT NULL,
+
+  PRIMARY KEY (node_id,group_id)
+);
+
+CREATE TABLE node_group (
+  node_group_id         int(10) unsigned NOT NULL auto_increment,
+  name                  varchar(40) NOT NULL,
+  description           varchar(255) NOT NULL,
+
+  PRIMARY KEY (node_group_id),
+  KEY (name)
+);
+
