@@ -765,7 +765,7 @@ sub unconstrain_taxon{
     # if this is MySQL we need to temporarily disable foreign key constraint
     # checking because MySQL can't defer foreign key validation - ugly
     # (and potentially dangerous as I guess cascading deletes will be disabled
-    # while this in effect)
+    # while this is in effect)
     if($driver eq "mysql") {
 	#if(!$dbh->do('SET FOREIGN_KEY_CHECKS=0')) {
 	#    warn "failed to disable foreign key checks: ".$dbh->errstr;
