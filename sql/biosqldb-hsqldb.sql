@@ -350,7 +350,7 @@ CREATE TABLE location (
 	term_id			INT,
    	start_pos              	INT,
    	end_pos                	INT,
-   	strand             	TINYINT NOT NULL,
+   	strand             	TINYINT DEFAULT 0 NOT NULL,
    	rank          		SMALLINT DEFAULT 0 NOT NULL,
    	UNIQUE (seqfeature_id, rank)
 );
