@@ -44,60 +44,110 @@ of the taxon table.
 
 =head1 ARGUMENTS
 
---dbname     # name of database to use
---sid        # synonym for --dbname for Oracle folks
+=over 2
 
---dsn        # the DSN of the database to connect to,
-             # overrides --dbname, --driver, --host, and --port
+=item --dbname     
 
---driver     # the DBD driver, one of mysql, Pg, or Oracle. If
-             # your driver is not listed here, use --dsn instead.
+name of database to use
 
---host       # optional: host to connect with
---port       # optional: port to connect with
---dbuser     # optional: user name to connect with
---dbpass     # optional: password to connect with
+=item --sid
 
---download   # optional: whether to download new NCBI taxonomy data
-             # default is no download
+synonym for --dbname for Oracle folks
 
---directory  # optional: where to store/look for the data
-             # default is ./taxdata
+=item --dsn
 
---nodelete   # don't delete retired nodes
+the DSN of the database to connect to, overrides --dbname, --driver,
+--host, and --port
 
---verbose=n  # set the verbosity level, default is 1.
-             # 0 = silent, 1 = print current step, 2 = print progress
-             # statistics.
+=item --driver
 
---help       # print this manual and exit
+the DBD driver, one of mysql, Pg, or Oracle. If your driver is not
+listed here, use --dsn instead.
 
---allow_truncate # flag to allow for non-transactional TRUNCATE.
+=item --host
 
-     This presently applies only to deleting and re-loading taxon
-     names table. The script will attempt to perform the much faster
-     TRUNCATE operation instead of a DELETE.  Some RDBMSs, like
-     PostgreSQL, however prohibit TRUNCATE from within a transactions,
-     because they cannot roll it back. If this flag is specified, the
-     TRUNCATE will still be performed, but then outside of a
-     transaction. This means that between the time of this operation
-     until the names have been fully loaded there will be no or only
-     partial taxon names for querying, leading to inconsistent or
-     incomplete answers to queries. This is therefore disabled by
-     default. Note though that for instance in PostgreSQL TRUNCATE
-     is several orders of magnitude faster.
+optional: host to connect with
 
---chunksize  # the number of rows after which to commit and possibly
-             # recompute statistics
+=item --port
 
-     This presently only applies to the nested set rebuild phase. It
-     tries to address the marked performance degradation in PostgreSQL
-     while updating the taxon rows. The default value is 30,000 for
-     PostgreSQL and disabled for other drivers. The downside of this
-     approach is that because computing statistics in PostgreSQL
-     cannot run within a transaction, partially rebuilt nested set
-     values have to be committed at regular intervals. You can
-     disable the chunked commits by a value of 0.
+optional: port to connect with
+
+=item --dbuser
+
+optional: user name to connect with
+
+=item --dbpass
+
+optional: password to connect with
+
+=item --download
+
+optional: whether to download new NCBI taxonomy data, default is no
+download
+
+=item --directory
+
+optional: where to store/look for the data, default is ./taxdata
+
+=item --nodelete
+
+Flag meaning don't delete retired nodes.
+
+You may want to specify this if you have sequence records referencing
+the retired nodes if they happen to be leafs.  Otherwise you'll get a
+foreign key constraint failure saying something like 'child record
+found' if there is a bioentry for that species. The retired nodes will
+still be printed, so that you can then decide for yourself afterwards
+what to do with the bioentries that reference them.
+
+=item --verbose=n
+
+Sets the verbosity level, default is 1.
+    
+0 = silent,
+1 = print current step,
+2 = print current step and progress statistics.
+
+=item --help
+
+print this manual and exit
+
+=item --allow_truncate
+
+Flag to allow for non-transactional TRUNCATE.
+
+This presently applies only to deleting and re-loading taxon names
+table. The script will attempt to perform the much faster TRUNCATE
+operation instead of a DELETE.  Some RDBMSs, like PostgreSQL, however
+prohibit TRUNCATE from within a transactions, because they cannot roll
+it back. If this flag is specified, the TRUNCATE will still be
+performed, but then outside of a transaction. This means that between
+the this operation is done until the names have been fully loaded
+there will be no or only partial taxon names for querying, leading to
+inconsistent or incomplete answers to queries. This is therefore
+disabled by default. Note though that for instance in PostgreSQL
+TRUNCATE is several orders of magnitude faster.
+
+=item --chunksize
+
+The number of rows after which to commit and possibly recompute
+statistics.
+
+This presently only applies to the nested set rebuild phase. It tries
+to address the marked performance degradation in PostgreSQL while
+updating the taxon rows. The default value is 40,000 for PostgreSQL
+and disabled for other drivers. The downside of this approach is that
+because computing statistics in PostgreSQL cannot run within a
+transaction, partially rebuilt nested set values have to be committed
+at regular intervals. You can disable the chunked commits by supplying
+a value of 0.
+
+If you run on PostgreSQL and you are not sure about the performance
+win, try --chunksize=0 --verbose=2. Watch the performance statistics
+during the nested set rebuild phase. If you see a marked decrease in
+rows/s over time down to values significantly below 100 rows/s, you
+may want to run a chunked rebuild. Otherwise keep it disabled. For
+database and query consistency disabling it is generally preferrable.
 
 =head1 Authors
 
@@ -281,11 +331,8 @@ my %sth = (
 	   set_nested_set => 
 'UPDATE '.$taxontbl.' SET left_value = ?, right_value = ? WHERE taxon_id = ?'
 	   ,
-	   set_left => 
-'UPDATE '.$taxontbl.' SET left_value = ? WHERE taxon_id = ?'
-	   ,
-	   set_right => 
-'UPDATE '.$taxontbl.' SET right_value = ? WHERE taxon_id = ?'
+	   unset_nested_set => 
+'UPDATE '.$taxontbl.' SET left_value = NULL, right_value = NULL WHERE left_value = ? OR right_value = ?'
 	   ,
 	   );
 
@@ -432,12 +479,18 @@ print STDERR "Done.\n" if $verbose;
 	}
 
 	my $right_value = ++$nodectr;
-	if((($left != $left_value) || ($right != $right_value)) &&
-	   (!$sth{set_nested_set}->execute($left_value, $right_value, $id))) {
-	    die "update of nested set values failed (taxonID: $id): ".
-		$sth{set_nested_set}->errstr;
+	if(($left != $left_value) || ($right != $right_value)) {
+	    # if this is an update run, we can't just update to any number we
+	    # think is right, because another node that we haven't reached
+	    # yet for update may carry this value (left_value and right_value
+	    # are constrained for uniqueness)
+	    $sth{unset_nested_set}->execute($left_value, $right_value);
+	    if(!$sth{set_nested_set}->execute($left_value,
+					      $right_value, $id)) {
+		die "update of nested set values failed (taxonID: $id): ".
+		    $sth{set_nested_set}->errstr;
+	    }
 	}
-
 	handle_progress($dbh, \$time, floor($nodectr/2), undef, $chunksize);
     }
 }
@@ -671,8 +724,7 @@ sub constrain_taxon{
     # terminated. All we need to take care of here is therefore
     # re-establishing the constraints we removed before in Pg
     if($driver eq "Pg") {
-	print STDERR "\t... (re-establishing parent taxon FK constraint)\n"
-	    if $verbose;
+	print STDERR "\t... (re-constraining taxon)\n" if $verbose;
 	$dbh->do('SELECT constrain_taxon()');
 	# we ignore a possible failure -- maybe we should at least make
 	# some noise about it?

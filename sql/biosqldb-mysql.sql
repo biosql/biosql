@@ -561,8 +561,10 @@ ALTER TABLE term_path ADD CONSTRAINT FKterm_ontpath
 
 -- taxon, taxon_name
 
-ALTER TABLE taxon ADD CONSTRAINT FKtaxon_taxon
-        FOREIGN KEY (parent_taxon_id) REFERENCES taxon(taxon_id);
+-- unfortunately, we can't constrain parent_taxon_id as it is violated
+-- occasionally by the downloads available from NCBI
+-- ALTER TABLE taxon ADD CONSTRAINT FKtaxon_taxon
+--         FOREIGN KEY (parent_taxon_id) REFERENCES taxon(taxon_id);
 ALTER TABLE taxon_name ADD CONSTRAINT FKtaxon_taxonname
         FOREIGN KEY (taxon_id) REFERENCES taxon(taxon_id)
         ON DELETE CASCADE;

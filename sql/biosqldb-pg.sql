@@ -528,9 +528,11 @@ ALTER TABLE term_path ADD CONSTRAINT FKterm_ontpath
       ON DELETE CASCADE ;
 
 -- taxon, taxon_name 
-ALTER TABLE taxon ADD CONSTRAINT FKtaxon_taxon
-      FOREIGN KEY ( parent_taxon_id ) REFERENCES taxon ( taxon_id )
-      DEFERRABLE;
+-- unfortunately, we can't constrain parent_taxon_id as it is violated
+-- occasionally by the downloads available from NCBI
+-- ALTER TABLE taxon ADD CONSTRAINT FKtaxon_taxon
+--       FOREIGN KEY ( parent_taxon_id ) REFERENCES taxon ( taxon_id )
+--       DEFERRABLE;
 ALTER TABLE taxon_name ADD CONSTRAINT FKtaxon_taxonname
       FOREIGN KEY ( taxon_id ) REFERENCES taxon ( taxon_id )
       ON DELETE CASCADE ;
@@ -1005,7 +1007,6 @@ CREATE OR REPLACE FUNCTION unconstrain_taxon ()
 RETURNS INTEGER
 AS
 '
-ALTER TABLE taxon DROP CONSTRAINT fktaxon_taxon;
 DROP RULE rule_taxon_i ON taxon;
 SELECT 1;
 '
@@ -1018,9 +1019,6 @@ CREATE OR REPLACE FUNCTION constrain_taxon ()
 RETURNS INTEGER
 AS
 '
-ALTER TABLE taxon ADD CONSTRAINT FKtaxon_taxon
-      FOREIGN KEY ( parent_taxon_id ) REFERENCES taxon ( taxon_id )
-      DEFERRABLE;
 CREATE RULE rule_taxon_i
        AS ON INSERT TO taxon
        WHERE (SELECT oid FROM taxon WHERE ncbi_taxon_id = new.ncbi_taxon_id)
