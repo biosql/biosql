@@ -39,19 +39,34 @@ my $parser = new Parse::RecDescent
      stmt   : createindex
      stmt   : insertstmt
      stmt   : comment
-     createtable : createkwd tablekwd tableid '(' coldefs ');'
+     stmt   : altertable
+     createtable : createkwd tablekwd tableid '(' coldefs ')' tablehandler(?) ';'
      createindex : createkwd indexkwd indexid onkwd tableid '(' colids ');'
      insertstmt  : insertkwd intokwd tableid '(' colids ')' valueskwd '(' values ');'
      insertstmt  : insertkwd intokwd tableid '(' values ');'
+     altertable  : alterkwd tablekwd tableid alterclause ';'
+     alterclause : addconstraint
+   addconstraint : addconstraintkwd constraintname(?) constraintclause
+   constraintclause : fkconstraint
+   fkconstraint  : keydef ondelete(?)
+   ondelete      : ondeletekwd ondeleteaction
+   tablehandler  : typekwd '=' handlername
+   ondeleteaction: 'CASCADE' | 'cascade' | 'SET NULL' | 'set null'
      values: /\'.*\'/
      createkwd: 'CREATE' | 'create'
+   alterkwd: 'ALTER' | 'alter'
      tablekwd: 'TABLE'| 'table'
      indexkwd: 'INDEX'| 'index'
      onkwd: 'ON'| 'on'
      intokwd: 'INTO'| 'into'
      insertkwd: 'INSERT' | 'insert'
      valueskwd: 'VALUES' | 'values'
-     comment: /#[^\n]*/
+   ondeletekwd: 'ON DELETE' | 'on delete'
+   addconstraintkwd: 'ADD CONSTRAINT' | 'add constraint'
+   typekwd    : 'TYPE' | 'type'
+   constraintname  : tableid
+   handlername     : tableid
+     comment: /--[^\n]*/ | /#[^\n]*/
      coldefs: coldef(s)
      coldef : cd /\,/ | cd
      cd     : colid coltype | keydef | constraint
@@ -64,7 +79,7 @@ my $parser = new Parse::RecDescent
    coltype: maintype size(?)
    qualifs: qualif(s)
    maintype: inttype | chartype | varchartype | texttype
-   inttype: 'int' | 'integer' | 'INT' | 'INTEGER'
+   inttype: 'int' | 'integer' | 'smallint' | 'tinyint' | 'INT' | 'INTEGER' | 'SMALLINT' | 'TINYINT'
    chartype: 'char' | 'CHAR'
    varchartype: 'varchar' | 'VARCHAR'
    texttype: 'text' | 'longtext' | 'mediumtext' | 'TEXT' | 'LONGTEXT' | 'MEDIUMTEXT'
@@ -144,6 +159,7 @@ check your output is complete
 EOM
 
 }
+
 # ------------------------------------------
 # node processors.
 #
@@ -199,14 +215,16 @@ sub pg_e {
     my $ref = shift;
     my $type = $node->type;
     my @c = @{$node->children};
-    my $data = $c[0]->data;
     my $pre = "";
-    if ($type eq "createtable") {
-        my $table = $c[2]->children->[0]->data;
-        if ($ref->{seqnh}) {
-            my $seqn = $ref->{seqnh}->{$table};
-            $pre = "CREATE SEQUENCE $seqn;\n" if $seqn;
-        }
+    if(@c) {
+	my $data = $c[0]->data;
+	if ($type eq "createtable") {
+	    my $table = $c[2]->children->[0]->data;
+	    if ($ref->{seqnh}) {
+		my $seqn = $ref->{seqnh}->{$table};
+		$pre = "CREATE SEQUENCE $seqn;\n" if $seqn;
+	    }
+	}
     }
     $pre;
 }
@@ -228,41 +246,53 @@ sub pg {
     }
     if ($type eq "createtable") {
         $ref->{table} = $c[2]->children->[0]->data;
-#        my $cdefs = $c[4]->children->[0]->children->[0]->children;
     }
     if ($type eq "coltype") {
         my $q = $c[2]; # get the qualifier
         if ($q && $q->children->[0] && $q->children->[0]->children) {
             my @qs = @{$q->children->[0]->children};
             if (grep {/^auto_increment$/i} map {$_->children->[0]->data}@qs) {
-                my $table = $ref->{table} || die("asserion error");
+                my $table = $ref->{table} || die("assertion error");
                 # postgres needs a sequence datatype
                 my $seqn = $table."_pk_seq";
                 $ref->{seqnh} = {} unless $ref->{seqnh};
                 $ref->{seqnh}->{$table} = $seqn;
-                @c = (node->new( [['inttype', 'integer'],  # type
+                @c = (node->new( [['inttype', 'INTEGER'],  # type
                                   ['qualifs',
-                                   'primary key',
-                                   'default',
-                                   '(nextval',
+                                   #'primary key',
+                                   'DEFAULT',
+                                   'nextval',
                                    '(',
                                    "'$seqn'",
-                                   '))']]));
+                                   ')',
+				   'NOT NULL']]));
             }
         }
         if ($c[0]->children->[0]->type eq "inttype") {
+	    my $attrtype = $c[0]->children->[0]->children->[0];
+	    if(($attrtype->type eq "INT") || ($attrtype->type eq "int")) {
+		$attrtype->type("INTEGER");
+	    } elsif(($attrtype->type eq "TINYINT") ||
+		    ($attrtype->type eq "tinyint")) {
+		$attrtype->type("SMALLINT");
+	    }
             # ints don't have size in postgres
             splice(@c, 1, 1, (new node "")); # splice out size decl
         }
     }
     if ($type eq "texttype") {
         # turn all funky text types into 'text'
-        @c = (new node 'text');
+        @c = (new node 'TEXT');
     }
     if ($type eq "qualif") {
         $data =~ s/unsigned//i;
         $c[0]->data($data);
     }
+    if ($type eq 'tablehandler') {
+	$node->remove;
+	@c = ();
+    }
+    #print STDERR "TYPE = \"$type\"\n";
     $node->children(@c);
     1;
 }
