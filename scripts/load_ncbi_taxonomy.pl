@@ -21,7 +21,8 @@ GetOptions("help" => \$help,
 	  );
 
 die <<USAGE if $help;
-Usage: $0 --dbname     # name of database to use
+Usage: $0 
+          --dbname     # name of database to use
           --database   # synonym for --dbname
           --driver     # "mysql" or "pg", defaults to "mysql"
           --host       # optional: host to connect with
