@@ -202,12 +202,104 @@ CREATE TABLE seqfeature (
 CREATE INDEX sf1 ON seqfeature ( seqfeature_key_id ); 
 CREATE INDEX sf2 ON seqfeature ( seqfeature_source_id ); 
 CREATE INDEX sf3 ON seqfeature ( bioentry_id ); 
+--- seqfeatures can be arranged in containment hierarchies. 
+--- one can imagine storing other relationships between features, 
+--- in this case the ontology_term_id can be used to type the relationship 
+CREATE SEQUENCE seqfeature_relationship_pkey_seq;
+CREATE TABLE seqfeature_relationship ( 
+	 seqfeature_relationship_id integer primary key default (nextval ( 'seqfeature_relationship_pkey_seq' )) , 
+	 parent_seqfeature_id int NOT NULL , 
+	 child_seqfeature_id int NOT NULL , 
+	 relationship_type_id int NOT NULL , 
+	 relationship_rank int , 
+	 UNIQUE ( parent_seqfeature_id , child_seqfeature_id , relationship_type_id ) , 
+	 FOREIGN KEY ( relationship_type_id ) REFERENCES ontology_term ( ontology_term_id ) , 
+	 FOREIGN KEY ( parent_seqfeature_id ) REFERENCES seqfeature ( seqfeature_id ) , 
+	 FOREIGN KEY ( child_seqfeature_id ) REFERENCES seqfeature ( seqfeature_id ) ); 
+
+CREATE INDEX sfr1 ON seqfeature_relationship ( relationship_type_id ); 
+CREATE INDEX sfr2 ON seqfeature_relationship ( parent_seqfeature_id ); 
+CREATE INDEX sfr3 ON seqfeature_relationship ( child_seqfeature_id ); 
 CREATE TABLE seqfeature_qualifier_value ( 
 	 seqfeature_id int NOT NULL , 
 	 ontology_term_id int NOT NULL , 
 	 qualifier_rank int NOT NULL , 
 	 qualifier_value text NOT NULL , 
 	 FOREIGN KEY ( ontology_term_id ) REFERENCES ontology_term ( ontology_term_id ) , 
+	 FOREIGN KEY ( seqfeature_id ) REFERENCES seqfeature ( seqfeature_id ) , 
 	 PRIMARY KEY ( seqfeature_id , ontology_term_id , qualifier_rank ) ); 
 
 CREATE INDEX sqv1 ON seqfeature_qualifier_value ( ontology_term_id ); 
+CREATE INDEX sqv3 ON seqfeature_qualifier_value ( seqfeature_id ); 
+--- basically we model everything as potentially having 
+--- any number of locations, ie, a split location. SimpleLocations 
+--- just have one location. We need to have a location id so for remote 
+--- split locations we can specify the start/end point 
+--- please do not try to model complex assemblies with this thing. It wont 
+--- work. Check out the ensembl schema for this. 
+--- we allow nulls for start/end - this is useful for fuzzies as 
+--- standard range queries will not be included 
+CREATE SEQUENCE seqfeature_location_pkey_seq;
+CREATE TABLE seqfeature_location ( 
+	 seqfeature_location_id integer primary key default (nextval ( 'seqfeature_location_pkey_seq' )) , 
+	 seqfeature_id int NOT NULL , 
+	 seq_start int , 
+	 seq_end int , 
+	 seq_strand int NOT NULL , 
+	 location_rank int NOT NULL , 
+	 FOREIGN KEY ( seqfeature_id ) REFERENCES seqfeature ( seqfeature_id ) ); 
+
+CREATE INDEX sfl1 ON seqfeature_location ( seqfeature_id ); 
+CREATE INDEX sfl2 ON seqfeature_location ( seq_start ); 
+CREATE INDEX sfl3 ON seqfeature_location ( seq_end ); 
+--- for remote locations, this is the join to make. 
+--- beware - in the object layer it has to make a double SQL query to figure out 
+--- whether this is remote location or not 
+--- like DR links, we do not link directly to a bioentry_id - we have to do 
+--- this run-time 
+CREATE TABLE remote_seqfeature_name ( 
+	 seqfeature_location_id int NOT NULL PRIMARY KEY , 
+	 accession varchar ( 40 ) NOT NULL , 
+	 version int NOT NULL , 
+	 FOREIGN KEY ( seqfeature_location_id ) REFERENCES seqfeature_location ( seqfeature_location_id ) ); 
+
+CREATE INDEX rsfn1 ON remote_seqfeature_name ( seqfeature_location_id ); 
+--- location qualifiers - mainly intended for fuzzies but anything 
+--- can go in here 
+--- some controlled vocab terms have slots; 
+--- fuzzies could be modeled as min_start(5), max_start(5) 
+---  
+--- there is no restriction on extending the fuzzy ontology 
+--- for your own nefarious aims, although the bio* apis will 
+--- most likely ignore these 
+CREATE TABLE location_qualifier_value ( 
+	 seqfeature_location_id int NOT NULL , 
+	 ontology_term_id int NOT NULL , 
+	 qualifier_value char ( 255 ) NOT NULL , 
+	 qualifier_int_value int , 
+	 FOREIGN KEY ( seqfeature_location_id ) REFERENCES seqfeature_location ( seqfeature_location_id ) , 
+	 FOREIGN KEY ( ontology_term_id ) REFERENCES ontology_term ( ontology_term_id ) ); 
+
+CREATE INDEX lqv1 ON location_qualifier_value ( seqfeature_location_id ); 
+CREATE INDEX lqv2 ON location_qualifier_value ( ontology_term_id ); 
+--- pre-make the fuzzy ontology 
+INSERT INTO ontology_term ( term_name ) VALUES ( 'min_start' ); 
+INSERT INTO ontology_term ( term_name ) VALUES ( 'min_end' ); 
+INSERT INTO ontology_term ( term_name ) VALUES ( 'max_start' ); 
+INSERT INTO ontology_term ( term_name ) VALUES ( 'max_end' ); 
+INSERT INTO ontology_term ( term_name ) VALUES ( 'unknown_start' ); 
+INSERT INTO ontology_term ( term_name ) VALUES ( 'unknown_end' ); 
+INSERT INTO ontology_term ( term_name ) VALUES ( 'end_pos_type' ); 
+INSERT INTO ontology_term ( term_name ) VALUES ( 'start_pos_type' ); 
+INSERT INTO ontology_term ( term_name ) VALUES ( 'location_type' ); 
+--- coordinate policies? 
+--- 
+--- this is a tiny table to allow a cach'ing corba server to 
+--- persistently store aspects of the root server - so when/if 
+--- the server gets reaped it can reconnect 
+--- 
+CREATE TABLE cache_corba_support ( 
+	 biodatabase_id int NOT NULL PRIMARY KEY , 
+	 http_ior_string varchar ( 255 ) , 
+	 direct_ior_string varchar ( 255 ) ); 
+

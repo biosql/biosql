@@ -233,16 +233,35 @@ CREATE INDEX sf1 ON seqfeature(seqfeature_key_id);
 CREATE INDEX sf2 ON seqfeature(seqfeature_source_id);
 CREATE INDEX sf3 ON seqfeature(bioentry_id);
 
+# seqfeatures can be arranged in containment hierarchies.
+# one can imagine storing other relationships between features,
+# in this case the ontology_term_id can be used to type the relationship
+CREATE TABLE seqfeature_relationship (
+   seqfeature_relationship_id int(10) unsigned NOT NULL PRIMARY KEY auto_increment,
+   parent_seqfeature_id int(10) NOT NULL,
+   child_seqfeature_id int(10) NOT NULL,
+   relationship_type_id int(10) NOT NULL,
+   relationship_rank int(5),
+   UNIQUE(parent_seqfeature_id, child_seqfeature_id, relationship_type_id),
+   FOREIGN KEY (relationship_type_id) REFERENCES ontology_term(ontology_term_id),
+   FOREIGN KEY (parent_seqfeature_id) REFERENCES seqfeature(seqfeature_id),
+   FOREIGN KEY (child_seqfeature_id) REFERENCES seqfeature(seqfeature_id)
+);
+CREATE INDEX sfr1 ON seqfeature_relationship(relationship_type_id);
+CREATE INDEX sfr2 ON seqfeature_relationship(parent_seqfeature_id);
+CREATE INDEX sfr3 ON seqfeature_relationship(child_seqfeature_id);
+
 CREATE TABLE seqfeature_qualifier_value (
    seqfeature_id int(10) NOT NULL,
    ontology_term_id int(10) NOT NULL,
    qualifier_rank int(5) NOT NULL,
    qualifier_value  mediumtext NOT NULL,
    FOREIGN KEY (ontology_term_id) REFERENCES ontology_term(ontology_term_id),
+   FOREIGN KEY (seqfeature_id) REFERENCES seqfeature(seqfeature_id),
    PRIMARY KEY(seqfeature_id,ontology_term_id,qualifier_rank)
 );
 CREATE INDEX sqv1 ON seqfeature_qualifier_value(ontology_term_id);
-CREATE INDEX sqv2 ON seqfeature_qualifier_value(qualifier_value(20));
+CREATE INDEX sqv3 ON seqfeature_qualifier_value(seqfeature_id);
    
 # basically we model everything as potentially having
 # any number of locations, ie, a split location. SimpleLocations
