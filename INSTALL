@@ -3,7 +3,7 @@ BioSQL - INSTALL
 -----------------
 
 This document gives an overview of the installation process for
-BioSQL on 3 different platforms: mySQL, Postgres, and Oracle, 
+BioSQL on 3 different platforms: MySQL, Postgres, and Oracle, 
 from a Bioperl perspective.
 
 In each case the installation has multiple steps, and there may
@@ -70,13 +70,16 @@ database.  Below gives you the basic set up of the three databases.
 MYSQL
 -----
 
-If you are lucky your Linux or Mac distribution, or whatever, came with
-mySQL.  Look at your service tools and switch on MySQL. If not, don't
-worry. Installing MySQL is easy.
+For the MySQL version to instantiate and run properly you need to
+have MySQL version 3.23.50 or later, because only from that version on 
+are nullable columns handled in a bug-free manner, according to the
+MySQL documentation. If you are lucky your Linux or Mac distribution, 
+or whatever, came with MySQL.  Look at your service tools and switch
+on MySQL. If not, don't worry, installing MySQL is easy.
 
-Most of us typically install from source. Download the tar ball from 
-one of the mirrors linked off www.mysql.com. Uncompress and untar 
-the tar ball.
+Most of us on Unix typically install from source. Download the tar 
+ball from one of the mirrors linked off www.mysql.com. Uncompress and 
+untar the tar ball.
 
    >tar -zxvf mysql-4.0.10-gamma.tar.gz 
    >./configure
@@ -84,11 +87,14 @@ the tar ball.
    >make install
 
 You'll probably need root privileges to run the 'make install'.
-Once the mySQL files are installed you are ready to create setup
+Once the MySQL files are installed you are ready to create setup
 accounts and start the server, and the steps are well-documented
-in the mySQL manual. Another good document to look at is in the 
+in the MySQL manual. Another good document to look at is in the 
 bioperl-db package: bioperl-db/docs/HOWTO-MySQL.html. This one
-discusses both mySQL installation and bioperl-db.
+discusses both MySQL installation and bioperl-db.
+
+If you are on Windows you're better off using a binary. Please
+see the installation instructions at www.mysql.com.
 
 
 POSTGRES
@@ -210,7 +216,7 @@ The postgres server is now up and running.
 ORACLE Installation 
 -------------------
 
-Oracle installations are certainly more complicated than mySQL
+Oracle installations are certainly more complicated than MySQL
 installs. Depending on the situation one could choose from the free 
 Personal Oracle or Oracle Enterprise. The latter package is installed 
 using the Oracle Universal Installer which uses a graphic interface. 
@@ -219,9 +225,9 @@ Both available through the Oracle Technology Network.
 Installing Oracle, with its relative complexity, is somewhat beyond
 the scope of this document. However, if this is your choice then bear
 in mind that there are people in bioperl-l@bioperl.org who can assist
-should you run into trouble. Just as with mySQL and Postgres you will
+should you run into trouble. Just as with MySQL and Postgres you will
 probably need to create special users to install the database and
-you will need root privileges. Unlike mySQL and Postgres Oracle uses
+you will need root privileges. Unlike MySQL and Postgres Oracle uses
 configuration files, such as tnsnames.ora and listener.ora, that keep
 track of essential information, many problems are solved by making 
 changes in these files. Other common problems concern the
@@ -288,7 +294,7 @@ Perl Loading
 ------------
 
 To load with Perl, you need to have the DBI module installed as well
-as the driver for your SQL database of choice. The Oracle, mySQL, 
+as the driver for your SQL database of choice. The Oracle, MySQL, 
 and Postgres modules are available at CPAN:
 
   >sudo perl -MCPAN -e 'shell'

@@ -22,18 +22,9 @@ PostgreSQL).
 ======================================================================
 INSTALLATION NOTES
 
-1. Generally, the support for each RDBMS is maintained individually,
+Generally, the support for each RDBMS is maintained individually,
 as there are too many differences between the RDBMSs for automatic
-generation from a single DDL.
-
-2. For the MySQL version to instantiate and run properly you need to
-have a very fairly recent version of MySQL installed. Minimum
-requirement is MySQL 3.23.50, because only from that version on are
-nullable columns which participate in a UK handled in a bug-free 
-manner (according to the MySQL documentation).
-
-3. The Oracle version is maintained separately, in sql/biosql-ora. 
-Check for a README and INSTALL document in that directory.
+generation from a single DDL. Please see the INSTALL for details.
 
 ======================================================================
 POST v1.0 TODO
