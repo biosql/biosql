@@ -206,12 +206,14 @@ CREATE TABLE biosequence (
 	 bioentry_id INTEGER NOT NULL , 
 	 version SMALLINT , 
 	 length INTEGER , 
-	 pI NUMERIC ( 4 , 2 ) , 
-	 MW DOUBLE PRECISION , 
 	 alphabet VARCHAR ( 10 ) , 
 	 seq TEXT , 
 	 PRIMARY KEY ( bioentry_id ) ) ; 
 
+-- add these only if you want them: 
+-- ALTER TABLE biosequence ADD COLUMN ( isoelec_pt NUMERIC(4,2) ); 
+-- ALTER TABLE biosequence ADD COLUMN (	mol_wgt DOUBLE PRECISION ); 
+-- ALTER TABLE biosequence ADD COLUMN ( perc_gc DOUBLE PRECISION ); 
 -- database cross-references (e.g., GenBank:AC123456.1) 
 CREATE SEQUENCE dbxref_pk_seq;
 CREATE TABLE dbxref ( 
