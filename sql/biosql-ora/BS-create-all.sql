@@ -24,7 +24,7 @@
 @BS-defs-local
 
 -- 1) login as DBA
---connect &sysdba/&dbapwd
+--connect &sysdba/&dbapwd as sysdba
 
 -- 2) create the tablespaces
 --@BS-create-tablespaces
@@ -50,7 +50,7 @@
 @BS-grants
 
 -- 9) create additional users
---connect &sysdba/&dbapwd
+--connect &sysdba/&dbapwd as sysdba
 --@BS-create-users
 --connect &biosql_owner/&biosql_pwd
 
