@@ -279,7 +279,6 @@ CREATE TABLE dbxref (
 
 CREATE INDEX dbxref_db  ON dbxref(dbname);
 
--- new table
 -- for roundtripping embl/genbank, we need to have the "optional ID"
 -- for the dbxref.
 --
@@ -288,15 +287,12 @@ CREATE INDEX dbxref_db  ON dbxref(dbname);
 -- know stuff about the interpro accessions we store (without
 -- importing all of interpro), so we can attach the text
 -- description as a synonym
-
 CREATE TABLE dbxref_qualifier_value (
-	dbxref_qualifier_value_id  INT(10) UNSIGNED NOT NULL auto_increment,
        	dbxref_id 		INT(10) UNSIGNED NOT NULL,
        	term_id 		INT(10) UNSIGNED NOT NULL,
   	rank  		   	SMALLINT NOT NULL DEFAULT 0,
        	value			TEXT,
-	PRIMARY KEY (dbxref_qualifier_value_id),
-	UNIQUE (dbxref_id,term_id,rank)
+	PRIMARY KEY (dbxref_id,term_id,rank)
 ) TYPE=INNODB;
 
 CREATE INDEX dbxrefqual_dbx ON dbxref_qualifier_value(dbxref_id);
@@ -414,7 +410,7 @@ CREATE INDEX seqfeaturerel_child ON seqfeature_relationship(child_seqfeature_id)
 -- respect to using the composite index for the initial keys
 --CREATE INDEX seqfeaturerel_parent ON seqfeature_relationship(parent_seqfeature_id);
 
--- for deep (depth > 1) bioentry relationship trees we need a transitive
+-- for deep (depth > 1) seqfeature relationship trees we need a transitive
 -- closure table too
 CREATE TABLE seqfeature_path (
    	parent_seqfeature_id	INT(10) UNSIGNED NOT NULL,
@@ -441,7 +437,7 @@ CREATE TABLE seqfeature_qualifier_value (
 CREATE INDEX seqfeaturequal_ont ON seqfeature_qualifier_value(term_id);
    
 -- DBXrefs for features. This is necessary for genome oriented viewpoints,
--- where you a few have long sequences (contigs, or chromosomes) with many
+-- where you have a few have long sequences (contigs, or chromosomes) with many
 -- features on them. In that case the features are the semantic scope for
 -- their annotation bundles, not the bioentry they are attached to.
 
