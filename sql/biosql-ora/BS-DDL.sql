@@ -2,7 +2,7 @@
 -- SQL script to instantiate the SYMGENE/BioSQL database schema.
 --
 --
--- $GNF: projects/gi/symgene/src/DB/BS-DDL.sql,v 1.29 2003/05/23 19:33:52 hlapp Exp $
+-- $GNF: projects/gi/symgene/src/DB/BS-DDL.sql,v 1.30 2003/06/01 21:07:24 hlapp Exp $
 --
 
 --
@@ -984,11 +984,13 @@ ALTER TABLE SG_Similarity
 -- Taxon and Taxon Name tables
 --
 
-ALTER TABLE SG_Taxon
-       ADD  ( CONSTRAINT FKTax_Tax
-              FOREIGN KEY (Tax_Oid)
-                             REFERENCES SG_Taxon (Oid)
-			     ON DELETE CASCADE INITIALLY DEFERRED ) ;
+-- unfortunately, we can't constrain parent_taxon_id as it is violated
+-- occasionally by the downloads available from NCBI
+-- ALTER TABLE SG_Taxon
+--        ADD  ( CONSTRAINT FKTax_Tax
+--               FOREIGN KEY (Tax_Oid)
+--                              REFERENCES SG_Taxon (Oid)
+-- 			     DEFERRABLE ) ;
 
 
 ALTER TABLE SG_Taxon_Name
