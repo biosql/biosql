@@ -3,22 +3,22 @@
 # $Id$
 #
 
-=head1 NAME 
+=head1 NAME
 
-    load_ncbi_taxonomy.pl
+load_ncbi_taxonomy.pl
 
 =head1 SYNOPSIS
 
   Usage: load_ncbi_taxonomy.pl
-          --dbname     # name of database to use
-          --dsn        # the DSN of the database to connect to
-          --driver     # "mysql" or "pg", defaults to "mysql"
-          --host       # optional: host to connect with
-          --port       # optional: port to connect with
-          --dbuser     # optional: user name to connect with
-          --dbpass     # optional: password to connect with
-          --download   # optional: whether to download new NCBI taxonomy data
-          --directory  # optional: where to store/look for the data
+        --dbname     # name of database to use
+        --dsn        # the DSN of the database to connect to
+        --driver     # "mysql" or "pg", defaults to "mysql"
+        --host       # optional: host to connect with
+        --port       # optional: port to connect with
+        --dbuser     # optional: user name to connect with
+        --dbpass     # optional: password to connect with
+        --download   # optional: whether to download new NCBI taxonomy data
+        --directory  # optional: where to store/look for the data
 
 =head1 DESCRIPTION
 
@@ -27,9 +27,9 @@ Database. There are a number of options to do with where the biosql
 database is (i.e., database name, hostname, user for database,
 password, database name).
 
-This script may on-the-fly download the NCBI Taxon Database from the
-NCBI FTP server. Otherwise it expects the files from that download to
-be present already.
+This script may download the NCBI Taxon Database from the NCBI FTP
+server on-the-fly (ftp://ftp.ncbi.nih.gov/pub/taxonomy/). Otherwise it
+expects the files to be downloaded already.
 
 You can use this script to load taxon data into a fresh instance of
 biosql, or to update the taxon content of an already populated biosql
@@ -44,9 +44,9 @@ of the taxon table.
 
 =head1 ARGUMENTS
 
-=over 2
+=over
 
-=item --dbname     
+=item --dbname
 
 name of database to use
 
@@ -103,7 +103,7 @@ what to do with the bioentries that reference them.
 =item --verbose=n
 
 Sets the verbosity level, default is 1.
-    
+
 0 = silent,
 1 = print current step,
 2 = print current step and progress statistics.
@@ -150,6 +150,8 @@ database and query consistency disabling it is generally preferrable.
 
 The default presently is to disable it. A suitable value for
 PostgreSQL according to test runs would be 40,000.
+
+=back
 
 =head1 Authors
 
