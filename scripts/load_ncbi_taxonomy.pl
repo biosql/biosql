@@ -73,7 +73,7 @@ my $dbh = DBI->connect($dsn,
 		       $user,
 		       $pass,
 		       { RaiseError => 1,
-			 AutoCommit => 0,
+			 AutoCommit => 1,
 			 PrintError => 1
 		       }
 		      ) or die $DBI::errstr;
@@ -121,6 +121,7 @@ if ($driver =~ m/mysql/i) {
     $dbh->do('LOCK TABLES ' . join(", ", map { $_ .= ' WRITE' } @locktables));
 } elsif ($driver =~ m/pg/i) {
     # turn on deferrable, start a transaction:
+    $dbh->begin_work;
     $dbh->do('SET CONSTRAINTS ALL DEFERRED');
 }
 
@@ -149,9 +150,12 @@ close(TAX);
 		 sub { return $sth{del_tax}->execute(@_[0..0]) }
 		);
 
+if ($driver =~ m/pg/i) {
+    $dbh->commit;
+}
+
 ##### rebuild the nested set left/right id':
 
-my $nodectr = 0;
 handle_subtree(1);
 
 ##### enter the taxonomy names:
@@ -175,19 +179,22 @@ for my $sth (values %sth) {
 $dbh->do('UNLOCK TABLES') if $driver =~ m/mysql/i;
 $dbh->disconnect();
 
-sub handle_subtree {
+{
+    my $nodectr = 0;
+    sub handle_subtree {
 
-    my $id = shift;
+	my $id = shift;
 
-    $sth{set_left}->execute(++$nodectr, $id);
+	$sth{set_left}->execute(++$nodectr, $id);
 
-    $sth{get_children}->execute($id);
-    for my $child ( @{$sth{get_children}->fetchall_arrayref()} ) {
-	handle_subtree($child->[0]) unless $child->[0] == $id;
+	$sth{get_children}->execute($id);
+	for my $child ( @{$sth{get_children}->fetchall_arrayref()} ) {
+	    handle_subtree($child->[0]) unless $child->[0] == $id;
+	}
+
+	$sth{set_right}->execute(++$nodectr, $id);
+
     }
-
-    $sth{set_right}->execute(++$nodectr, $id);
-
 }
 
 sub handle_diffs {
