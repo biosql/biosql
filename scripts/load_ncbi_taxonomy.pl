@@ -156,11 +156,23 @@ if ($driver =~ m/pg/i) {
 
 ##### rebuild the nested set left/right id':
 
+if ($driver =~ m/pg/i) {
+    $dbh->begin_work;
+}
+
 handle_subtree(1);
+
+if ($driver =~ m/pg/i) {
+    $dbh->commit;
+}
 
 ##### enter the taxonomy names:
 
 open(NAMES, "<$dir/names.dmp") or die "Couldn't open data file $dir/names.dmp: $!\n";
+
+if ($driver =~ m/pg/i) {
+    $dbh->begin_work;
+}
 
 $dbh->do(q{DELETE FROM taxon_name});
 
@@ -169,6 +181,10 @@ while (<NAMES>) {
     $sth{add_taxname}->execute(@data[0, 1, 3]);
 }
 close(NAMES);
+
+if ($driver =~ m/pg/i) {
+    $dbh->commit;
+}
 
 # clean up statement/database handles:
 for my $sth (values %sth) {
