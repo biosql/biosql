@@ -181,10 +181,10 @@ CREATE TABLE reference (
   	reference_title    TEXT,
   	reference_authors  TEXT NOT NULL,
   	reference_identifier VARCHAR(32),
-  	crc	           VARCHAR(32),
+  	reference_crc	   VARCHAR(32),
 	PRIMARY KEY (reference_id),
 	UNIQUE (reference_identifier),
-	UNIQUE (crc)
+	UNIQUE (reference_crc)
 ) TYPE=INNODB;
 
 

@@ -157,10 +157,10 @@ CREATE TABLE reference (
 	 reference_title VARCHAR (1000) , 
 	 reference_authors VARCHAR (4000) NOT NULL , 
 	 reference_identifier VARCHAR ( 32 ) , 
-	 crc VARCHAR ( 32 ) , 
+	 reference_crc VARCHAR ( 32 ) , 
 	 PRIMARY KEY ( reference_id ) , 
 	 UNIQUE ( reference_identifier ) , 
-	 UNIQUE ( crc ) ) ; 
+	 UNIQUE ( reference_crc ) ) ; 
 
 CREATE TABLE bioentry_reference ( 
 	 bioentry_id INTEGER NOT NULL , 
