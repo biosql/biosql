@@ -25,7 +25,7 @@ CREATE TABLE job (
 CREATE TABLE iohandler (
    iohandler_id         int(10) unsigned DEFAULT '0' NOT NULL auto_increment,
    adaptor_id           int(10) DEFAULT '0' NOT NULL,
-   type                 enum ('INPUT','INPUT_CREATION','OUTPUT','NEW_INPUT') NOT NULL,
+   type                 enum ('INPUT','CREATE_INPUT','OUTPUT','NEW_INPUT') NOT NULL,
    adaptor_type         enum('DB','STREAM') DEFAULT 'DB' NOT NULL,
 
    PRIMARY KEY (iohandler_id),
@@ -123,7 +123,7 @@ CREATE TABLE new_input (
 
 CREATE TABLE rule (
   rule_id          int(10) unsigned DEFAULT'0' NOT NULL auto_increment,
-  current          int(10) unsigned NOT NULL,
+  current          int(10) unsigned DEFAULT '',
   next             int(10) unsigned NOT NULL,
   action           enum('WAITFORALL','WAITFORALL_AND_UPDATE','UPDATE','NOTHING','COPY_INPUT','COPY_ID','CREATE_INPUT'),
   
