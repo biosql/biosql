@@ -78,8 +78,8 @@ or whatever, came with MySQL.  Look at your service tools and switch
 on MySQL. If not, don't worry, installing MySQL is easy.
 
 Most of us on Unix typically install from source. Download the tar 
-ball from one of the mirrors linked off www.mysql.com. Uncompress and 
-untar the tar ball.
+file from one of the mirrors linked off www.mysql.com. Uncompress and 
+untar the tar file.
 
    >tar -zxvf mysql-4.0.10-gamma.tar.gz 
    >./configure
@@ -96,11 +96,49 @@ discusses both MySQL installation and bioperl-db.
 If you are on Windows you're better off using a binary. Please
 see the installation instructions at www.mysql.com.
 
+If you want InnoDB compiled in MySQL you should probably download the
+stable MySQL 4* version, but if you have already installed MySQL 3.23 
+MAX and you want to activate InnoDB in your server you need to
+uncomment InnoDB-related lines in the my.cnf MySQL configuration file. 
+
+By default there is no configuration file, so if you don't have one
+you need to copy one of the sample files in the supporting_files/
+directory to /etc/. There are four my.cnf files called my-small.cnf,
+my-medium.cnf, my-large.cnf, and my-huge.cnf corresponding to
+predefined defaults for small, medium and large databases
+respectively. Pick any of them and copy it to /etc/.
+
+For example:
+
+  >cp /usr/local/mysql/support-files/my-small.cf /etc/my.cnf
+
+Then edit the /etc/my.cnf to uncomment lines referring to InnoDB, 
+specifically the following lines:
+
+innodb_data_home_dir = /usr/local/mysql/var/
+innodb_data_file_path = ibdata1:10M:autoextend
+innodb_log_group_home_dir = /usr/local/mysql/var/
+innodb_log_arch_dir = /usr/local/mysql/var/
+set-variable = innodb_buffer_pool_size=16M
+set-variable = innodb_additional_mem_pool_size=2M
+set-variable = innodb_log_file_size=5M
+set-variable = innodb_log_buffer_size=8M
+innodb_flush_log_at_trx_commit=1
+set-variable = innodb_lock_wait_timeout=50
+
+Finally you need to make sure the innodb_data_home_dir exists and is
+owned by the mysql user, e.g.
+
+  >mkdir /usr/local/mysql/var/
+  >chown mysql /usr/local/mysql/var/
+
+Finally start the mysql server as per normal:
+
+  >safe_mysqld &
+
 
 POSTGRES
 --------
-
-Installing postgres. 
 
 Like Mysql, the best thing is to install from source. Go to
 www.postgresql.org and choose a mirror to download the postgres tar
@@ -121,7 +159,7 @@ Or in two steps:
   >make
   >make install
 
-You have to be root to do this.
+You may have to be root to do this.
 
 In some systems, readline is not installed. In this case either:
 
@@ -136,10 +174,10 @@ unix's this is done by something like:
 
 On Mac OS X, go to SystemPreferences --> Users --> New User
 
-You now need to make a place for your data directory for postgres. On
-my laptop (Mac OS X) I built /usr/local/postgres and then
-/usr/local/postgres/data as root:
+You now need to make a place for your data directory for postgres.
+For example, as root:
 
+  >cd /usr/local
   >mkdir postgres
   >mkdir postgres/data
   >chown -R psqldb postgres/
@@ -256,7 +294,7 @@ http://cvs.open-bio.org/cgi-bin/viewcvs/viewcvs.cgi?cvsroot=biosql.
 Alternatively use the cvs checkout from the anonymous server:
 
    >cvs -d :pserver:cvs@cvs.open-bio.org:/home/repository/biosql login
-   (Logging in to cvs@cvs.open-bio.org)
+   <Logging in to cvs@cvs.open-bio.org>
    CVS password: <<PASSWORD is cvs, lowercase>>
    >cvs -d :pserver:cvs@cvs.open-bio.org:/home/repository/biosql co biosql-schema
 
