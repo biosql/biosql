@@ -1,19 +1,15 @@
 #!/usr/local/bin/perl
 #
 # sql processor for biosql-db
-# uses parse::recdescent to make a nested list, each elt preceeded by
-# type.
+# uses parse::recdescent to make a parse tree
+#
 # list is then recursively descended pushing it through a database specific
 # processor
 #
-# yes this could be made more clever, feel free to go ahead...
 # TODO - alert user to errors in source sql - currently silent
 #
-# since most people don't think in lisp, we should maybe convert
-# this so that it creates either objects or xml style events + SAX/XSLT
-#
-# the data structure used for a tree right now is a nested array
-# where the first element is always the node type
+# main data structure is a tree-node, which has data/type and
+# children which are themselves tree-nodes
 
 use Parse::RecDescent;
 use Data::Dumper;
@@ -28,73 +24,13 @@ if ($opth->{help} || !@ARGV) {
     usage();
     exit 0;
 }
-sub cdr {
-    my @arr = @{shift || []};
-    @arr[1..scalar(@arr)];
-}
-sub null {
-    return [@{shift || []}] ;
-}
-sub xml {
-    my $ir = shift;
-    my $c = shift @$ir;
-    my @i = @$ir;
-    @i = ("<$c>",@i, "</$c>") if @i && $i[0];
-    push(@i, "\n") if grep {/^$c$/} qw(stmt);
-    push(@i, "\n") if grep {/^$c$/} qw(createtable);
-    unshift(@i, "\n") if grep {/^$c$/} qw(coldef);
-    return [@i];
-}
-sub mysql {
-    my $ir = shift;
-    my $c = shift @$ir;
-    my @i = grep { !(/\(/||/\)/) } @$ir;
-    push(@i, "\n") if grep {/^$c$/} qw(stmt);
-    push(@i, "\n") if grep {/^$c$/} qw(createtable);
-    unshift(@i, "\n\t") if grep {/^$c$/} qw(coldef);
-    return [@i];
-}
-sub pg {
-    my $ir = shift;
-    my $c = shift @$ir;
-    my @i = @$ir;
-    if ($c eq "comment") {
-        $i[0] =~ s/^\#/\-\-\-/;
-    }
-    if ($c eq "coltype") {
-        if ($i[0]->[1]->[0] eq "inttype") {
-            # ints don't have size in postgres
-            $i[1] = [];
-        }
-        my $q = $i[2];
-        if ($q && $q->[1]) {
-            my @qs = @{$q->[1]};
-#            print Dumper $q->[1];
-#            print Dumper \@qs;
-            if (grep {/^auto_increment$/i} map {$_->[1]}@qs) {
-                $i[0]->[1] = ['inttype', 'serial'];
-                splice(@i,1);
-            }
-        }
-    }
-    if ($c eq "texttype") {
-        @i = ('text');
-    }
-    if ($c eq "qualif") {
-        $i[0] =~ s/unsigned//i;
-    }
-    push(@i, "\n") if grep {/^$c$/} qw(stmt);
-    push(@i, "\n") if grep {/^$c$/} qw(createtable);
-    unshift(@i, "\n\t") if grep {/^$c$/} qw(coldef);
-    return [@i];
-}
 my $target = $opth->{target} || "mysql";
 my $transform = \&$target;
-sub process {
-    @_;
-#    &$transform(@_);
-}
-#$::RD_AUTOACTION = q { ::process([@item]) };
+
+# ------------------------------------------
+# SQL GRAMMAR
+# ------------------------------------------
+
 $::RD_AUTOACTION = q { [@item] };
 # is there a better way of making it case insensitive?
 my $parser = new Parse::RecDescent
@@ -126,7 +62,8 @@ my $parser = new Parse::RecDescent
      cj     : colid /\,/
      tableid: /\w+/
    coltype: maintype size(?) qualifs
-   qualifs: qualif(s?)
+   coltype: maintype size(?)
+   qualifs: qualif(s)
    maintype: inttype | chartype | varchartype | texttype
    inttype: 'int' | 'integer' | 'INT' | 'INTEGER'
    chartype: 'char' | 'CHAR'
@@ -148,39 +85,43 @@ my $parser = new Parse::RecDescent
    uconstraint: u '(' colids ')'
    u: 'unique' | 'UNIQUE'
    });
-print "\n";
+
+# ------------------------------------------
+# read in the input file
+# parse it
+# process and flatten the tree
+# ------------------------------------------
 open(F, shift @ARGV);
 my $str = join("",<F>);
 close(F);
 my $rf = $parser->schema($str);
-#print Dumper $rf;
-my $new = &mydesc($rf);
-print $new;
+my $tree = node->new(@$rf);
+my $flat = &flatten($tree);
+print $flat;
 
-sub mydesc {
-    my $r = shift;
-    if (ref($r)) {
-        if (ref($r) eq "ARRAY") {
-#            my @elts = map {mydesc($_)} map {&$transform($_) }@$r;
-            my @elts = ();
-            if (ref($r->[0])) {
-                @elts = map {mydesc($_)} @$r;
-            }
-            else {
-                @elts = map {mydesc($_)} @{&$transform($r)};
-            }
-            my $str = join(" ", grep {$_} @elts);
-            $str =~ s/\n /\n/g;
-            return $str;
-        }
-        else {
-            die $r;
-        }
+# ------------------------------------------
+# flatten($node)
+# recursively flattens a tree,
+# applying $transform processor to
+# every node
+# ------------------------------------------
+sub flatten {
+    my $node = shift;
+    UNIVERSAL::isa($node, "node") or die("uh oh ", Dumper $node);
+    if ($node->is_terminal) {
+        return $node->data;
     }
     else {
-        return $r;
+        my @elts = ();
+        &$transform($node);
+        @elts = map {flatten($_)} @{$node->children};
+        my $str = join(" ", grep {$_} @elts);
+        $str =~ s/\n /\n/g;
+        return $str;
     }
 }
+
+# ------------------------------------------
 
 sub usage {
     print <<EOM;
@@ -193,8 +134,114 @@ available processors:
 mysql (for completion)
 pg    (postgres)
 
-WARNING: the parser is currently silent on errors in the source sql
+WARNING: the parser is currently silent on errors in the source sql;
+check your output is complete
 
 EOM
 
 }
+# ------------------------------------------
+# node processors.
+#
+# these are applied to every node, they
+# can look down the tree and make
+# modifications anywhere beneath them
+# ------------------------------------------
+sub null {
+}
+sub xml { # needs work!
+    my $node = shift;
+    my $type = $node->type;
+    my @c = @{$node->children};
+    @c = (node->new("<$type>"),@c,  node->new( "</$type>" )) if @c;
+    push(@c, new node "\n") if grep {/^$type$/} qw(stmt);
+    push(@c, new node "\n") if grep {/^$type$/} qw(createtable);
+    unshift(@c, new node "\n") if grep {/^$type$/} qw(coldef);
+    $node->children(@c);
+}
+sub prettify {
+    my $node = shift;
+    my $type = $node->type;
+    my @c = @{$node->children};
+    push(@c, node->new("\n")) if $type eq 'stmt';
+    push(@c, new node "\n") if grep {/^$type$/} qw(createtable);
+    unshift(@c, new node"\n\t") if grep {/^$type$/} qw(coldef);
+    $node->children(@c);
+}
+sub mysql {
+    my $node = shift;
+    prettify($node);
+    1;
+}
+sub pg {
+    my $node = shift;
+    prettify($node);
+    my $type = $node->type;
+    my @c = @{$node->children};
+    my $data = $c[0]->data;
+    if ($type eq "comment") {
+        $data =~ s/^\#/\-\-\-/;
+        $c[0]->data($data);
+    }
+    if ($type eq "coltype") {
+        my $q = $c[2]; # get the qualifier
+        if ($q && $q->children->[0] && $q->children->[0]->children) {
+            my @qs = @{$q->children->[0]->children};
+            if (grep {/^auto_increment$/i} map {$_->children->[0]->data}@qs) {
+                @c = (new node ['inttype', 'serial']);
+            }
+        }
+        if ($c[0]->children->[0]->type eq "inttype") {
+            # ints don't have size in postgres
+            splice(@c, 1, 2, (new node "")); # splice out size decl
+        }
+    }
+    if ($type eq "texttype") {
+        # turn all funky text types into 'text'
+        @c = (new node 'text');
+    }
+    if ($type eq "qualif") {
+        $data =~ s/unsigned//i;
+        $c[0]->data($data);
+    }
+    $node->children(@c);
+    1;
+}
+# ------------------------------------------
+# DATA STRUCTURE - tree nodes
+# ------------------------------------------
+package node;
+sub new {
+    my $class = shift;
+    return undef unless @_;
+    if (ref($_[0])) {
+        # recdescent deals with (s)
+        # by putting extra level of nesting
+        unshift(@_, "collection");
+    }
+    my $self = [shift];
+    push(@$self, grep {$_} map {$class->new(ref $_ ? @$_ : $_)} @_);
+    bless $self, $class;
+    $self;
+}
+sub type {
+    my $self = shift;
+    $self->[0] = shift if @_;
+    return $self->[0];
+}
+sub children {
+    my $self = shift;
+    splice(@$self, 1, scalar(@$self)-1, @_) if @_;
+    my @arr = @$self;
+    my @rarr = @arr[1..$#arr];
+    return [@rarr];
+}
+sub is_terminal {
+    my $self = shift;
+    @{$self->children} ? 0:1;
+}
+sub data {
+    my $self = shift;
+    $self->is_terminal ? $self->type(@_) : '';
+}
+1;
