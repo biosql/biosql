@@ -3,26 +3,25 @@ for storing sequences from different sources, for instance Genbank or
 Swissprot.
 
 BioSQL is meant to be a common data storage layer supported by all the
-different Bio* projects, such that entries stored through an
-application written in, e.g., bioperl could be re-retrieved by one
-written in, e.g., BioJava.
+different Bio* projects, Bioperl, Biojava, Biopython, and Bioruby.
+Entries stored through an application written in, say, Bioperl could
+be retrieved by another written in Biojava.
 
 --------------------------------------------------------------------------
 INSTALLATION NOTES
 
-1. Generally, the MySQL schema sources function as the basis from
-which schemas for other RDBMSs are auto-generated using, as an example,
+1. Generally, the MySQL schema sources are the basis for the other
+RDBMS schemas. For example, the Postgres SQL is made like this:
 
-	$ scripts/transform_sql -target pg biosqldb-mysql.sql > biosqldb-pg.sql
+ $ scripts/transform_sql -target pg biosqldb-mysql.sql > biosqldb-pg.sql
 
 Replace the biosqldb-mysql.sql with the DDL source you are interested in.
 
-2. For the MySQL version to instantiate and run properly, you need to
+2. For the MySQL version to instantiate and run properly you need to
 have a very fairly recent version of MySQL installed. Minimum
-requirement is MySQL 3.23.50, because only from that version on
-nullable columns which participate in a UK are handled largely
-bug-free (at this point according to the MySQL documentation).
+requirement is MySQL 3.23.50, because only from that version on are
+nullable columns which participate in a UK handled in a bug-free 
+manner (according to the MySQL documentation).
 
-3. The Oracle version so far is separate from this in
-   sql/biosql-ora. Check for a README and INSTALL document in that
-   directory.
+3. The Oracle version is maintained separately, in sql/biosql-ora. 
+Check for a README and INSTALL document in that directory.
