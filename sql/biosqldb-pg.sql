@@ -104,22 +104,22 @@ CREATE INDEX ontdbxref_dbxrefid ON term_dbxref ( dbxref_id );
 -- 
 -- this table probably won''t be filled for a while, the core 
 -- will just treat ontologies as flat lists of terms 
-CREATE SEQUENCE ontology_relationship_pk_seq;
-CREATE TABLE ontology_relationship ( 
-	 ontology_relationship_id INTEGER DEFAULT nextval ( 'ontology_relationship_pk_seq' ) NOT NULL , 
-	 subject_id INTEGER NOT NULL , 
-	 predicate_id INTEGER NOT NULL , 
-	 object_id INTEGER NOT NULL , 
+CREATE SEQUENCE term_relationship_pk_seq;
+CREATE TABLE term_relationship ( 
+	 term_relationship_id INTEGER DEFAULT nextval ( 'term_relationship_pk_seq' ) NOT NULL , 
+	 subject_term_id INTEGER NOT NULL , 
+	 predicate_term_id INTEGER NOT NULL , 
+	 object_term_id INTEGER NOT NULL , 
 	 ontology_id INTEGER , 
-	 PRIMARY KEY ( ontology_relationship_id ) , 
-	 UNIQUE ( subject_id , predicate_id , object_id , ontology_id ) ) ; 
+	 PRIMARY KEY ( term_relationship_id ) , 
+	 UNIQUE ( subject_term_id , predicate_term_id , object_term_id , ontology_id ) ) ; 
 
-CREATE INDEX ontrel_predicateid ON ontology_relationship ( predicate_id ); 
-CREATE INDEX ontrel_objectid ON ontology_relationship ( object_id ); 
-CREATE INDEX ontrel_ontid ON ontology_relationship ( ontology_id ); 
+CREATE INDEX ontrel_predicateid ON term_relationship ( predicate_term_id ); 
+CREATE INDEX ontrel_objectid ON term_relationship ( object_term_id ); 
+CREATE INDEX ontrel_ontid ON term_relationship ( ontology_id ); 
 -- you may want to add this for mysql because MySQL often is broken with 
 -- respect to using the composite index for the initial keys 
---CREATE INDEX ontrel_subjectid ON ontology_relationship(subject_id); 
+--CREATE INDEX ontrel_subjectid ON term_relationship(subject_term_id); 
 -- the infamous transitive closure table on ontology term relationships 
 -- this is a warehouse approach - you will need to update this regularly 
 -- 
@@ -131,18 +131,20 @@ CREATE INDEX ontrel_ontid ON ontology_relationship ( ontology_id );
 -- 
 -- See the GO database or Chado schema for other (and possibly better 
 -- documented) implementations of the transitive closure table approach. 
-CREATE TABLE ontology_path ( 
-	 subject_id INTEGER NOT NULL , 
-	 predicate_id INTEGER NOT NULL , 
-	 object_id INTEGER NOT NULL , 
+CREATE TABLE term_path ( 
+	 subject_term_id INTEGER NOT NULL , 
+	 predicate_term_id INTEGER NOT NULL , 
+	 object_term_id INTEGER NOT NULL , 
+	 ontology_id INTEGER NOT NULL , 
 	 distance INTEGER , 
-	 PRIMARY KEY ( subject_id , predicate_id , object_id ) ) ; 
+	 PRIMARY KEY ( subject_term_id , predicate_term_id , object_term_id , ontology_id ) ) ; 
 
-CREATE INDEX ontpath_predicateid ON ontology_path ( predicate_id ); 
-CREATE INDEX ontpath_objectid ON ontology_path ( object_id ); 
+CREATE INDEX ontpath_predicateid ON term_path ( predicate_term_id ); 
+CREATE INDEX ontpath_objectid ON term_path ( object_term_id ); 
+CREATE INDEX ontpath_ontid ON term_path ( ontology_id ); 
 -- you may want to add this for mysql because MySQL often is broken with 
 -- respect to using the composite index for the initial keys 
---CREATE INDEX ontpath_subjectid ON ontology_path(subject_id); 
+--CREATE INDEX ontpath_subjectid ON term_path(subject_term_id); 
 -- we can be a bioentry without a biosequence, but not visa-versa 
 -- most things are going to be keyed off bioentry_id 
 -- accession is the stable id, display_id is a potentially volatile, 
@@ -438,16 +440,17 @@ CREATE TABLE cache_corba_support (
 ALTER TABLE term ADD CONSTRAINT FKterm FOREIGN KEY ( ontology_id ) REFERENCES ontology ( ontology_id ) ON DELETE CASCADE ; 
 -- term_dbxref 
 ALTER TABLE term_dbxref ADD CONSTRAINT FKdbxref_ontdbxref FOREIGN KEY ( dbxref_id ) REFERENCES dbxref ( dbxref_id ) ON DELETE CASCADE ; 
-ALTER TABLE term_dbxref ADD CONSTRAINT FKontology_ontdbxref FOREIGN KEY ( term_id ) REFERENCES term ( term_id ) ON DELETE CASCADE ; 
--- ontology_relationship 
-ALTER TABLE ontology_relationship ADD CONSTRAINT FKontsubject_ontrel FOREIGN KEY ( subject_id ) REFERENCES term ( term_id ) ON DELETE CASCADE ; 
-ALTER TABLE ontology_relationship ADD CONSTRAINT FKontpredicate_ontrel FOREIGN KEY ( predicate_id ) REFERENCES term ( term_id ) ON DELETE CASCADE ; 
-ALTER TABLE ontology_relationship ADD CONSTRAINT FKontobject_ontrel FOREIGN KEY ( object_id ) REFERENCES term ( term_id ) ON DELETE CASCADE ; 
-ALTER TABLE ontology_relationship ADD CONSTRAINT FKontology_ontrel FOREIGN KEY ( ontology_id ) REFERENCES ontology ( ontology_id ) ON DELETE CASCADE ; 
--- ontology_path 
-ALTER TABLE ontology_path ADD CONSTRAINT FKontsubject_ontpath FOREIGN KEY ( subject_id ) REFERENCES term ( term_id ) ON DELETE CASCADE ; 
-ALTER TABLE ontology_path ADD CONSTRAINT FKontpredicate_ontpath FOREIGN KEY ( predicate_id ) REFERENCES term ( term_id ) ON DELETE CASCADE ; 
-ALTER TABLE ontology_path ADD CONSTRAINT FKontobject_ontpath FOREIGN KEY ( object_id ) REFERENCES term ( term_id ) ON DELETE CASCADE ; 
+ALTER TABLE term_dbxref ADD CONSTRAINT FKterm_ontdbxref FOREIGN KEY ( term_id ) REFERENCES term ( term_id ) ON DELETE CASCADE ; 
+-- term_relationship 
+ALTER TABLE term_relationship ADD CONSTRAINT FKontsubject_ontrel FOREIGN KEY ( subject_term_id ) REFERENCES term ( term_id ) ON DELETE CASCADE ; 
+ALTER TABLE term_relationship ADD CONSTRAINT FKontpredicate_ontrel FOREIGN KEY ( predicate_term_id ) REFERENCES term ( term_id ) ON DELETE CASCADE ; 
+ALTER TABLE term_relationship ADD CONSTRAINT FKontobject_ontrel FOREIGN KEY ( object_term_id ) REFERENCES term ( term_id ) ON DELETE CASCADE ; 
+ALTER TABLE term_relationship ADD CONSTRAINT FKterm_ontrel FOREIGN KEY ( ontology_id ) REFERENCES ontology ( ontology_id ) ON DELETE CASCADE ; 
+-- term_path 
+ALTER TABLE term_path ADD CONSTRAINT FKontsubject_ontpath FOREIGN KEY ( subject_term_id ) REFERENCES term ( term_id ) ON DELETE CASCADE ; 
+ALTER TABLE term_path ADD CONSTRAINT FKontpredicate_ontpath FOREIGN KEY ( predicate_term_id ) REFERENCES term ( term_id ) ON DELETE CASCADE ; 
+ALTER TABLE term_path ADD CONSTRAINT FKontobject_ontpath FOREIGN KEY ( object_term_id ) REFERENCES term ( term_id ) ON DELETE CASCADE ; 
+ALTER TABLE term_path ADD CONSTRAINT FKterm_ontpath FOREIGN KEY ( ontology_id ) REFERENCES ontology ( ontology_id ) ON DELETE CASCADE ; 
 -- taxon, taxon_name 
 ALTER TABLE taxon ADD CONSTRAINT FKtaxon_taxon FOREIGN KEY ( parent_taxon_id ) REFERENCES taxon ( taxon_id ) ON DELETE CASCADE ; 
 ALTER TABLE taxon_name ADD CONSTRAINT FKtaxon_taxonname FOREIGN KEY ( taxon_id ) REFERENCES taxon ( taxon_id ) ON DELETE CASCADE ; 
@@ -455,11 +458,11 @@ ALTER TABLE taxon_name ADD CONSTRAINT FKtaxon_taxonname FOREIGN KEY ( taxon_id )
 ALTER TABLE bioentry ADD CONSTRAINT FKtaxon_bioentry FOREIGN KEY ( taxon_id ) REFERENCES taxon ( taxon_id ) ; 
 ALTER TABLE bioentry ADD CONSTRAINT FKbiodatabase_bioentry FOREIGN KEY ( biodatabase_id ) REFERENCES biodatabase ( biodatabase_id ) ; 
 -- bioentry_relationship 
-ALTER TABLE bioentry_relationship ADD CONSTRAINT FKontology_bioentryrel FOREIGN KEY ( term_id ) REFERENCES term ( term_id ) ; 
+ALTER TABLE bioentry_relationship ADD CONSTRAINT FKterm_bioentryrel FOREIGN KEY ( term_id ) REFERENCES term ( term_id ) ; 
 ALTER TABLE bioentry_relationship ADD CONSTRAINT FKparentent_bioentryrel FOREIGN KEY ( parent_bioentry_id ) REFERENCES bioentry ( bioentry_id ) ON DELETE CASCADE ; 
 ALTER TABLE bioentry_relationship ADD CONSTRAINT FKchildent_bioentryrel FOREIGN KEY ( child_bioentry_id ) REFERENCES bioentry ( bioentry_id ) ON DELETE CASCADE ; 
 -- bioentry_path 
-ALTER TABLE bioentry_path ADD CONSTRAINT FKontology_bioentrypath FOREIGN KEY ( term_id ) REFERENCES term ( term_id ) ; 
+ALTER TABLE bioentry_path ADD CONSTRAINT FKterm_bioentrypath FOREIGN KEY ( term_id ) REFERENCES term ( term_id ) ; 
 ALTER TABLE bioentry_path ADD CONSTRAINT FKparentent_bioentrypath FOREIGN KEY ( parent_bioentry_id ) REFERENCES bioentry ( bioentry_id ) ON DELETE CASCADE ; 
 ALTER TABLE bioentry_path ADD CONSTRAINT FKchildent_bioentrypath FOREIGN KEY ( child_bioentry_id ) REFERENCES bioentry ( bioentry_id ) ON DELETE CASCADE ; 
 -- biosequence 
@@ -477,21 +480,21 @@ ALTER TABLE bioentry_reference ADD CONSTRAINT FKbioentry_entryref FOREIGN KEY ( 
 ALTER TABLE bioentry_reference ADD CONSTRAINT FKreference_entryref FOREIGN KEY ( reference_id ) REFERENCES reference ( reference_id ) ON DELETE CASCADE ; 
 -- bioentry_qualifier_value 
 ALTER TABLE bioentry_qualifier_value ADD CONSTRAINT FKbioentry_entqual FOREIGN KEY ( bioentry_id ) REFERENCES bioentry ( bioentry_id ) ON DELETE CASCADE ; 
-ALTER TABLE bioentry_qualifier_value ADD CONSTRAINT FKontology_entqual FOREIGN KEY ( term_id ) REFERENCES term ( term_id ) ; 
+ALTER TABLE bioentry_qualifier_value ADD CONSTRAINT FKterm_entqual FOREIGN KEY ( term_id ) REFERENCES term ( term_id ) ; 
 -- seqfeature 
-ALTER TABLE seqfeature ADD CONSTRAINT FKontology_seqfeature FOREIGN KEY ( type_term_id ) REFERENCES term ( term_id ) ; 
+ALTER TABLE seqfeature ADD CONSTRAINT FKterm_seqfeature FOREIGN KEY ( type_term_id ) REFERENCES term ( term_id ) ; 
 ALTER TABLE seqfeature ADD CONSTRAINT FKsourceterm_seqfeature FOREIGN KEY ( source_term_id ) REFERENCES term ( term_id ) ; 
 ALTER TABLE seqfeature ADD CONSTRAINT FKbioentry_seqfeature FOREIGN KEY ( bioentry_id ) REFERENCES bioentry ( bioentry_id ) ON DELETE CASCADE ; 
 -- seqfeature_relationship 
-ALTER TABLE seqfeature_relationship ADD CONSTRAINT FKontology_seqfeatrel FOREIGN KEY ( term_id ) REFERENCES term ( term_id ) ; 
+ALTER TABLE seqfeature_relationship ADD CONSTRAINT FKterm_seqfeatrel FOREIGN KEY ( term_id ) REFERENCES term ( term_id ) ; 
 ALTER TABLE seqfeature_relationship ADD CONSTRAINT FKparentfeat_seqfeatrel FOREIGN KEY ( parent_seqfeature_id ) REFERENCES seqfeature ( seqfeature_id ) ON DELETE CASCADE ; 
 ALTER TABLE seqfeature_relationship ADD CONSTRAINT FKchildfeat_seqfeatrel FOREIGN KEY ( child_seqfeature_id ) REFERENCES seqfeature ( seqfeature_id ) ON DELETE CASCADE ; 
 -- seqfeature_path 
-ALTER TABLE seqfeature_path ADD CONSTRAINT FKontology_seqfeatpath FOREIGN KEY ( term_id ) REFERENCES term ( term_id ) ; 
+ALTER TABLE seqfeature_path ADD CONSTRAINT FKterm_seqfeatpath FOREIGN KEY ( term_id ) REFERENCES term ( term_id ) ; 
 ALTER TABLE seqfeature_path ADD CONSTRAINT FKparentfeat_seqfeatpath FOREIGN KEY ( parent_seqfeature_id ) REFERENCES seqfeature ( seqfeature_id ) ON DELETE CASCADE ; 
 ALTER TABLE seqfeature_path ADD CONSTRAINT FKchildfeat_seqfeatpath FOREIGN KEY ( child_seqfeature_id ) REFERENCES seqfeature ( seqfeature_id ) ON DELETE CASCADE ; 
 -- seqfeature_qualifier_value 
-ALTER TABLE seqfeature_qualifier_value ADD CONSTRAINT FKontology_featqual FOREIGN KEY ( term_id ) REFERENCES term ( term_id ) ; 
+ALTER TABLE seqfeature_qualifier_value ADD CONSTRAINT FKterm_featqual FOREIGN KEY ( term_id ) REFERENCES term ( term_id ) ; 
 ALTER TABLE seqfeature_qualifier_value ADD CONSTRAINT FKseqfeature_featqual FOREIGN KEY ( seqfeature_id ) REFERENCES seqfeature ( seqfeature_id ) ON DELETE CASCADE ; 
 -- seqfeature_dbxref 
 ALTER TABLE seqfeature_dbxref ADD CONSTRAINT FKseqfeature_feadblink FOREIGN KEY ( seqfeature_id ) REFERENCES seqfeature ( seqfeature_id ) ON DELETE CASCADE ; 
@@ -502,4 +505,4 @@ ALTER TABLE location ADD CONSTRAINT FKdbxref_location FOREIGN KEY ( dbxref_id ) 
 ALTER TABLE location ADD CONSTRAINT FKterm_featloc FOREIGN KEY ( term_id ) REFERENCES term ( term_id ) ; 
 -- location_qualifier_value 
 ALTER TABLE location_qualifier_value ADD CONSTRAINT FKfeatloc_locqual FOREIGN KEY ( location_id ) REFERENCES location ( location_id ) ON DELETE CASCADE ; 
-ALTER TABLE location_qualifier_value ADD CONSTRAINT FKontology_locqual FOREIGN KEY ( term_id ) REFERENCES term ( term_id ) ; 
+ALTER TABLE location_qualifier_value ADD CONSTRAINT FKterm_locqual FOREIGN KEY ( term_id ) REFERENCES term ( term_id ) ; 
