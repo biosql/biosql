@@ -7,13 +7,12 @@ example SQL. Design philosophies and expectations are presented with
 reasoning.
 
 The BioSQL schema is described in four sections: Bioentry, Sequence 
-Features and Ontology Terms.  A fourth section demonstrates
+Features, Ontology Terms, and Annotation.  A fifth section demonstrates
 possible extensions to the schema that may be useful under some
 circumstances.
 
 
-I. Bioentry: "core" BioSQL entities
-
+I. Bioentry with Taxon and Namespace
 
 BIOENTRY
 
@@ -57,7 +56,6 @@ In this case, the identifier 902772 is not an NCBI GI number, but is a
 key to lookup this entry in the private database, "My Favorite
 Database" (MFD).
 
-
 BIODATABASE
 
 A biodatabase is simply a collection of bioentries; one bioentry may
@@ -96,7 +94,6 @@ SELECT MID(MAX(CONCAT(RPAD(LPAD(bioentry.version,5,'?'),10,'?'),
 WHERE  biodatabase.name = 'swiss'
 GROUP BY bioentry.name
 
-
 BIOSEQUENCE
 
 In BioSQL, all databases have bioentries, but not all bioentries need
@@ -133,6 +130,13 @@ FROM    bioentry JOIN biosequence USING (bioentry_id)
 WHERE   biosequence.seq LIKE "%ELVIS%"
   AND   biosequence.alphabet = 'protein'
 
+BIOENTRY_RELATIONSHIP
+
+Bioentries may themselves be related to one another (e.g., a PDB
+record may be composed of multiple subrecords for separate chains, or
+multiple SwissProt records may be associated with a given PFAM domain
+entry).  These relationships are "typed" via links to ontology terms
+using the term_id field.
 
 TAXON, TAXON_NAME
 
@@ -155,9 +159,13 @@ between taxons found in the taxon_name table. The node_rank field
 stores the class of the taxon (e.g. "species", "kingdom"). The 
 parent_taxon_id contains the taxon id of the parent taxon, since there
 should only be one parent in the taxonomic tree. The right_value and
-left_value fields are used to store the surrogate keys (taxon.taxon_id)
-of child taxons for any given taxon - these values can be calculated by
-the load_taxonomy.pl script.
+left_value fields store values that are calculated and entered by the 
+load_taxonomy.pl script. These arbitrary values are the upper and
+lower bounds of "nested sets", one set for each taxa, where the set 
+of the child taxa is contained within the larger set of the parent 
+taxon. An example would be the set for the species Procyon lotor,  
+365816 to 365823, contained within the set for the genus Procyon, 
+365815 to 365828.
 
 Note: Taxon is optional for bioentries. This is because certain
 bioentries may not have a clearly identified taxon, or because the
@@ -181,51 +189,18 @@ SELECT * FROM biosequence
        JOIN taxon_name USING (taxon_id)
 WHERE  taxon_name.name = 'Homo sapiens'
 
+Example SQL -find the taxon id's of all the parental taxa in the 
+Primate lineage using a self-join:
 
-REFERENCE
-
-Entries in a database may have cross-references to the literature.
-The reference table stores each journal article, book chapter,
-etc. that may be associated with a bioentry (or multiple bioentries).
-A reference's location refers to the journal (including volume, index,
-and possibly pages) or book in which the reference is found.  Neither
-the location nor the authors fields have any canonical format, they are as
-found in the bioentry record.  To help ensure uniqueness, a calculated
-checksum (crc) is kept over the author, location, title
-fields. Also, if provided by the data source, dbxref_id
-will contain the MEDLINE number, or any other identifier if the
-reference is indexed in another resource than MEDLINE.
+SELECT b.taxon_id FROM taxon as a
+       JOIN taxon as b
+       ON (a.left_value < b.right_value AND a.left_value > b.left_value)
+       JOIN taxon_name
+       ON a.taxon_id = taxon_name.taxon_id
+WHERE taxon_name.name = 'Primate'
 
 
-BIOENTRY_REFERENCE
-
-A given literature reference may be associated with many bioentries,
-and a given bioentry may be associated with multiple references (thus
-calling for the linking "bioentry_reference" table to map the
-associations between each).  Furthermore, the rank field
-may be used to define the order of the references for each associated
-bioentry.  Lastly, start_pos and end_pos fields may be used
-to associate references with specific locations on the bioentry.
-
-
-COMMENT
-
-Each bioentry can have one or more simple textual comments associated
-with it, and the order of the comments may be specified by the
-rank field.
-
-
-DBXREF, BIOENTRY_DBXREF
-
-Database cross references are links to records in other databases
-(whether they be sequence databases or not).  The relationship between
-bioentries and dbxrefs is many-to-many: one bioentry may have multiple
-associated dbxrefs, and one dbxref may be associated with many
-bioentries.  
-
-
-II. Sequence Features: everything else about a biosequence
-
+II. Sequence Features with Location and Annotation
 
 SEQFEATURE
 
@@ -233,7 +208,6 @@ More information pertaining to a bioentry is stored as a
 generic "feature" of the sequence, the semantics of which are defined
 by associations with a specific "source" term and optional qualifiers
 (see below under TERM).
-
 
 LOCATION
 
@@ -245,9 +219,14 @@ to accomodate some forms of "fuzzy" locations.  Additionally, a
 location may refer to a "remote" sequence, i.e. not the sequence
 associated with the bioentry, this is accomplished by a dbxref_id link.
 
+SEQFEATURE_RELATIONSHIP
 
-III. Ontology Terms: adding meaning to entities and relationships
+Sequence features may also have associated sub-seqfeatures (with potentially
+many-to-many parent-child relationships).  These relationships are
+also "typed" via links to ontology terms using the term_id fields.
 
+
+III. Ontology Terms and Relationships
 
 TERM
 
@@ -261,6 +240,69 @@ seqfeature_relationship below).  While a seqfeature may have only one
 term to describe its type and source, relationships between
 seqfeatures and sub-seqfeatures may have multiple terms associated
 with them.
+
+TERM_RELATIONSHIP, TERM_DBXREF
+
+However, the powerful utility of ontology terms is that they can be
+associated with each other in hierarchies; e.g. a "sequence similarity
+search" is a general term that includes more specific terms like
+"BLAST result" or "HMMER PFAM result".  "BLAST result" may also be a
+more specific term for "pairwise sequence alignment".  One might like
+to further qualify these relationships by putting names on them: a
+"BLAST result" is a "result from" a "sequence similarity search" and a
+"example of" a "pairwise sequence alignment".  We refer to these as
+"subject", "predicate", "object" (or, "parent", "relationship type",
+"child").  The term_relationship table performs this mapping
+between terms, using the subject/predicate/object terminology.  This
+mapping (or "rule set") must itself be given an ontological namespace
+(ontology_id), as the mapping may relate terms between separate
+ontologies; we must keep track of where each "rule" comes from.
+
+Finally, ontology terms themselves can be linked to external databases
+via a many-to-many relationship using the term_dbxref table.
+
+TERM_PATH, BIOENTRY_PATH, SEQFEATURE_PATH
+
+All three of these tables are meant to store the "transitive closure"
+of the respective *_relationship data; that is, if A is related to B,
+and B is related to C, then A is related to C, and will have a row in
+the table.  The definition of the type of relationship between A and C
+depends greatly on the semantics of the individual relationships
+between A and B and B and C (including the possibility that A and C
+aren't actually related by any meaningful type, and should therefore
+not appear in the table).  We leave it to individual implementors to
+define the policy for building these paths.
+
+A very generic policy would be to use the ontology of relationship types
+involved between A and B and B and C, and choose the greatest common
+denominator between the two relationship types (e.g. when the two
+relationship types are the same, then A and C are related by the same
+type; when the two relationship types differ, then A and C are related
+by the first "supertype" that includes both relationship types).
+
+
+IV. Annotation Bundle
+
+Annotations are similar to Sequence Features in that they describe a
+sequence, but unlike Sequence Features they have no locations on the
+sequence, they are associated with the entire sequence. Annotations
+may come with references and database ids.
+
+BIOENTRY_REFERENCE
+
+A given literature reference may be associated with many bioentries,
+and a given bioentry may be associated with multiple references (thus
+calling for the linking "bioentry_reference" table to map the
+associations between each).  Furthermore, the rank field
+may be used to define the order of the references for each associated
+bioentry.  Lastly, start_pos and end_pos fields may be used
+to associate references with specific locations on the bioentry.
+
+COMMENT
+
+Each bioentry can have one or more simple textual comments associated
+with it, and the order of the comments may be specified by the
+rank field.
 
 BIOENTRY_QUALIFIER_VALUE, DBXREF_QUALIFIER_VALUE,
 LOCATION_QUALIFIER_VALUE, SEQFEATURE_QUALIFIER_VALUE
@@ -284,64 +326,30 @@ entity-specific tables.  For example, a "SwissProt_dbxref" view could
 be made that had all the dbxref fields plus a "SwissProt_name" field
 containing the qualifier value discussed previously.
 
+REFERENCE
 
-TERM_RELATIONSHIP, TERM_DBXREF
+Entries in a database may have cross-references to the literature.
+The reference table stores each journal article, book chapter,
+etc. that may be associated with a bioentry (or multiple bioentries).
+A reference's location refers to the journal (including volume, index,
+and possibly pages) or book in which the reference is found.  Neither
+the location nor the authors fields have any canonical format, they are as
+found in the bioentry record.  To help ensure uniqueness, a calculated
+checksum (crc) is kept over the author, location, title
+fields. Also, if provided by the data source, dbxref_id
+will contain the MEDLINE number, or any other identifier if the
+reference is indexed in another resource than MEDLINE.
 
-However, the powerful utility of ontology terms is that they can be
-associated with each other in hierarchies; e.g. a "sequence similarity
-search" is a general term that includes more specific terms like
-"BLAST result" or "HMMER PFAM result".  "BLAST result" may also be a
-more specific term for "pairwise sequence alignment".  One might like
-to further qualify these relationships by putting names on them: a
-"BLAST result" is a "result from" a "sequence similarity search" and a
-"example of" a "pairwise sequence alignment".  We refer to these as
-"subject", "predicate", "object" (or, "parent", "relationship type",
-"child").  The term_relationship table performs this mapping
-between terms, using the subject/predicate/object terminology.  This
-mapping (or "rule set") must itself be given an ontological namespace
-(ontology_id), as the mapping may relate terms between separate
-ontologies; we must keep track of where each "rule" comes from.
+DBXREF, BIOENTRY_DBXREF
 
-Finally, ontology terms themselves can be linked to external databases
-via a many-to-many relationship using the term_dbxref table.
-
-
-BIOENTRY_RELATIONSHIP
-
-Bioentries may themselves be related to one another (e.g., a PDB
-record may be composed of multiple subrecords for separate chains, or
-multiple SwissProt records may be associated with a given PFAM domain
-entry).  These relationships are "typed" via links to ontology terms
-using the term_id field.
+Database cross references are links to records in other databases
+(whether they be sequence databases or not).  The relationship between
+bioentries and dbxrefs is many-to-many: one bioentry may have multiple
+associated dbxrefs, and one dbxref may be associated with many
+bioentries.  
 
 
-SEQFEATURE_RELATIONSHIP
-
-Sequence features may also have associated sub-seqfeatures (with potentially
-many-to-many parent-child relationships).  These relationships are
-also "typed" via links to ontology terms using the term_id fields.
-
-
-TERM_PATH, BIOENTRY_PATH, SEQFEATURE_PATH
-
-All three of these tables are meant to store the "transitive closure"
-of the respective *_relationship data; that is, if A is related to B,
-and B is related to C, then A is related to C, and will have a row in
-the table.  The definition of the type of relationship between A and C
-depends greatly on the semantics of the individual relationships
-between A and B and B and C (including the possibility that A and C
-aren't actually related by any meaningful type, and should therefore
-not appear in the table).  We leave it to individual implementors to
-define the policy for building these paths.
-
-A very generic policy would be to use the ontology of relationship types
-involved between A and B and B and C, and choose the greatest common
-denominator between the two relationship types (e.g. when the two
-relationship types are the same, then A and C are related by the same
-type; when the two relationship types differ, then A and C are related
-by the first "supertype" that includes both relationship types).
-
-IV. Possible add-ons to the core BioSQL schema
+V. Possible add-ons to the core BioSQL schema
 
 Bioentry date stamping:
 
@@ -439,7 +447,6 @@ Example SQL: Give me all nonredundant biosequences from GenPept
 (i.e. the NCBI "nr" database)
 
 [ Nasty cross-joining SQL to be delivered ... ]
-
 
 Feature set versioning:
 
