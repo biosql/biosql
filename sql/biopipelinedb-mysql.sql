@@ -46,8 +46,7 @@ CREATE TABLE input_dba(
    data_adaptor_method  varchar(40) DEFAULT '' NOT NULL,
 
    PRIMARY KEY (input_dba_id),
-   KEY (dbadaptor_id),
-   KEY (analysis_id)
+   KEY (dbadaptor_id)
 );
 
 CREATE TABLE output_dba (
@@ -114,7 +113,7 @@ CREATE TABLE analysis_input_dba(
   analysis_id               int(10) NOT NULL,
   input_dba_id              int(10) NOT NULL,
 
-  PRIMARY KEY (analysis_input_dba),
+  PRIMARY KEY (analysis_input_dba_id),
   KEY analysis (analysis_id),
   KEY input_dba (input_dba_id)
 
