@@ -254,7 +254,7 @@ CREATE TABLE reference (
 	dbxref_id	   INT,
   	location 	   LONGVARCHAR NOT NULL,
   	title    	   LONGVARCHAR,
-  	authors  	   LONGVARCHAR NOT NULL,
+  	authors  	   LONGVARCHAR,
   	crc	   	   VARCHAR(32),
         PRIMARY KEY (reference_id),
 	UNIQUE (dbxref_id),

@@ -349,7 +349,7 @@ CREATE TABLE reference (
 	 dbxref_id INTEGER , 
 	 location TEXT NOT NULL , 
 	 title TEXT , 
-	 authors TEXT NOT NULL , 
+	 authors TEXT , 
 	 crc VARCHAR ( 32 ) , 
 	 PRIMARY KEY ( reference_id ) , 
 	 UNIQUE ( dbxref_id ) , 
