@@ -13,7 +13,7 @@
 -- WARRANTIES WHATSOEVER. Please read the license under which you may use
 -- this script and those that come with it.
 --
--- $GNF: projects/gi/symgene/src/sql/migrate/singapore/migrate-taxon.sql,v 1.3 2003/06/03 01:47:06 hlapp Exp $
+-- $GNF: projects/gi/symgene/src/sql/migrate/singapore/migrate-taxon.sql,v 1.4 2003/06/12 01:03:40 hlapp Exp $
 --
 
 --
@@ -191,7 +191,7 @@ ALTER TABLE SG_Bioentry
 --               FOREIGN KEY (Tax_Oid)
 --                              REFERENCES SG_Taxon (Oid) DEFERRED ) ;
 ALTER TABLE SG_Taxon_Name
-       ADD  ( CONSTRAINT FKTax_Tan
+       ADD  ( CONSTRAINT FKTax_Tnm
               FOREIGN KEY (Tax_Oid)
                              REFERENCES SG_Taxon (Oid)
 			     ON DELETE CASCADE ) ;
