@@ -22,40 +22,24 @@
 
 CREATE TABLE biodatabase (
   	biodatabase_id 	INT(10) UNSIGNED NOT NULL auto_increment,
-  	name           	VARCHAR(40) NOT NULL, -- NOTE: why (40) and not max VARCHAR?
-	authority	VARCHAR(40), -- NOTE: ditto on (40)
+  	name           	VARCHAR(128) NOT NULL,
+	authority	VARCHAR(128),
+	description	TEXT,
 	PRIMARY KEY (biodatabase_id),
   	UNIQUE (name)
 ) TYPE=INNODB;
 
--- do we really this? NOTE: doesn't hurt
---CREATE INDEX db_auth on biodatabase(authority);
+CREATE INDEX db_auth on biodatabase(authority);
 
 -- we could insist that taxa are NCBI taxon id, but on reflection I made this
 -- an optional extra line, as many flat file formats do not have the NCBI id
 --
--- full lineage is : delimited string starting with species.
-
--- NOTE: '; ' delimited would better reflect typical NCBI usage ...
-
 -- no organelle/sub species
-
--- CREATE TABLE taxon (
---   	taxon_id   	INT(10) UNSIGNED NOT NULL auto_increment,
---   	binomial 	VARCHAR(96) NOT NULL,
--- 	variant         VARCHAR(64) NOT NULL,
---   	common_name 	VARCHAR(255),
---   	ncbi_taxon_id 	INT(10),
---   	full_lineage 	TEXT NOT NULL,
--- 	PRIMARY KEY (taxon_id),
---   	UNIQUE (binomial,variant),
---   	UNIQUE (ncbi_taxon_id)
--- ) TYPE=INNODB;
 
 CREATE TABLE taxon (
        taxon_id		INT(10) UNSIGNED NOT NULL auto_increment,
        ncbi_taxon_id 	INT(10),
-       parent_ncbi_taxon_id	INT(10) UNSIGNED,
+       parent_taxon_id	INT(10) UNSIGNED,
        node_rank	VARCHAR(32),
        genetic_code	TINYINT UNSIGNED,
        mito_genetic_code TINYINT UNSIGNED,
@@ -64,22 +48,16 @@ CREATE TABLE taxon (
        PRIMARY KEY (taxon_id),
        UNIQUE (ncbi_taxon_id),
        UNIQUE (left_value),
-       UNIQUE (right_value),
-       UNIQUE (left_value, right_value)
+       UNIQUE (right_value)
 ) TYPE=INNODB;
 
---NOTE: necessary, given UNIQUE's above??
-CREATE INDEX taxparent ON taxon(ncbi_parent_taxon_id);
-CREATE INDEX taxleft ON taxon(left_value);
-CREATE INDEX taxright ON taxon(right_value);
+CREATE INDEX taxparent ON taxon(parent_taxon_id);
 
 CREATE TABLE taxon_name (
        taxon_id		INT(10) UNSIGNED NOT NULL,
        name		VARCHAR(255) NOT NULL,
-       unique_name	VARCHAR(255), --NOTE: What is this??
-       name_class	VARCHAR(32) NOT NULL, --NOTE: is simply "class" not allowable?
-       UNIQUE (taxon_id,name,name_class),
-       UNIQUE (unique_name)
+       name_class	VARCHAR(32) NOT NULL,
+       UNIQUE (taxon_id,name,name_class)
 ) TYPE=INNODB;
 
 CREATE INDEX taxnametaxonid ON taxon_name(taxon_id);
@@ -146,15 +124,19 @@ CREATE TABLE ontology_relationship (
 
 CREATE INDEX ontrel_predicateid ON ontology_relationship(predicate_id);
 CREATE INDEX ontrel_objectid ON ontology_relationship(object_id);
---NOTE: why no subject_id INDEX ??
+-- you may want to add this for mysql because MySQL often is broken with
+-- respect to using the composite index for the initial keys
+--CREATE INDEX ontrel_subjectid ON ontology_relationship(subject_id);
 
 
 -- the infamous transitive closure table on ontology term relationships
 -- this is a warehouse approach - you will need to update this regularly
 --
 -- the triple of (subject, predicate, object) is the same as for ontology
--- relationships, with the exception of predicate being the least common
--- denominator of relationships types visited in the path
+-- relationships, with the exception of predicate being the greatest common
+-- denominator of the relationships types visited in the path (i.e., if
+-- relationship type A is-a relationship type B, the greatest common
+-- denominator for path containing both types A and B is B)
 --
 -- See the GO database or Chado schema for other (and possibly better
 -- documented) implementations of the transitive closure table approach.
@@ -168,6 +150,9 @@ CREATE TABLE ontology_path (
 
 CREATE INDEX ontpath_predicateid ON ontology_path(predicate_id);
 CREATE INDEX ontpath_objectid ON ontology_path(object_id);
+-- you may want to add this for mysql because MySQL often is broken with
+-- respect to using the composite index for the initial keys
+--CREATE INDEX ontpath_subjectid ON ontology_path(subject_id);
 
 -- we can be a bioentry without a biosequence, but not visa-versa
 -- most things are going to be keyed off bioentry_id
@@ -178,13 +163,17 @@ CREATE INDEX ontpath_objectid ON ontology_path(object_id);
 -- not all entries have a taxon, but many do.
 -- one bioentry only has one taxon! (weirdo chimerias are not handled. tough)
 
+-- Name maps to display_id in bioperl. We have a different column name
+-- here to avoid confusion with the naming convention for foreign keys.
+
 CREATE TABLE bioentry (
 	bioentry_id	INT(10) UNSIGNED NOT NULL auto_increment,
   	biodatabase_id  INT(10) UNSIGNED NOT NULL,
   	taxon_id     	INT(10) UNSIGNED,
-  	display_id   	VARCHAR(40) NOT NULL, --NOTE: "name" better semantic??
+  	name		VARCHAR(40) NOT NULL,
   	accession    	VARCHAR(40) NOT NULL,
   	identifier   	VARCHAR(40),
+	division	VARCHAR(6),
   	description  	TEXT,
   	version 	SMALLINT UNSIGNED, 
 	PRIMARY KEY (bioentry_id),
@@ -192,7 +181,7 @@ CREATE TABLE bioentry (
   	UNIQUE (identifier)
 ) TYPE=INNODB;
 
-CREATE INDEX bioentry_did  ON bioentry(display_id);
+CREATE INDEX bioentry_name ON bioentry(name);
 CREATE INDEX bioentry_db   ON bioentry(biodatabase_id);
 CREATE INDEX bioentry_tax  ON bioentry(taxon_id);
 
@@ -211,23 +200,26 @@ CREATE TABLE bioentry_relationship (
 
 CREATE INDEX bioentryrel_ont   ON bioentry_relationship(ontology_term_id);
 CREATE INDEX bioentryrel_child ON bioentry_relationship(child_bioentry_id);
+-- you may want to add this for mysql because MySQL often is broken with
+-- respect to using the composite index for the initial keys
+--CREATE INDEX bioentryrel_parent ON bioentry_relationship(parent_bioentry_id);
 
 -- some bioentries will have a sequence
 -- biosequence because sequence is sometimes a reserved word
--- removed not null for seq_version; cjm
 
 CREATE TABLE biosequence (
   	bioentry_id     INT(10) UNSIGNED NOT NULL,
   	version     	SMALLINT, 
-  	length      	INT(10), 
+  	length      	INT(10),
+	pI		NUMERIC(4,2),
+	MW		FLOAT,
   	alphabet        VARCHAR(10),
-	division	VARCHAR(6), --NOTE: why 6 if VARCHAR?
   	seq 		LONGTEXT,
 	PRIMARY KEY (bioentry_id)
 ) TYPE=INNODB;
 
 
--- new table
+-- database cross-references (e.g., GenBank:AC123456.1)
 CREATE TABLE dbxref (
         dbxref_id	INT(10) UNSIGNED NOT NULL auto_increment,
         dbname          VARCHAR(40) NOT NULL,
@@ -266,13 +258,13 @@ CREATE INDEX dbxrefqual_ont ON dbxref_qualifier_value(ontology_term_id);
 -- this table each time. Better to do the join through accession
 -- and db each time. Should be almost as cheap
 
-CREATE TABLE bioentry_dblink ( --NOTE: why not called bioentry_dbxref ??
+CREATE TABLE bioentry_dbxref ( 
        	bioentry_id        INT(10) UNSIGNED NOT NULL,
        	dbxref_id          INT(10) UNSIGNED NOT NULL,
 	PRIMARY KEY (bioentry_id,dbxref_id)
 ) TYPE=INNODB;
 
-CREATE INDEX dblink_dbx  ON bioentry_dblink(dbxref_id);
+CREATE INDEX dblink_dbx  ON bioentry_dbxref(dbxref_id);
 
 -- We can have multiple references per bioentry, but one reference
 -- can also be used for the same bioentry.
@@ -318,11 +310,9 @@ CREATE TABLE comment (
 ) TYPE=INNODB;
 
 
--- separate description table separate to save on space when we
--- do not store descriptions
-
 -- this table replaces the old bioentry_description and bioentry_keywords
 -- tables
+
 CREATE TABLE bioentry_qualifier_value (
 	bioentry_id   		INT(10) UNSIGNED NOT NULL,
    	ontology_term_id  	INT(10) UNSIGNED NOT NULL,
@@ -338,21 +328,22 @@ CREATE INDEX bioentryqual_ont ON bioentry_qualifier_value(ontology_term_id);
 --   - split locations
 --   - split locations on remote sequences
 
--- The fuzzies are not handled yet
-
 CREATE TABLE seqfeature (
    	seqfeature_id 		INT(10) UNSIGNED NOT NULL auto_increment,
    	bioentry_id   		INT(10) UNSIGNED NOT NULL,
-   	ontology_term_id	INT(10) UNSIGNED NOT NULL,
-   	seqfeature_source_id  	INT(10) UNSIGNED, --NOTE: why not ontology_source_id, or source_ontology_term_id ??
+   	type_term_id		INT(10) UNSIGNED NOT NULL,
+   	source_term_id  	INT(10) UNSIGNED,
 	display_name		VARCHAR(64),
    	rank 			SMALLINT UNSIGNED NOT NULL,
 	PRIMARY KEY (seqfeature_id),
-	UNIQUE (bioentry_id,ontology_term_id,seqfeature_source_id,rank)
+	UNIQUE (bioentry_id,type_term_id,source_term_id,rank)
 ) TYPE=INNODB;
 
-CREATE INDEX seqfeature_ont  ON seqfeature(ontology_term_id);
-CREATE INDEX seqfeature_fsrc ON seqfeature(seqfeature_source_id);
+CREATE INDEX seqfeature_ont  ON seqfeature(type_term_id);
+CREATE INDEX seqfeature_fsrc ON seqfeature(source_term_id);
+-- you may want to add this for mysql because MySQL often is broken with
+-- respect to using the composite index for the initial keys
+--CREATE INDEX seqfeature_bioentryid ON seqfeature(bioentry_id);
 
 -- seqfeatures can be arranged in containment hierarchies.
 -- one can imagine storing other relationships between features,
@@ -370,6 +361,9 @@ CREATE TABLE seqfeature_relationship (
 
 CREATE INDEX seqfeaturerel_ont   ON seqfeature_relationship(ontology_term_id);
 CREATE INDEX seqfeaturerel_child ON seqfeature_relationship(child_seqfeature_id);
+-- you may want to add this for mysql because MySQL often is broken with
+-- respect to using the composite index for the initial keys
+--CREATE INDEX seqfeaturerel_parent ON seqfeature_relationship(parent_seqfeature_id);
 
 CREATE TABLE seqfeature_qualifier_value (
 	seqfeature_id 		INT(10) UNSIGNED NOT NULL,
@@ -487,8 +481,8 @@ ALTER TABLE ontology_path ADD CONSTRAINT FKontobject_ontpath
 
 -- taxon, taxon_name
 ALTER TABLE taxon ADD CONSTRAINT FKtaxon_taxon
-        FOREIGN KEY (ncbi_parent_taxon_id) REFERENCES taxon(ncbi_taxon_id)
-        ON DELETE CASCADE; --NOTE: dangerous - we don't really want this
+        FOREIGN KEY (parent_taxon_id) REFERENCES taxon(taxon_id)
+        ON DELETE CASCADE; 
 ALTER TABLE taxon_name ADD CONSTRAINT FKtaxon_taxonname
         FOREIGN KEY (taxon_id) REFERENCES taxon(taxon_id)
         ON DELETE CASCADE;
@@ -501,7 +495,7 @@ ALTER TABLE bioentry ADD CONSTRAINT FKbiodatabase_bioentry
 
 -- bioentry_relationship
 ALTER TABLE bioentry_relationship ADD CONSTRAINT FKontology_bioentryrel
-	FOREIGN KEY (ontology_term_id) REFERENCES ontology_term(ontology_term_id)	ON DELETE CASCADE;
+	FOREIGN KEY (ontology_term_id) REFERENCES ontology_term(ontology_term_id);
 ALTER TABLE bioentry_relationship ADD CONSTRAINT FKparentent_bioentryrel
 	FOREIGN KEY (parent_bioentry_id) REFERENCES bioentry(bioentry_id)
 	ON DELETE CASCADE;
@@ -519,11 +513,11 @@ ALTER TABLE comment ADD CONSTRAINT FKbioentry_comment
 	FOREIGN KEY(bioentry_id) REFERENCES bioentry(bioentry_id)
 	ON DELETE CASCADE;
 
--- bioentry_dblink
-ALTER TABLE bioentry_dblink ADD CONSTRAINT FKbioentry_dblink
+-- bioentry_dbxref
+ALTER TABLE bioentry_dbxref ADD CONSTRAINT FKbioentry_dblink
         FOREIGN KEY (bioentry_id) REFERENCES bioentry(bioentry_id)
 	ON DELETE CASCADE;
-ALTER TABLE bioentry_dblink ADD CONSTRAINT FKdbxref_dblink
+ALTER TABLE bioentry_dbxref ADD CONSTRAINT FKdbxref_dblink
        	FOREIGN KEY (dbxref_id) REFERENCES dbxref(dbxref_id)
 	ON DELETE CASCADE;
 
@@ -547,22 +541,20 @@ ALTER TABLE bioentry_qualifier_value ADD CONSTRAINT FKbioentry_entqual
 	FOREIGN KEY (bioentry_id) REFERENCES bioentry(bioentry_id)
 	ON DELETE CASCADE;
 ALTER TABLE bioentry_qualifier_value ADD CONSTRAINT FKontology_entqual
-	FOREIGN KEY (ontology_term_id) REFERENCES ontology_term(ontology_term_id)
-	ON DELETE CASCADE;
+	FOREIGN KEY (ontology_term_id) REFERENCES ontology_term(ontology_term_id);
 
 -- seqfeature
 ALTER TABLE seqfeature ADD CONSTRAINT FKontology_seqfeature
-	FOREIGN KEY (ontology_term_id) REFERENCES ontology_term(ontology_term_id);
+	FOREIGN KEY (type_term_id) REFERENCES ontology_term(ontology_term_id);
 ALTER TABLE seqfeature ADD CONSTRAINT FKsourceterm_seqfeature
-	FOREIGN KEY (seqfeature_source_id) REFERENCES ontology_term(ontology_term_id)
-	ON DELETE CASCADE;
+	FOREIGN KEY (source_term_id) REFERENCES ontology_term(ontology_term_id);
 ALTER TABLE seqfeature ADD CONSTRAINT FKbioentry_seqfeature
 	FOREIGN KEY (bioentry_id) REFERENCES bioentry(bioentry_id)
 	ON DELETE CASCADE;
 
 -- seqfeature_relationship
 ALTER TABLE seqfeature_relationship ADD CONSTRAINT FKontology_seqfeatrel
-	FOREIGN KEY (ontology_term_id) REFERENCES ontology_term(ontology_term_id)	ON DELETE CASCADE;
+	FOREIGN KEY (ontology_term_id) REFERENCES ontology_term(ontology_term_id);
 ALTER TABLE seqfeature_relationship ADD CONSTRAINT FKparentfeat_seqfeatrel
 	FOREIGN KEY (parent_seqfeature_id) REFERENCES seqfeature(seqfeature_id)
 	ON DELETE CASCADE;
@@ -572,8 +564,7 @@ ALTER TABLE seqfeature_relationship ADD CONSTRAINT FKchildfeat_seqfeatrel
 
 -- seqfeature_qualifier_value
 ALTER TABLE seqfeature_qualifier_value ADD CONSTRAINT FKontology_featqual
-	FOREIGN KEY (ontology_term_id) REFERENCES ontology_term(ontology_term_id)
-	ON DELETE CASCADE;
+	FOREIGN KEY (ontology_term_id) REFERENCES ontology_term(ontology_term_id);
 ALTER TABLE seqfeature_qualifier_value ADD CONSTRAINT FKseqfeature_featqual
 	FOREIGN KEY (seqfeature_id) REFERENCES seqfeature(seqfeature_id)
 	ON DELETE CASCADE;
@@ -583,19 +574,16 @@ ALTER TABLE seqfeature_location ADD CONSTRAINT FKseqfeature_featloc
 	FOREIGN KEY (seqfeature_id) REFERENCES seqfeature(seqfeature_id)
 	ON DELETE CASCADE;
 ALTER TABLE seqfeature_location ADD CONSTRAINT FKdbxref_featloc
-	FOREIGN KEY (dbxref_id) REFERENCES dbxref(dbxref_id)
-	ON DELETE CASCADE;
+	FOREIGN KEY (dbxref_id) REFERENCES dbxref(dbxref_id);
 ALTER TABLE seqfeature_location ADD CONSTRAINT FKontologyterm_featloc
-	FOREIGN KEY (ontology_term_id) REFERENCES ontology_term(ontology_term_id)
-	ON DELETE CASCADE;
+	FOREIGN KEY (ontology_term_id) REFERENCES ontology_term(ontology_term_id);
 
 -- location_qualifier_value
 ALTER TABLE location_qualifier_value ADD CONSTRAINT FKfeatloc_locqual
 	FOREIGN KEY (seqfeature_location_id) REFERENCES seqfeature_location(seqfeature_location_id)
 	ON DELETE CASCADE;
 ALTER TABLE location_qualifier_value ADD CONSTRAINT FKontology_locqual
-	FOREIGN KEY (ontology_term_id) REFERENCES ontology_term(ontology_term_id)
-	ON DELETE CASCADE;
+	FOREIGN KEY (ontology_term_id) REFERENCES ontology_term(ontology_term_id);
 
 -- Done with foreign key constraints.
 
