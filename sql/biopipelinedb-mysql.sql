@@ -20,8 +20,55 @@ CREATE TABLE job (
   KEY (analysis_id)
 );
 
+CREATE TABLE dynamic_argument(
+  input_id             int(10) unsigned DEFAULT '0' NOT NULL ,
+  datahandler_id     int(10) unsigned NOT NULL,
+  tag             varchar(40) DEFAULT '',
+  value           varchar(40) DEFAULT '',
+  rank            int(10) DEFAULT 1 NOT NULL,
+  type            enum('SCALAR','ARRAY') DEFAULT 'SCALAR' NOT NULL,
+
+  PRIMARY KEY (input_id,datahandler_id,rank),
+  KEY(datahandler_id)
+);
+
+CREATE TABLE input_create_argument (
+  input_create_argument_id    int(10) unsigned DEFAULT '0' NOT NULL auto_increment,
+  input_create_id    int(10) unsigned DEFAULT '0' NOT NULL ,
+  tag             varchar(40) DEFAULT '',
+  value           varchar(40) DEFAULT '',
+
+  PRIMARY KEY (input_create_argument_id)
+);
+
+CREATE TABLE filter_argument (
+  filter_argument_id    int(10) unsigned DEFAULT '0' NOT NULL auto_increment,
+  filter_id    int(10) unsigned DEFAULT '0' NOT NULL ,
+  tag             varchar(40) DEFAULT '',
+  value           varchar(40) DEFAULT '',
+
+  PRIMARY KEY (filter_argument_id)
+);
 
 
+CREATE TABLE filter (
+  filter_id int(10) unsigned DEFAULT '0' NOT NULL ,
+  data_monger_id int(10) unsigned DEFAULT '0' NOT NULL ,
+  module varchar(40) DEFAULT '',
+  rank            int(10) DEFAULT 1 NOT NULL,
+  
+  PRIMARY KEY(filter_id)
+);
+
+CREATE TABLE input_create (
+  input_create_id  int(10) unsigned DEFAULT '0' NOT NULL ,
+  data_monger_id int(10) unsigned DEFAULT '0' NOT NULL ,
+  module varchar(40) DEFAULT '' NOT NULL,
+  rank            int(10) DEFAULT 1 NOT NULL,
+  
+  PRIMARY KEY(data_monger_id,module,rank)
+);
+  
 CREATE TABLE iohandler (
    iohandler_id         int(10) unsigned DEFAULT '0' NOT NULL auto_increment,
    adaptor_id           int(10) DEFAULT '0' NOT NULL,
@@ -142,6 +189,7 @@ CREATE TABLE analysis (
   program          varchar(80),
   program_version  varchar(40),
   program_file     varchar(80),
+  data_monger_id   int(10) unsigned DEFAULT '',
   parameters       varchar(80),
   gff_source       varchar(40),
   gff_feature      varchar(40),
@@ -203,7 +251,6 @@ CREATE TABLE iohandler_map(
  prev_iohandler_id             int(10) NOT NULL,
  analysis_id                   int(10) NOT NULL,
  map_iohandler_id              int(10) NOT NULL,
-
 
  PRIMARY KEY (prev_iohandler_id,analysis_id)
 );
