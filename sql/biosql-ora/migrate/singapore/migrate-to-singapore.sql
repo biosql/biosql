@@ -36,7 +36,7 @@
 
 -- make sure the above works first before you run the whole script! once
 -- you've verified that, just comment out the line below.
---exit
+exit
 
 --
 -- if there's any error we better stop and rollback what can be rolled
