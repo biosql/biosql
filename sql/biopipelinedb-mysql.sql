@@ -24,11 +24,12 @@ CREATE TABLE job (
 
 CREATE TABLE iohandler (
    iohandler_id         int(10) unsigned DEFAULT '0' NOT NULL auto_increment,
-   dbadaptor_id         int(10) DEFAULT '0' NOT NULL,
+   adaptor_id           int(10) DEFAULT '0' NOT NULL,
    type                 enum ('INPUT','OUTPUT') NOT NULL,
+   adaptor_type         enum('DB','STREAM') DEFAULT 'DB' NOT NULL,
 
    PRIMARY KEY (iohandler_id),
-   KEY dbadaptor (dbadaptor_id)
+   KEY adaptor (adaptor_id)
 );
 
 # note-  the column type is meant for differentiating the input adaptors from the output adaptors
@@ -47,7 +48,8 @@ CREATE TABLE datahandler(
 CREATE TABLE argument (
   argument_id     int(10) unsigned NOT NULL auto_increment,
   datahandler_id  int(10) unsigned NOT NULL ,
-  name            varchar(40) DEFAULT '',
+  tag             varchar(40) DEFAULT '',
+  value           varchar(40) DEFAULT '',
   rank            int(10) DEFAULT 1 NOT NULL,
   type            enum('SCALAR','ARRAY') DEFAULT 'SCALAR' NOT NULL,
 
@@ -59,11 +61,19 @@ CREATE TABLE dbadaptor (
    dbname         varchar(40) DEFAULT '' NOT NULL,
    driver         varchar (40) DEFAULT '' NOT NULL,
    host           varchar (40) DEFAULT '',
+   port           int(10) unsigned  DEFAULT '',
    user           varchar (40) DEFAULT '',
    pass           varchar (40) DEFAULT '',
    module         varchar (100) DEFAULT '',
    
    PRIMARY KEY (dbadaptor_id)
+);
+
+CREATE TABLE streamadaptor (
+  streamadaptor_id  int(10) unsigned DEFAULT '0' NOT NULL auto_increment,
+  module          varchar(40) DEFAULT '' NOT NULL,
+
+  PRIMARY KEY (streamadaptor_id)
 );
 
 #modified input table to reflect only Fixed Inputs (Inputs that are filled up before the pipeline run
@@ -92,6 +102,7 @@ CREATE TABLE output (
 
 # created new table to reflect the inputs generated (as outputs of an analysis)- currently an analysis can generate
 # outputs as inputs only for the next analysis  
+
 CREATE TABLE new_input (
   input_id         int(10) unsigned DEFAULT '0' NOT NULL auto_increment,
   job_id           int(10) unsigned DEFAULT '0' NOT NULL,
