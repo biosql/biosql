@@ -118,8 +118,9 @@ CREATE TABLE ontology_relationship (
        	subject_id	INT(10) UNSIGNED NOT NULL,
        	predicate_id    INT(10) UNSIGNED NOT NULL,
        	object_id       INT(10) UNSIGNED NOT NULL,
+	ontology_id	INT(10) UNSIGNED,
 	PRIMARY KEY (ontology_relationship_id),
-	UNIQUE (subject_id,predicate_id,object_id)
+	UNIQUE (subject_id,predicate_id,object_id,ontology_id)
 ) TYPE=INNODB;
 
 CREATE INDEX ontrel_predicateid ON ontology_relationship(predicate_id);
@@ -127,7 +128,6 @@ CREATE INDEX ontrel_objectid ON ontology_relationship(object_id);
 -- you may want to add this for mysql because MySQL often is broken with
 -- respect to using the composite index for the initial keys
 --CREATE INDEX ontrel_subjectid ON ontology_relationship(subject_id);
-
 
 -- the infamous transitive closure table on ontology term relationships
 -- this is a warehouse approach - you will need to update this regularly
@@ -204,6 +204,21 @@ CREATE INDEX bioentryrel_child ON bioentry_relationship(child_bioentry_id);
 -- respect to using the composite index for the initial keys
 --CREATE INDEX bioentryrel_parent ON bioentry_relationship(parent_bioentry_id);
 
+-- for deep (depth > 1) bioentry relationship trees we need a transitive
+-- closure table too
+CREATE TABLE bioentry_path (
+   	parent_bioentry_id 	INT(10) UNSIGNED NOT NULL,
+   	child_bioentry_id 	INT(10) UNSIGNED NOT NULL,
+   	ontology_term_id 	INT(10) UNSIGNED NOT NULL,
+	PRIMARY KEY (parent_bioentry_id,child_bioentry_id,ontology_term_id)
+) TYPE=INNODB;
+
+CREATE INDEX bioentrypath_ont   ON bioentry_path(ontology_term_id);
+CREATE INDEX bioentrypath_child ON bioentry_path(child_bioentry_id);
+-- you may want to add this for mysql because MySQL often is broken with
+-- respect to using the composite index for the initial keys
+--CREATE INDEX bioentrypath_parent ON bioentry_path(parent_bioentry_id);
+
 -- some bioentries will have a sequence
 -- biosequence because sequence is sometimes a reserved word
 
@@ -212,7 +227,7 @@ CREATE TABLE biosequence (
   	version     	SMALLINT, 
   	length      	INT(10),
 	pI		NUMERIC(4,2),
-	MW		FLOAT,
+	MW		DOUBLE PRECISION,
   	alphabet        VARCHAR(10),
   	seq 		LONGTEXT,
 	PRIMARY KEY (bioentry_id)
@@ -245,8 +260,10 @@ CREATE TABLE dbxref_qualifier_value (
 	dbxref_qualifier_value_id  INT(10) UNSIGNED NOT NULL auto_increment,
        	dbxref_id 		INT(10) UNSIGNED NOT NULL,
        	ontology_term_id 	INT(10) UNSIGNED NOT NULL,
+  	rank  		   	SMALLINT,
        	value			TEXT,
-	PRIMARY KEY (dbxref_qualifier_value_id)
+	PRIMARY KEY (dbxref_qualifier_value_id),
+	UNIQUE (dbxref_id,ontology_term_id,rank)
 ) TYPE=INNODB;
 
 CREATE INDEX dbxrefqual_dbx ON dbxref_qualifier_value(dbxref_id);
@@ -261,6 +278,7 @@ CREATE INDEX dbxrefqual_ont ON dbxref_qualifier_value(ontology_term_id);
 CREATE TABLE bioentry_dbxref ( 
        	bioentry_id        INT(10) UNSIGNED NOT NULL,
        	dbxref_id          INT(10) UNSIGNED NOT NULL,
+  	rank  		   SMALLINT,
 	PRIMARY KEY (bioentry_id,dbxref_id)
 ) TYPE=INNODB;
 
@@ -365,6 +383,22 @@ CREATE INDEX seqfeaturerel_child ON seqfeature_relationship(child_seqfeature_id)
 -- respect to using the composite index for the initial keys
 --CREATE INDEX seqfeaturerel_parent ON seqfeature_relationship(parent_seqfeature_id);
 
+-- for deep (depth > 1) bioentry relationship trees we need a transitive
+-- closure table too
+CREATE TABLE seqfeature_path (
+   	parent_seqfeature_id	INT(10) UNSIGNED NOT NULL,
+   	child_seqfeature_id 	INT(10) UNSIGNED NOT NULL,
+   	ontology_term_id 	INT(10) UNSIGNED NOT NULL,
+	PRIMARY KEY (parent_seqfeature_id,child_seqfeature_id,ontology_term_id)
+) TYPE=INNODB;
+
+CREATE INDEX seqfeaturepath_ont   ON seqfeature_path(ontology_term_id);
+CREATE INDEX seqfeaturepath_child ON seqfeature_path(child_seqfeature_id);
+-- you may want to add this for mysql because MySQL often is broken with
+-- respect to using the composite index for the initial keys
+--CREATE INDEX seqfeaturerel_parent ON seqfeature_path(parent_seqfeature_id);
+
+-- tag/value associations - or ontology annotations
 CREATE TABLE seqfeature_qualifier_value (
 	seqfeature_id 		INT(10) UNSIGNED NOT NULL,
    	ontology_term_id 	INT(10) UNSIGNED NOT NULL,
@@ -494,12 +528,24 @@ ALTER TABLE bioentry ADD CONSTRAINT FKbiodatabase_bioentry
 	FOREIGN KEY (biodatabase_id) REFERENCES biodatabase(biodatabase_id);
 
 -- bioentry_relationship
+
 ALTER TABLE bioentry_relationship ADD CONSTRAINT FKontology_bioentryrel
 	FOREIGN KEY (ontology_term_id) REFERENCES ontology_term(ontology_term_id);
 ALTER TABLE bioentry_relationship ADD CONSTRAINT FKparentent_bioentryrel
 	FOREIGN KEY (parent_bioentry_id) REFERENCES bioentry(bioentry_id)
 	ON DELETE CASCADE;
 ALTER TABLE bioentry_relationship ADD CONSTRAINT FKchildent_bioentryrel
+	FOREIGN KEY (child_bioentry_id) REFERENCES bioentry(bioentry_id)
+	ON DELETE CASCADE;
+
+-- bioentry_path
+
+ALTER TABLE bioentry_path ADD CONSTRAINT FKontology_bioentrypath
+	FOREIGN KEY (ontology_term_id) REFERENCES ontology_term(ontology_term_id);
+ALTER TABLE bioentry_path ADD CONSTRAINT FKparentent_bioentrypath
+	FOREIGN KEY (parent_bioentry_id) REFERENCES bioentry(bioentry_id)
+	ON DELETE CASCADE;
+ALTER TABLE bioentry_path ADD CONSTRAINT FKchildent_bioentrypath
 	FOREIGN KEY (child_bioentry_id) REFERENCES bioentry(bioentry_id)
 	ON DELETE CASCADE;
 
@@ -553,12 +599,24 @@ ALTER TABLE seqfeature ADD CONSTRAINT FKbioentry_seqfeature
 	ON DELETE CASCADE;
 
 -- seqfeature_relationship
+
 ALTER TABLE seqfeature_relationship ADD CONSTRAINT FKontology_seqfeatrel
 	FOREIGN KEY (ontology_term_id) REFERENCES ontology_term(ontology_term_id);
 ALTER TABLE seqfeature_relationship ADD CONSTRAINT FKparentfeat_seqfeatrel
 	FOREIGN KEY (parent_seqfeature_id) REFERENCES seqfeature(seqfeature_id)
 	ON DELETE CASCADE;
 ALTER TABLE seqfeature_relationship ADD CONSTRAINT FKchildfeat_seqfeatrel
+	FOREIGN KEY (child_seqfeature_id) REFERENCES seqfeature(seqfeature_id)
+	ON DELETE CASCADE;
+
+-- seqfeature_path
+
+ALTER TABLE seqfeature_path ADD CONSTRAINT FKontology_seqfeatpath
+	FOREIGN KEY (ontology_term_id) REFERENCES ontology_term(ontology_term_id);
+ALTER TABLE seqfeature_path ADD CONSTRAINT FKparentfeat_seqfeatpath
+	FOREIGN KEY (parent_seqfeature_id) REFERENCES seqfeature(seqfeature_id)
+	ON DELETE CASCADE;
+ALTER TABLE seqfeature_path ADD CONSTRAINT FKchildfeat_seqfeatpath
 	FOREIGN KEY (child_seqfeature_id) REFERENCES seqfeature(seqfeature_id)
 	ON DELETE CASCADE;
 
