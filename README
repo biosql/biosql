@@ -22,3 +22,7 @@ have a very fairly recent version of MySQL installed. Minimum
 requirement is MySQL 3.23.50, because only from that version on
 nullable columns which participate in a UK are handled largely
 bug-free (at this point according to the MySQL documentation).
+
+3. The Oracle version so far is separate from this in
+   sql/biosql-ora. Check for a README and INSTALL document in that
+   directory.

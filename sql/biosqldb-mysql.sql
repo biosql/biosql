@@ -180,11 +180,11 @@ CREATE TABLE reference (
   	reference_location TEXT NOT NULL,
   	reference_title    TEXT,
   	reference_authors  TEXT NOT NULL,
-  	reference_medline  VARCHAR(32),
-  	reference_docid    VARCHAR(32),
+  	reference_identifier VARCHAR(32),
+  	crc	           VARCHAR(32),
 	PRIMARY KEY (reference_id),
-	UNIQUE (reference_medline),
-	UNIQUE (reference_docid)
+	UNIQUE (reference_identifier),
+	UNIQUE (crc)
 ) TYPE=INNODB;
 
 

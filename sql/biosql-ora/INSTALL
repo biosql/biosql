@@ -1,0 +1,64 @@
+Here's a rough walk-through.
+
+1) Check BS-defs.sql and make sure the settings reflect what you want.
+
+2) BS-create-all.sql is the overall build script. Make sure only those
+   commands are commented out that you know you don't want to happen
+   (e.g., you may have the tablespaces already, so skip that). Then
+   run it:
+
+	SQL> @BS-create-all
+
+   Currently this will leave certain objects as invalid, because they
+   depend on SG_Chr_Map_Assocs, which is only created in the warehouse
+   script.
+
+3) Creation of the warehouse components and the context indexes is not
+   yet included in the overall build script. In order to enable that,
+   you need to
+
+	SQL> @BS-create-warehouse
+	SQL> @BS-create-ctx  -- read the comments to check your settings
+
+   After issuing the first command SG_Chr_Map_Assocs should be
+   present. Also, there should be no objects anymore which don't
+   compile. If there still are, send email to biosql-l@open-bio.org.
+
+4) To create the Biosql API used by the Oracle driver in bioperl-db,
+   run BS-create-Biosql-API.sql:
+
+	SQL> @BS-create-Biosql-API
+
+   Bioperl-db will *not* work without running this command. The schema
+   will, though.
+
+5) I strongly recommend to create one or more separate users under
+   which to load (and retrieve data), rather than using the schema
+   owner. Because the aforementioned Biosql-API is not public (I chose
+   that to limit cluttering of the public namespace), every user who
+   wants to use the API needs to establish synonyms. There is a script
+   BS-create-Biosql-usersyns.sql which creates a script usersyns.sql,
+   which is then to be run under every user who wants to use the API,
+   for instance the user biosql. I.e.,
+
+	SQL> @BS-create-Biosql-usersyns
+	SQL> connect biosql/biosql -- or whatever your usr/pwd is
+	SQL> @usersyns
+
+6) I also recommend to create a bare-bones test schema under a
+   different schema owner specifically for the bioperl-db test suite
+   (or any other Bio* test suite for that matter), using a trimmed
+   down version of BS-create-all.sql. For those object-relational
+   adaptors to work you don't need the warehouse, nor the context
+   indexes, nor the PL/SQL API. All that is needed is the schema (in
+   BS-DDL.sql) and the biosql API (in BS-create-Biosql-API.sql). Be
+   careful to comment out the creation of roles, grants, and
+   specifically synonyms in BS-create-all when instantiating the test
+   schema.
+
+7) You should be set now. If there are invalid objects or you
+   encounter other problems with the schema, send email to
+   biosql-l@open-bio.org.
+
+Hilmar
+

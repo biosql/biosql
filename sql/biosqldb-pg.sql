@@ -156,11 +156,11 @@ CREATE TABLE reference (
 	 reference_location VARCHAR (512) NOT NULL , 
 	 reference_title VARCHAR (1000) , 
 	 reference_authors VARCHAR (4000) NOT NULL , 
-	 reference_medline VARCHAR ( 32 ) , 
-	 reference_docid VARCHAR ( 32 ) , 
+	 reference_identifier VARCHAR ( 32 ) , 
+	 crc VARCHAR ( 32 ) , 
 	 PRIMARY KEY ( reference_id ) , 
-	 UNIQUE ( reference_medline ) , 
-	 UNIQUE ( reference_docid ) ) ; 
+	 UNIQUE ( reference_identifier ) , 
+	 UNIQUE ( crc ) ) ; 
 
 CREATE TABLE bioentry_reference ( 
 	 bioentry_id INTEGER NOT NULL , 

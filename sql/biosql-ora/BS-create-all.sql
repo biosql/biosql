@@ -24,7 +24,7 @@
 @BS-defs
 
 -- 1) login as DBA
---connect &sysdba/&dbapwd
+--connect &sysdba/&dbapwd AS SYSDBA
 
 -- 2) create the tablespaces
 --@BS-create-tablespaces
@@ -50,7 +50,7 @@
 --@BS-grants
 
 -- 9) create additional users
---connect &sysdba/&dbapwd
+--connect &sysdba/&dbapwd AS SYSDBA
 --@BS-create-users
 
 -- 10) pre-populate database as necessary
