@@ -20,9 +20,6 @@
 
 @BS-defs
 
---
--- Grants for the SG_USER: read-only on all tables
--- 
 set timing off
 set heading off
 set termout off
@@ -30,9 +27,20 @@ set feedback off
 
 spool _grants
 
+--
+-- Grants for the SG_USER: read-only on all SG_ views
+-- 
 SELECT 'GRANT SELECT ON ' || view_name || ' TO &biosql_user;'
 FROM user_views
 WHERE view_name LIKE 'SG%' AND NOT view_name LIKE 'SGLD%'
+;
+
+--
+-- also, execute on the SymGene API package(s)
+--
+SELECT 'GRANT EXECUTE ON ' || object_name || ' TO &biosql_user;'
+FROM user_objects
+WHERE object_name LIKE 'SGAPI%' AND object_type = 'PACKAGE'
 ;
 
 --
@@ -50,6 +58,34 @@ WHERE view_name LIKE 'SGLD%'
 SELECT 'GRANT DELETE ON ' || view_name || ' TO &biosql_admin;'
 FROM user_views
 WHERE view_name LIKE 'SGLD%'
+;
+
+--
+-- Biosql grants for SG_LOADER: needs insert, update, delete on all BS_
+-- objects.
+-- 
+SELECT 'GRANT INSERT, UPDATE, DELETE ON ' || object_name || 
+       ' TO &biosql_loader;'
+FROM user_objects
+WHERE object_name LIKE 'BS_%' 
+AND object_name NOT LIKE '%_PK_SEQ'
+AND object_type IN ('VIEW','SYNONYM')
+;
+-- also, we need select on sequences
+SELECT 'GRANT SELECT ON ' || object_name || ' TO &biosql_loader;'
+FROM user_objects
+WHERE object_name LIKE 'BS_%_PK_SEQ' 
+AND object_type IN ('SYNONYM','SEQUENCE')
+;
+
+--
+-- Biosql grants for SG_USER: needs select on all BS_ objects.
+-- 
+SELECT 'GRANT SELECT ON ' || object_name || ' TO &biosql_user;'
+FROM user_objects
+WHERE object_name LIKE 'BS_%' 
+AND object_name NOT LIKE '%_PK_SEQ'
+AND object_type IN ('VIEW','SYNONYM')
 ;
 
 spool off

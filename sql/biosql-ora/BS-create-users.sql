@@ -21,16 +21,39 @@
 @BS-defs
 
 --
--- The read-only user for the schema. Note that this is the 'default' user;
--- real users should use their personal login and be granted the BIOSQL_USER
--- role.
+-- The Biosql-db reader/loader user for the schema. Note that this is the
+-- 'default' user; real users should use their personal login and be granted
+-- the respective role.
 --
 CREATE USER biosql
        PROFILE "DEFAULT" IDENTIFIED BY "biosql"
        DEFAULT TABLESPACE "&biosql_data"
        TEMPORARY TABLESPACE "TEMP" ACCOUNT UNLOCK
 ;
-GRANT &biosql_user TO biosql;
+GRANT &biosql_loader TO biosql;
 
+--
+-- This is the schema owner for a test schema which will be more or less
+-- empty and only used for the purpose of testing programmatic access
+-- (like the bioperl-db test suite). This is such that deleting certain
+-- entries for testing purposes does not harm loaded content.
+--
+CREATE USER biosqltest
+       PROFILE "DEFAULT" IDENTIFIED BY "biosql"
+       DEFAULT TABLESPACE "&biosql_data"
+       TEMPORARY TABLESPACE "TEMP" ACCOUNT UNLOCK
+       QUOTA UNLIMITED ON &biosql_data
+       QUOTA UNLIMITED ON &biosql_index
+       QUOTA UNLIMITED ON &biosql_lob
+;
+GRANT &biosql_loader TO biosql;
 
-
+--
+-- This is the default read-only user.
+--
+CREATE USER symgene
+       PROFILE "DEFAULT" IDENTIFIED BY "symgene"
+       DEFAULT TABLESPACE "&biosql_data"
+       TEMPORARY TABLESPACE "TEMP" ACCOUNT UNLOCK
+;
+GRANT &biosql_user TO symgene;

@@ -20,9 +20,6 @@
 
 @BS-defs
 
---
--- Synonyms for tables and views
--- 
 set timing off
 set heading off
 set termout off
@@ -30,10 +27,25 @@ set feedback off
 
 spool _syns
 
+--
+-- Synonyms for tables and views
+-- 
 SELECT 'DROP PUBLIC SYNONYM ' || view_name || ';'
 FROM user_views WHERE view_name LIKE 'SG%';
 SELECT 'CREATE PUBLIC SYNONYM ' || view_name || ' FOR ' || view_name || ';'
 FROM user_views WHERE view_name LIKE 'SG%';
+
+--
+-- Synonyms for SymGene API package(s)
+-- 
+SELECT 'DROP PUBLIC SYNONYM ' || object_name || ';'
+FROM user_objects
+WHERE object_name LIKE 'SGAPI%' AND object_type = 'PACKAGE'
+;
+SELECT 'CREATE PUBLIC SYNONYM ' || object_name || ' FOR ' || object_name || ';'
+FROM user_objects
+WHERE object_name LIKE 'SGAPI%' AND object_type = 'PACKAGE'
+;
 
 spool off
 

@@ -31,10 +31,6 @@ prompt Trigger for SGLD_Bioentries API
 
 @load-trgs/Bioentries.trg
 
-prompt Trigger for SGLD_Bioentry_Rel_Assocs API
-
-@load-trgs/Bioentry_Rel_Assocs.trg
-
 prompt Trigger for SGLD_Bioentry_Qualifier_Assocs API
 
 @load-trgs/Bioentry_Qualifier_Assocs.trg

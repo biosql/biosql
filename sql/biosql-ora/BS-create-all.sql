@@ -24,16 +24,16 @@
 @BS-defs
 
 -- 1) login as DBA
-connect &sysdba/&dbapwd
+--connect &sysdba/&dbapwd
 
 -- 2) create the tablespaces
-@BS-create-tablespaces
+--@BS-create-tablespaces
 
 -- 3) create the schema user
-@BS-create-schema-user
+--@BS-create-schema-user
 
 -- 4) Now we're ready to create our own schema. Connect as the schema owner.
-connect &biosql_owner/&biosql_pwd
+--connect &biosql_owner/&biosql_pwd
 
 -- 5) create the schema
 @BS-DDL
@@ -45,17 +45,17 @@ connect &biosql_owner/&biosql_pwd
 @BS-create-API
 
 -- 8) Security: create roles and synonyms, issue grants
-@BS-create-roles
-@BS-create-synonyms
-@BS-grants
+--@BS-create-roles
+--@BS-create-synonyms
+--@BS-grants
 
 -- 9) create additional users
-connect &sysdba/&dbapwd
-@BS-create-users
+--connect &sysdba/&dbapwd
+--@BS-create-users
 
 -- 10) pre-populate database as necessary
-connect &biosql_owner/&biosql_pwd
-@BS-prepopulate-db
+--connect &biosql_owner/&biosql_pwd
+--@BS-prepopulate-db
 
 -- done, except grants of certain roles to certain users
 

@@ -21,6 +21,10 @@
 --
 -- Package headers
 --
+prompt Creating package SGAPI
+
+@PkgAPI/SGAPI.pkg
+
 prompt Creating package BSStd
 
 @PkgAPI/BSStd.pkg
@@ -45,6 +49,10 @@ prompt Creating package for entity Bioentry_Ref_Assoc
 
 @PkgAPI/Bioentry_Ref_Assoc.pkg
 
+prompt Creating package for entity Bioentry_Dbxref_Assoc
+
+@PkgAPI/Bioentry_Dbxref_Assoc.pkg
+
 prompt Creating package for entity Biosequence
 
 @PkgAPI/Biosequence.pkg
@@ -53,21 +61,13 @@ prompt Creating package for entity Chr_Map_Assoc
 
 @PkgAPI/Chr_Map_Assoc.pkg
 
-prompt Creating package for entity Chromosome
-
-@PkgAPI/Chromosome.pkg
-
 prompt Creating package for entity Comment
 
 @PkgAPI/Comment.pkg
 
-prompt Creating package for entity DB_Release
+prompt Creating package for entity Dbxref
 
-@PkgAPI/DB_Release.pkg
-
-prompt Creating package for entity Bioentry_Rel_Assoc
-
-@PkgAPI/Bioentry_Rel_Assoc.pkg
+@PkgAPI/Dbxref.pkg
 
 prompt Creating package for entity Location_Qualifier_Assoc
 
@@ -101,10 +101,6 @@ prompt Creating package for entity Seqfeature_Qualifier_Assoc
 
 @PkgAPI/Seqfeature_Qualifier_Assoc.pkg
 
-prompt Creating package for entity Seqfeature_Source
-
-@PkgAPI/Seqfeature_Source.pkg
-
 prompt Creating package for entity Similarity
 
 @PkgAPI/Similarity.pkg
@@ -117,6 +113,9 @@ prompt Creating package for entity Taxon
 --
 -- Package bodies
 --
+prompt Creating package body for SGAPI
+
+@PkgAPI/SGAPI.pkb
 
 prompt Creating package body for BSStd
 
@@ -142,6 +141,10 @@ prompt Creating package body for entity Bioentry_Ref_Assoc
 
 @PkgAPI/Bioentry_Ref_Assoc.pkb
 
+prompt Creating package body for entity Bioentry_Dbxref_Assoc
+
+@PkgAPI/Bioentry_Dbxref_Assoc.pkb
+
 prompt Creating package body for entity Biosequence
 
 @PkgAPI/Biosequence.pkb
@@ -150,21 +153,13 @@ prompt Creating package body for entity Chr_Map_Assoc
 
 @PkgAPI/Chr_Map_Assoc.pkb
 
-prompt Creating package body for entity Chromosome
-
-@PkgAPI/Chromosome.pkb
-
 prompt Creating package body for entity Comment
 
 @PkgAPI/Comment.pkb
 
-prompt Creating package body for entity DB_Release
+prompt Creating package body for entity Dbxref
 
-@PkgAPI/DB_Release.pkb
-
-prompt Creating package body for entity Bioentry_Rel_Assoc
-
-@PkgAPI/Bioentry_Rel_Assoc.pkb
+@PkgAPI/Dbxref.pkb
 
 prompt Creating package body for entity Location_Qualifier_Assoc
 
@@ -197,10 +192,6 @@ prompt Creating package body for entity Seqfeature_Location
 prompt Creating package body for entity Seqfeature_Qualifier_Assoc
 
 @PkgAPI/Seqfeature_Qualifier_Assoc.pkb
-
-prompt Creating package body for entity Seqfeature_Source
-
-@PkgAPI/Seqfeature_Source.pkb
 
 prompt Creating package body for entity Similarity
 
