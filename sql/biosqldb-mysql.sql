@@ -37,7 +37,7 @@ CREATE TABLE taxa (
   binomial varchar(96),
   common_name varchar(255),
   ncbi_taxa_id int(10),
-  full_lineage mediumtext NOT NULL,
+  full_lineage mediumtext NOT NULL
 );
 
 CREATE INDEX taxa_ncbiid ON taxa(ncbi_taxa_id);
