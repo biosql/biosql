@@ -314,7 +314,7 @@ For Oracle:
 
   cpan>install DBD::Oracle
 
-The DBD modules nearly always need the source client libraries for
+The DBD modules will need the database client libraries for
 the relevant database on the local system to compile and link
 correctly. Occasionally this install fails in an indecipherable way.
 If the install in the CPAN shell fails it is usually best to try the
@@ -363,13 +363,15 @@ Downloading bioperl-db and loading your first sequences
 With DBI and the driver of choice set up you now should download
 the bioperl and bioperl-db package.
 
-bioperl-1.2 is available from CPAN or www.bioperl.org, and
+bioperl-1.2* is available from CPAN or www.bioperl.org, and
 bioperl-db is available from CPAN, or from cvs:
 
    >cvs -d :pserver:cvs@cvs.open-bio.org:/home/repository/bioperl login
    (Logging in to cvs@cvs.open-bio.org)
    CVS password: <<PASSWORD is cvs, lowercase>>
    >cvs -d :pserver:cvs@cvs.open-bio.org:/home/repository/bioperl co bioperl-db
+
+Use version 1.2.2 or later. 
 
 Look at the INSTALL files in the bioperl and bioperl-db directories, 
 they will give specific instructions. Bioperl uses other CPAN modules 
@@ -387,9 +389,12 @@ set appropriately, e.g.:
 Many of the bioperl installation details are discussed in the INSTALL
 file found in the bioperl package, look there for more information.
 
-With bioperl and bioperl-db installed you can use the
-load_seqdatabase.pl script in bioperl-db/scripts/biosql/ to load data, 
-for example:
+With bioperl and bioperl-db installed you are ready to load some data.
+It is advisable to pre-load the NCBI taxonomy database (use
+scripts/load_taxonomy.pl in the biosql-schema package, the details are
+in its documentation). Otherwise you'll see errors from misparsed
+organisms. To load sequence data you can use the load_seqdatabase.pl 
+script in bioperl-db/scripts/biosql/, for example:
 
   >perl load_seqdatabase.pl -dbuser psqldb -dbname bioseqdb -namespace swissprot -format swiss sprot40.dat
 
