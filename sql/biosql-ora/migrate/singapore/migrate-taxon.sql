@@ -13,7 +13,7 @@
 -- WARRANTIES WHATSOEVER. Please read the license under which you may use
 -- this script and those that come with it.
 --
--- $GNF: projects/gi/symgene/src/sql/migrate/singapore/migrate-taxon.sql,v 1.2 2003/05/21 06:47:24 hlapp Exp $
+-- $GNF: projects/gi/symgene/src/sql/migrate/singapore/migrate-taxon.sql,v 1.3 2003/06/03 01:47:06 hlapp Exp $
 --
 
 --
@@ -184,11 +184,12 @@ ALTER TABLE SG_Bioentry
        ADD  ( CONSTRAINT FKTax_Ent
               FOREIGN KEY (Tax_Oid)
                              REFERENCES SG_Taxon (Oid)  ) ;
-ALTER TABLE SG_Taxon
-       ADD  ( CONSTRAINT FKTax_Tax
-              FOREIGN KEY (Tax_Oid)
-                             REFERENCES SG_Taxon (Oid)
-			     ON DELETE CASCADE INITIALLY DEFERRED ) ;
+-- unfortunately, we can't constrain parent_taxon_id as it is violated
+-- occasionally by the downloads available from NCBI
+-- ALTER TABLE SG_Taxon
+--        ADD  ( CONSTRAINT FKTax_Tax
+--               FOREIGN KEY (Tax_Oid)
+--                              REFERENCES SG_Taxon (Oid) DEFERRED ) ;
 ALTER TABLE SG_Taxon_Name
        ADD  ( CONSTRAINT FKTax_Tan
               FOREIGN KEY (Tax_Oid)
