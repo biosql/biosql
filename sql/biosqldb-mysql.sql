@@ -14,9 +14,8 @@
 
 
 CREATE TABLE biodatabase (
-  biodatabase_id int(10) unsigned NOT NULL auto_increment,
-  name        varchar(40) NOT NULL,
-  PRIMARY KEY(biodatabase_id)
+  biodatabase_id int(10) unsigned NOT NULL PRIMARY KEY auto_increment,
+  name        varchar(40) NOT NULL
 );
 
 # we could insist that taxa are NCBI taxa id, but on reflection I made this
@@ -43,15 +42,14 @@ CREATE TABLE taxa (
 
 
 CREATE TABLE bioentry (
-  bioentry_id  int(10) unsigned NOT NULL auto_increment,
+  bioentry_id  int(10) unsigned NOT NULL PRIMARY KEY auto_increment,
   biodatabase_id  int(10) NOT NULL,
   display_id   varchar(40) NOT NULL,
   accession    varchar(40) NOT NULL,
-  entry_version int(10) NOT NULL, 
+  entry_version int(10), 
   division     varchar(3) NOT NULL,
-  UNIQUE (biodatabase_id,accession,entry_version),
-  FOREIGN KEY (biodatabase_id) REFERENCES biodatabase(biodatabase_id),
-  PRIMARY KEY(bioentry_id)
+  UNIQUE (biodatabase_id,accession,entry_version, division),
+  FOREIGN KEY (biodatabase_id) REFERENCES biodatabase(biodatabase_id)
 );
 
 #Bioentries should have one or more dates
@@ -76,11 +74,12 @@ CREATE TABLE bioentry_taxa (
 # some bioentries will have a sequence
 # biosequence because sequence is sometimes 
 # a reserved word
+# removed not null for seq_version; cjm
 
 CREATE TABLE biosequence (
   biosequence_id  int(10) unsigned NOT NULL PRIMARY KEY auto_increment,
   bioentry_id     int(10) NOT NULL,
-  seq_version     int(6) NOT NULL,
+  seq_version     int(6), 
   biosequence_str mediumtext NOT NULL,
   molecule        varchar(10),
   FOREIGN KEY (bioentry_id) REFERENCES bioentry(bioentry_id),
@@ -110,10 +109,9 @@ CREATE TABLE bioentry_direct_links (
 CREATE TABLE reference (
   reference_id       int(10) unsigned NOT NULL PRIMARY KEY auto_increment,
   reference_location varchar(255) NOT NULL,
-  reference_title    mediumtext NOT NULL,
+  reference_title    mediumtext,
   reference_authors  mediumtext NOT NULL,
-  reference_medline  int(10) NOT NULL
-
+  reference_medline  int(10)
 );
 
 CREATE INDEX medlineidx ON reference(reference_medline);
@@ -251,19 +249,19 @@ CREATE TABLE location_qualifier_value (
    seqfeature_location_id int(10) unsigned NOT NULL,
    seqfeature_qualifier_id int(10) NOT NULL,
    qualifier_value  char(255) NOT NULL,
-   slot_value int(10),
+   qualifier_int_value int(10),
   FOREIGN KEY (seqfeature_location_id) REFERENCES seqfeature_location(seqfeature_location_id)
 );
 
 # pre-make the fuzzy ontology
-INSERT INTO seqfeature_qualifier (qualifier_name) VALUES ('min-start');
-INSERT INTO seqfeature_qualifier (qualifier_name) VALUES ('min-end');
-INSERT INTO seqfeature_qualifier (qualifier_name) VALUES ('max-start');
-INSERT INTO seqfeature_qualifier (qualifier_name) VALUES ('max-end');
-INSERT INTO seqfeature_qualifier (qualifier_name) VALUES ('unknown-start');
-INSERT INTO seqfeature_qualifier (qualifier_name) VALUES ('unknown-end');
-INSERT INTO seqfeature_qualifier (qualifier_name) VALUES ('unbounded-start');
-INSERT INTO seqfeature_qualifier (qualifier_name) VALUES ('unbounded-end');
+INSERT INTO seqfeature_qualifier (qualifier_name) VALUES ('min_start');
+INSERT INTO seqfeature_qualifier (qualifier_name) VALUES ('min_end');
+INSERT INTO seqfeature_qualifier (qualifier_name) VALUES ('max_start');
+INSERT INTO seqfeature_qualifier (qualifier_name) VALUES ('max_end');
+INSERT INTO seqfeature_qualifier (qualifier_name) VALUES ('unknown_start');
+INSERT INTO seqfeature_qualifier (qualifier_name) VALUES ('unknown_end');
+INSERT INTO seqfeature_qualifier (qualifier_name) VALUES ('unbounded_start');
+INSERT INTO seqfeature_qualifier (qualifier_name) VALUES ('unbounded_end');
 # coordinate policies?
 
 #

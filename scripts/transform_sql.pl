@@ -25,7 +25,6 @@ if ($opth->{help} || !@ARGV) {
     exit 0;
 }
 my $target = $opth->{target} || "mysql";
-my $transform = \&$target;
 
 # ------------------------------------------
 # SQL GRAMMAR
@@ -96,7 +95,8 @@ my $str = join("",<F>);
 close(F);
 my $rf = $parser->schema($str);
 my $tree = node->new(@$rf);
-my $flat = &flatten($tree);
+my $ref = {};
+my $flat = &flatten($tree, $ref);
 print $flat;
 
 # ------------------------------------------
@@ -107,17 +107,21 @@ print $flat;
 # ------------------------------------------
 sub flatten {
     my $node = shift;
+    my $ref = shift;
     UNIVERSAL::isa($node, "node") or die("uh oh ", Dumper $node);
     if ($node->is_terminal) {
         return $node->data;
     }
     else {
         my @elts = ();
-        &$transform($node);
-        @elts = map {flatten($_)} @{$node->children};
+        my $transform = \&$target;
+        &$transform($node, $ref, "start");
+        @elts = map {flatten($_, $ref)} @{$node->children};
+        my $f = \&{$target."_e"};
+        my $pre = &$f($node, $ref, "end");
         my $str = join(" ", grep {$_} @elts);
         $str =~ s/\n /\n/g;
-        return $str;
+        return $pre.$str;
     }
 }
 
@@ -145,19 +149,30 @@ EOM
 #
 # these are applied to every node, they
 # can look down the tree and make
-# modifications anywhere beneath them
+# modifications anywhere beneath them.
+#
+# these should really be made into pluggable
+# modules
 # ------------------------------------------
 sub null {
 }
 sub xml { # needs work!
     my $node = shift;
     my $type = $node->type;
+    return if grep {$type eq $_} qw(createkwd tablekwd);
     my @c = @{$node->children};
+    my %filter = map {$_=>1} qw(createkwd tablekwd);
+    @c =
+      grep {
+          !$filter{$_};
+      } @c;
     @c = (node->new("<$type>"),@c,  node->new( "</$type>" )) if @c;
     push(@c, new node "\n") if grep {/^$type$/} qw(stmt);
     push(@c, new node "\n") if grep {/^$type$/} qw(createtable);
     unshift(@c, new node "\n") if grep {/^$type$/} qw(coldef);
     $node->children(@c);
+}
+sub xml_e {
 }
 sub prettify {
     my $node = shift;
@@ -173,8 +188,31 @@ sub mysql {
     prettify($node);
     1;
 }
+sub n3 {
+    my $node = shift;
+    if ($node->type eq "comment") {
+        $node->remove;
+    }
+}
+sub pg_e {
+    my $node = shift;
+    my $ref = shift;
+    my $type = $node->type;
+    my @c = @{$node->children};
+    my $data = $c[0]->data;
+    my $pre = "";
+    if ($type eq "createtable") {
+        my $table = $c[2]->children->[0]->data;
+        if ($ref->{seqnh}) {
+            my $seqn = $ref->{seqnh}->{$table};
+            $pre = "CREATE SEQUENCE $seqn;\n" if $seqn;
+        }
+    }
+    $pre;
+}
 sub pg {
     my $node = shift;
+    my $ref = shift;
     prettify($node);
     my $type = $node->type;
     my @c = @{$node->children};
@@ -183,12 +221,33 @@ sub pg {
         $data =~ s/^\#/\-\-\-/;
         $c[0]->data($data);
     }
+    if ($type eq "stmt") {
+        if ($node->children->[0]->type eq "createtable") {
+            $ref->{table} = $node->children->[0]->children->[0]->data;
+        }
+    }
+    if ($type eq "createtable") {
+        $ref->{table} = $c[2]->children->[0]->data;
+#        my $cdefs = $c[4]->children->[0]->children->[0]->children;
+    }
     if ($type eq "coltype") {
         my $q = $c[2]; # get the qualifier
         if ($q && $q->children->[0] && $q->children->[0]->children) {
             my @qs = @{$q->children->[0]->children};
             if (grep {/^auto_increment$/i} map {$_->children->[0]->data}@qs) {
-                @c = (new node ['inttype', 'serial']);
+                my $table = $ref->{table} || die("asserion error");
+                # postgres needs a sequence datatype
+                my $seqn = $table."_pkey_seq";
+                $ref->{seqnh} = {} unless $ref->{seqnh};
+                $ref->{seqnh}->{$table} = $seqn;
+                @c = (node->new( [['inttype', 'integer'],  # type
+                                  ['qualifs',
+                                   'primary key',
+                                   'default',
+                                   '(nextval',
+                                   '(',
+                                   "'$seqn'",
+                                   '))']]));
             }
         }
         if ($c[0]->children->[0]->type eq "inttype") {
@@ -243,5 +302,9 @@ sub is_terminal {
 sub data {
     my $self = shift;
     $self->is_terminal ? $self->type(@_) : '';
+}
+sub remove { # nullifies node
+    my $self = shift;
+    @$self = [""];
 }
 1;
