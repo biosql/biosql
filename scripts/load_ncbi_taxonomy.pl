@@ -473,8 +473,9 @@ sub handle_diffs {
 	} elsif ($ndone) {
 	    # only old's left to remove
 	    if($nodelete) {
-		print "note: node (".join(";",@{$old->[$o]}).") is retired\n" 
-		    if $verbose;
+		print STDERR "note: node (".
+		    join(";",map { defined($_) ? $_ : ""; } @{$old->[$o]}).
+		    ") is retired\n" if $verbose;
 	    } elsif(!$delete->(@{$old->[$o]})) {
 		die "failed to delete node (".join(";",@{$old->[$o]}).
 		    "): ".$dbh->errstr;
@@ -509,7 +510,8 @@ sub handle_diffs {
 	    } elsif ($oldentry->[0] < $newentry->[0]) {
 		# old entry to be removed
 		if($nodelete) {
-		    print "note: node (".join(";",@{$oldentry}).
+		    print STDERR "note: node (".
+			join(";",map { defined($_) ? $_ : ""; } @{$oldentry}).
 			") is retired\n" if $verbose;
 		} elsif(!$delete->(@{$oldentry})) {
 		    die "failed to delete node (".join(";",@{$oldentry}).
@@ -733,6 +735,10 @@ sub end_work{
 	$dbh->do('UNLOCK TABLES');
     }
     # end the transaction
-    $commit ? $dbh->commit() : $dbh->rollback();
+    my $rv = $commit ? $dbh->commit() : $dbh->rollback();
+    if(!$rv) {
+	print STDERR ($commit ? "commit " : "rollback ").
+	    "failed: ".$dbh->errstr;
+    }
     $dbh->disconnect() unless defined($commit);
 }
