@@ -2,7 +2,7 @@
 -- SQL script to create the views for SYMGENE/BioSQL that utilize the
 -- warehouse materialized views.
 --
--- $GNF: projects/gi/symgene/src/DB/BS-create-wh-views.sql,v 1.4 2003/05/23 17:42:27 hlapp Exp $
+-- $GNF: projects/gi/symgene/src/DB/BS-create-wh-views.sql,v 1.5 2003/06/10 20:06:30 hlapp Exp $
 --
 
 --
@@ -54,13 +54,13 @@ SELECT
 	, ECM.EntSeg_Loc_Oid	EntSeg_Loc_Oid
 	, ECM.EntSeg_Oid	EntSeg_Oid
 	, ECM.Ent_Oid		Ent_Oid
-	, ECM.Ent_Tax_Oid	Ent_Tax_Oid
-	, ECM.DB_Oid		DB_Oid
+	, Ent.Tax_Oid		Ent_Tax_Oid
+	, Ent.DB_Oid		DB_Oid
 	, ECM.ChrSeg_Loc_Oid	ChrSeg_Loc_Oid
 	, ECM.ChrSeg_Oid	ChrSeg_Oid
 	, ECM.Chr_Oid		Chr_Oid
-	, ECM.Chr_Tax_Oid	Chr_Tax_Oid
-	, ECM.Asm_Oid		Asm_Oid
+	, Chr.Tax_Oid		Chr_Tax_Oid
+	, Chr.DB_Oid		Asm_Oid
 	, ECM.EntSeg_Type_Oid	EntSeg_Type_Oid
 	, ECM.EntSeg_Source_Oid	EntSeg_Source_Oid
 FROM SG_Ent_Chr_Map ECM, 
@@ -71,12 +71,12 @@ FROM SG_Ent_Chr_Map ECM,
      SG_Term FType, SG_Term FSrc
 WHERE
      ECM.Ent_Oid	 = Ent.Oid
-AND  Ent.DB_Oid		 = DB.Oid
-AND  Ent.Tax_Oid	 = EntTNod.Oid (+)
+AND  ENT.DB_Oid		 = DB.Oid
+AND  ENT.Tax_Oid	 = EntTNod.Oid (+)
 AND  EntTax.Tax_Oid (+)	 = EntTNod.Oid
 AND  ECM.Chr_Oid	 = Chr.Oid
-AND  Ent.DB_Oid		 = Asm.Oid
-AND  Ent.Tax_Oid	 = ChrTNod.Oid
+AND  Chr.DB_Oid	 	 = Asm.Oid
+AND  Chr.Tax_Oid	 = ChrTNod.Oid
 AND  ChrTax.Tax_Oid	 = ChrTNod.Oid
 AND  ECM.EntSeg_Type_Oid = FType.Oid
 AND  ECM.EntSeg_Source_Oid = FSrc.Oid
@@ -91,7 +91,7 @@ PROMPT Creating view SG_Bioentry_Names
 CREATE OR REPLACE VIEW SG_Bioentry_Names
 AS
 SELECT
-	BEN.Ent_Name		Ent_Keyword
+	BEN.Ent_Name		Ent_Name_Key
 	, Ent.Accession		Ent_Accession
 	, Ent.Identifier	Ent_Identifier
 	, Ent.Version		Ent_Version

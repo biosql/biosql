@@ -1,7 +1,7 @@
 --
 -- SQL script to create the views for SYMGENE/BioSQL
 --
--- $GNF: projects/gi/symgene/src/DB/BS-create-views.sql,v 1.20 2003/05/23 21:58:43 hlapp Exp $
+-- $GNF: projects/gi/symgene/src/DB/BS-create-views.sql,v 1.21 2003/06/10 20:06:30 hlapp Exp $
 --
 
 --
@@ -27,16 +27,18 @@ PROMPT Creating view SG_Taxa
 CREATE OR REPLACE VIEW SG_Taxa
 AS
 SELECT
-	Tax.Name		Tax_Name
-	, TNam.Name		Tax_Common_Name
-	, TNod.NCBI_Taxon_ID	Tax_NCBI_Taxon_ID
-	, NULL			Tax_Full_Lineage
-	, TNod.Oid		Tax_Oid
-FROM SG_Taxon_Name Tax,
-     SG_Taxon TNod LEFT OUTER JOIN SG_Taxon_Name TNam ON (
-		TNam.Tax_Oid = TNod.Oid
-	AND     TNam.Name_Class = 'common name'
-     )
+	Tax.Name				Tax_Name
+	, Tnm.Collapse_Common_Names(TNod.Oid)	Tax_Common_Name
+	, DECODE(TNod.Node_Rank,
+		 'tribe', Tax.Name,
+		 'varietas', Tax.Name,
+		 'no rank', Tax.Name,
+		 'subspecies', Tax.Name,
+		 NULL)				Tax_Variant
+	, TNod.NCBI_Taxon_ID			Tax_NCBI_Taxon_ID
+	, NULL					Tax_Full_Lineage
+	, TNod.Oid				Tax_Oid
+FROM SG_Taxon_Name Tax, SG_Taxon TNod 
 WHERE
      Tax.Tax_Oid          = TNod.Oid
 AND  Tax.Name_Class       = 'scientific name'

@@ -3,7 +3,7 @@
 -- API Package body for general or special purpose SymGene functions and
 -- procedures.
 --
--- $GNF: projects/gi/symgene/src/DB/PkgAPI/SGAPI.pkb,v 1.4 2003/05/21 09:33:18 hlapp Exp $
+-- $GNF: projects/gi/symgene/src/DB/PkgAPI/SGAPI.pkb,v 1.5 2003/06/11 10:03:20 hlapp Exp $
 --
 
 --
@@ -23,30 +23,30 @@
 CREATE OR REPLACE
 PACKAGE BODY SGAPI IS
 
-CURSOR Ancestor_c (Ent_Oid IN SG_Bioentry.Oid%TYPE)
-IS
-	SELECT Subj_Ent_Oid, Level
-	FROM SG_Bioentry_Assoc
-	START WITH Obj_Ent_Oid = Ent_Oid
-	CONNECT BY PRIOR Subj_Ent_Oid = Obj_Ent_Oid
-;
-
 FUNCTION Platonic_Ent(Ent_Oid IN SG_Bioentry.Oid%TYPE)
 RETURN SG_Bioentry.Oid%TYPE
 IS
-	-- default is there is no parent
-	Parent_Oid SG_Bioentry.Oid%TYPE DEFAULT Ent_Oid;
-	lvl        INTEGER DEFAULT 0;
 BEGIN
-	-- if there is a hierarchy of parents, get the last (highest) one
-	FOR parent_r IN Ancestor_c (Ent_Oid)
-	LOOP
-		IF parent_r.Level > lvl THEN 
-		   Parent_Oid := parent_r.Subj_Ent_Oid;
-		   lvl := parent_r.Level;
-		END IF;
-	END LOOP;
-	RETURN Parent_Oid;
+	RETURN EntA.Platonic_Ent(Ent_Oid);
+END;
+
+FUNCTION Ent_Descendants(
+			Ent_Oid		IN SG_Bioentry.Oid%TYPE,
+		 	Trm_Oid		IN SG_Term.Oid%TYPE DEFAULT NULL,
+			Trm_Name	IN SG_Term.Name%TYPE DEFAULT NULL,
+			Trm_Identifier IN SG_Term.Identifier%TYPE DEFAULT NULL,
+			Ont_Oid		IN SG_Ontology.Oid%TYPE DEFAULT NULL,
+			Ont_Name	IN SG_Ontology.Name%TYPE DEFAULT NULL)
+RETURN Oid_List_t
+IS
+BEGIN
+	RETURN EntA.Ent_Descendants(
+			Ent_Oid		=> Ent_Oid,
+		 	Trm_Oid		=> Trm_Oid,
+			Trm_Name	=> Trm_Name,
+			Trm_Identifier  => Trm_Identifier,
+			Ont_Oid		=> Ont_Oid,
+			Ont_Name	=> Ont_Name);
 END;
 
 PROCEDURE delete_mapping(

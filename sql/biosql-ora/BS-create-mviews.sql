@@ -1,7 +1,7 @@
 --
 -- SQL script to create the warehouse materialized views for SYMGENE/BioSQL
 --
--- $GNF: projects/gi/symgene/src/DB/BS-create-mviews.sql,v 1.7 2003/05/21 06:50:13 hlapp Exp $
+-- $GNF: projects/gi/symgene/src/DB/BS-create-mviews.sql,v 1.8 2003/06/10 20:06:30 hlapp Exp $
 --
 
 --
@@ -46,16 +46,11 @@ SELECT
 	, EntSeg.Oid		EntSeg_Oid
 	, EntSeg.Type_Trm_Oid	EntSeg_Type_Oid
 	, EntSeg.Source_Trm_Oid	EntSeg_Source_Oid
-	, Ent.Oid		Ent_Oid
-	, Ent.Tax_Oid		Ent_Tax_Oid
-	, Ent.DB_Oid		DB_Oid
+	, EntSeg.Ent_Oid	Ent_Oid
 	, ChrLoc.Oid		ChrSeg_Loc_Oid
 	, ChrSeg.Oid		ChrSeg_Oid
-	, Chr.Oid		Chr_Oid
-	, Chr.Tax_Oid		Chr_Tax_Oid
-	, Chr.DB_Oid		Asm_Oid
-FROM SG_Bioentry Ent, SG_Bioentry Chr,
-     SG_Seqfeature EntSeg, SG_Seqfeature ChrSeg,
+	, ChrSeg.Ent_Oid	Chr_Oid
+FROM SG_Seqfeature EntSeg, SG_Seqfeature ChrSeg,
      SG_Location EntLoc, SG_Location ChrLoc,
      SG_Seqfeature_Qualifier_Assoc FeaTrmA,
      SG_Seqfeature_Qualifier_Assoc NumA,
@@ -64,10 +59,8 @@ FROM SG_Bioentry Ent, SG_Bioentry Chr,
      SG_Term Qual,
      SG_Term NumQual
 WHERE
-     EntSeg.Ent_Oid   = Ent.Oid
-AND  EntLoc.Fea_Oid   = EntSeg.Oid
+     EntLoc.Fea_Oid   = EntSeg.Oid
 AND  EntLoc.Rank      = 1
-AND  ChrSeg.Ent_Oid   = Chr.Oid
 AND  ChrLoc.Fea_Oid   = ChrSeg.Oid
 AND  ChrLoc.Rank      = 1
 AND  HSP.Subj_Fea_Oid = EntSeg.Oid
