@@ -2,18 +2,50 @@
 This directory tree contains the Oracle version of the BioSQL schema.
 ======================================================================
 
-The Oracle version presently is decoupled from the other RDBMSs so far
-supported. This is for several reasons.
+The Oracle version presently is further decoupled from the other
+RDBMSs so far supported. While the relational model is identical to
+the MySQL and PostgreSQL versions, notable differences are the naming
+convention used and the richness of the complete schema instance.
 
-   - The Oracle version is richer. It comes with triggers, a complete
-     API as views and PL/SQL packages, materialized views, and context
-     indexes.
+This Oracle version of Biosql is also the database of the Symgene
+platform developed at GNF, a gene-centric database of integrated gene
+and genome annotation. Development of this platform has driven the
+advancement of the Oracle version in the past and can be anticipated
+to keep doing so.
 
-   - The creator of the Oracle version uses a completely different
-     naming convention than the original creators of BioSQL
-     use. Given the ability to create views and synonyms, it is not
-     necessary to sacrifice naming conventions to achieve
-     compatibility.
+Compatibility with the BioSQL naming convention as used in the MySQL
+and PostgreSQL versions of the schema is achieved via a compatibility
+layer that establishes synonyms and an API consisting of
+views. Because of this being possible, it is not necessary to
+sacrifice naming conventions just to achieve compatibility.
+
+Compared to the MySQL and PostgreSQL versions the Oracle version has
+the following extra functionality:
+
+	- Customizable, very modular instantiation (see BS-create-all
+	and BS-defs-local)
+
+	- Complete API both for SELECTs as views and for programming
+	as PL/SQL packages for all tables, see also general user
+	programming API as exposed in the SGAPI package (which just
+	delegates into the table APIs)
+
+	- Load API using denormalized views with insert triggers (only on
+	a few entities, and if you won't ever insert anything through
+	sql*plus you're not going to hit this)
+
+	- Ready-to-use scripts for allocating staged permission levels
+	to different roles
+
+	- Warehouse views with maintenance scripts, so far for genome
+	mappings and accession/name/symbol searching
+
+	- Ready-to-use scripts for generating context indexes (basically,
+	Oracle's text search engine) on descriptions, references, and
+	function-related annotation
+
+	- coming: gene expression warehouse table, and whatever else GNF
+	is going to develop for our Symgene platform.
 
 For installation instructions read the INSTALL document. See LICENSE
 for the license terms under which you may use biosql-ora.

@@ -1,49 +1,67 @@
+======================================================================
+$Id$
+======================================================================
+Note in advance: This document assumes that you are fairly familiar
+with the Oracle database and its administration. By following the
+steps below you will be creating a schema in Oracle (*not* a new
+instance), a task usually carried out by a DBA or experienced database
+developers. If you are neither of the two, I'd still encourage you to
+try, but expect problems and prepare yourself for consulting the vast
+amount of documentation available on OTN (otn.oracle.com).
+======================================================================
+Note: if you instantiated the schema in the pre-Singapore version and
+you are wondering how to migrate it, check out the migration
+instructions at the end of this document.
+======================================================================
+
 Here's a rough walk-through.
-
-0) If you instantiated this schema before in the pre-Singapore version
-   (2/03) and you would like to upgrade (migrate) your schema, possibly
-   without losing data, follow item 1) below and afterwards skip to
-   migrate/singapore/migrate-to-singapore.sql. Carefully read the
-   disclaimer in that file, and follow the backup instructions (note
-   that having a backup is no guarantee for also being able to restore
-   it, so make sure you can unless you can afford to lose all data in
-   the schema in the worst case). Run the script and see whether you
-   get an error:
-
-	SQL> @migrate/singapore/migrate-to-singapore
-
-   If there is an error saying that BS-defs-local.sql wasn't found,
-   fix that error by editing the path or following item 1) below as I
-   said you should. Once there is no error edit the
-   migrate-to-singapore.sql script to comment out the line containing
-   the word exit all by itself (you may want to comment out the
-   preceding PROMPT statements too). Then run the script again like
-   above. Cross your fingers. To limit the damage in case of errors
-   the script will exit upon the first error it encounters. Depending
-   on your volume of data that you have in your Biosql instance, the
-   entire migration may take a while. I had 8 million bioentries and the
-   whole migration took several hours. You will want to make sure that
-   nobody changes the data while the schema is being migrated.
-
-   BTW the migration script did work for me without any error (well,
-   finally). There is a chance it will for you too.
-
-Now for those who want to instantiate Biosql from scratch.
 
 1) Copy BS-defs.sql to BS-defs-local.sql. Then edit the latter to make
    sure the settings reflect what you want.
 
-2) BS-create-all.sql is the overall build script. Make sure only those
-   commands are commented out that you know you don't want to happen
-   (e.g., you may have the tablespaces already, so skip that). Note
-   that the default version may have commands commented out that you
-   may actually want to run. After editing it, run it:
+   It is important that you take your time going over the definitions
+   and make sure you alter them such that they make sense for your
+   desired or existing set-up.
+
+   You will encounter two roles schema_creator and base_user the
+   actual names of which you need to specify as the defaults will
+   almost certainly not exist in your instance of Oracle. The role
+   specified for schema_creator won't be needed if you are not going
+   to have the Biosql schema owner created through BS-create-all (see
+   below). Otherwise specify the name of the role you grant to schema
+   developers and owners. The role you name for base_user will be
+   granted to all roles created in the scripts, and will usually be
+   the role for users who merely connect and either select or
+   manipulate data, but do not create their own schema objects. If you
+   don't have such a role already, create at least an empty one, like
+   so:
+
+    SQL> CREATE ROLE my_connect_role;
+
+   and then put in my_connect_role as the name for the base_user role. 
+
+2) BS-create-all.sql is the overall build script. Pull up the script
+   in the text editor of your choice and make sure only those commands
+   are not commented out that you know you want to happen (e.g., if
+   you have the tablespaces already, skip that step). Note that the
+   default version may have commands commented out that you may
+   actually want to run. 
+
+   When finished adjusting the script to your needs, run it by issuing
+   the following at the sqlplus prompt, assuming you started sqlplus
+   in the directory where the biosql-ora scripts live.
 
 	SQL> @BS-create-all
 
+   Note that if you skipped the steps creating the schema owner you
+   need to issue this as the schema owner.
+
    Currently this will leave certain objects as invalid, because they
-   depend on SG_Chr_Map_Assocs, which are only created in the warehouse
-   script.
+   depend on SG_Ent_Chr_Map, which is only created in the warehouse
+   script (see below). You won't need any of the invalid objects for
+   use with bioperl-db or any other of the Bio* language bindings, so
+   you may as well choose to ignore them, or even drop the invalid
+   objects.
 
 3) Creation of the warehouse components and the context indexes is not
    yet included in the overall build script. In order to enable that
@@ -52,9 +70,9 @@ Now for those who want to instantiate Biosql from scratch.
 	SQL> @BS-create-warehouse
 	SQL> @BS-create-ctx  -- read the comments to check your settings
 
-   After issuing the first command SG_Chr_Map_Assocs should be
-   present. Also, there should be no objects which don't compile. 
-   If there still are, send email to biosql-l@open-bio.org.
+   After issuing the first command SG_Ent_Chr_Map should be
+   present. Also, there should be no objects anymore which don't
+   compile. If there still are, send email to biosql-l@open-bio.org.
 
 4) To create the Biosql API used by the Oracle driver in bioperl-db
    run BS-create-Biosql-API.sql:
@@ -80,17 +98,50 @@ Now for those who want to instantiate Biosql from scratch.
 6) I also recommend that you create a bare-bones test schema under a
    different schema owner specifically for the bioperl-db test suite
    (or any other Bio* test suite for that matter), using a trimmed
-   down version of BS-create-all.sql. For those object-relational
-   adaptors to work you don't need the warehouse, nor the context
-   indexes, nor the PL/SQL API. All that is needed is the schema (in
-   BS-DDL.sql) and the biosql API (in BS-create-Biosql-API.sql). Be
-   careful to comment out the creation of roles, grants, and
-   specifically synonyms in BS-create-all when instantiating the test
-   schema.
+   down version of BS-create-all.sql. In order for the
+   object-relational adaptors to work you don't need the warehouse,
+   nor the context indexes, nor the PL/SQL API. All that is needed is
+   the schema (in BS-DDL.sql) and the biosql API (in
+   BS-create-Biosql-API.sql). Be careful to comment out the creation
+   of roles, grants, and specifically synonyms in BS-create-all when
+   instantiating the test schema.
 
 7) You should be set now. If there are invalid objects or you
    encounter other problems with the schema, send email to
    biosql-l@open-bio.org.
 
-Hilmar
+Hilmar Lapp, hlapp at gmx.net
+
+======================================================================
+
+Appendix A) Migration From Pre-Singapore
+----------------------------------------
+
+If you instantiated this schema before in the pre-Singapore version
+(2/03) and you would like to upgrade (migrate) your schema, possibly
+without losing data, follow item 1) below and afterwards skip to
+migrate/singapore/migrate-to-singapore.sql. Carefully read the
+disclaimer in that file, and follow the backup instructions (note that
+having a backup is no guarantee for also being able to restore it, so
+make sure you can unless you can afford to lose all data in the schema
+in the worst case). Run the script and see whether you get an error:
+
+	SQL> @migrate/singapore/migrate-to-singapore
+
+If there is an error saying that BS-defs-local.sql wasn't found, fix
+that error by editing the path or following item 1) below as I said
+you should. Once there is no error edit the migrate-to-singapore.sql
+script to comment out the line containing the word exit all by itself
+(you may want to comment out the preceding PROMPT statements
+too). Then run the script again like above. Cross your fingers. To
+limit the damage in case of errors the script will exit upon the first
+error it encounters. Depending on your volume of data that you have in
+your Biosql instance, the entire migration may take a while. I had 8
+million bioentries and the whole migration took several hours. You
+will want to make sure that nobody changes the data while the schema
+is being migrated.
+
+BTW the migration script did work for me without any error (well,
+finally). There is a chance it will for you too.
+
 

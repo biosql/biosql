@@ -38,11 +38,11 @@
 -- 5) create the schema
 @BS-DDL
 
--- 6) create select-views
-@BS-create-views
-
--- 7) create the load API
+-- 6) create the PL/SQL package API and the load API
 @BS-create-API
+
+-- 7) create select-views
+@BS-create-views
 
 -- 8) Security: create roles and synonyms, issue grants
 @BS-create-roles

@@ -1,3 +1,7 @@
+======================================================================
+$Id$
+======================================================================
+
 This is the BioSQL distribution. BioSQL is a generic unifying schema
 for storing sequences from different sources, for instance Genbank or
 Swissprot.
@@ -7,15 +11,12 @@ different Bio* projects, Bioperl, Biojava, Biopython, and Bioruby.
 Entries stored through an application written in, say, Bioperl could
 be retrieved by another written in Biojava.
 
---------------------------------------------------------------------------
+======================================================================
 INSTALLATION NOTES
 
-1. Generally, the MySQL schema sources are the basis for the other
-RDBMS schemas. For example, the Postgres SQL is made like this:
-
- $ scripts/transform_sql -target pg biosqldb-mysql.sql > biosqldb-pg.sql
-
-Replace the biosqldb-mysql.sql with the DDL source you are interested in.
+1. Generally, the support for each RDBMS is maintained individually,
+as there are too many differences between the RDBMSs for automatic
+generation from a single DDL.
 
 2. For the MySQL version to instantiate and run properly you need to
 have a very fairly recent version of MySQL installed. Minimum
@@ -25,3 +26,18 @@ manner (according to the MySQL documentation).
 
 3. The Oracle version is maintained separately, in sql/biosql-ora. 
 Check for a README and INSTALL document in that directory.
+
+======================================================================
+POST v1.0 TODO
+======================================================================
+
+The following changes are scheduled for the next release of
+BioSQL. These changes incur incompatibilities with the 1.0 version and
+will require a database migration.
+
+  - Rename comment table to anncomment and rename term_synonym.synonym
+  to term_synonym.name in mysql and pg schemas. This will make the
+  names consistent with the Oracle schema, avoiding Oracle reserved
+  words.
+
+
