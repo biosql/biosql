@@ -14,6 +14,14 @@
 -- Migration of the MySQL schema to InnoDB by Hilmar Lapp <hlapp at gmx.net>
 -- Post-Cape Town changes by Hilmar Lapp.
 -- Singapore changes by Hilmar Lapp and Aaron Mackey.
+-- post-Singapore changes by Hilmar Lapp.
+--
+
+--
+-- Certain definitions in this schema, in particular certain unique
+-- key constrain definitions, are optional, or may optionally be
+-- changed (customized, if you wil). Search for the word OPTION: in
+-- capital letters.
 --
 -- Note that some aspects of the schema like uniqueness constraints
 -- may be changed to best suit your requirements. Search for the tag
@@ -361,7 +369,7 @@ CREATE TABLE reference (
 	dbxref_id	   INT(10) UNSIGNED,
   	location 	   TEXT NOT NULL,
   	title    	   TEXT,
-  	authors  	   TEXT NOT NULL,
+  	authors  	   TEXT,
   	crc	   	   VARCHAR(32),
 	PRIMARY KEY (reference_id),
 	UNIQUE (dbxref_id),
