@@ -1,10 +1,14 @@
+======================================================================
+$Id$
+======================================================================
 
 BioSQL - INSTALL
 -----------------
 
 This document gives an overview of the installation process for
-BioSQL on 3 different platforms: MySQL, Postgres, and Oracle, 
-from a Bioperl perspective.
+BioSQL on 3 different platforms: MySQL, Postgres, and Oracle. 
+It's written from a Bioperl and Unix perspective but most of the 
+instructions will work for Unix generally, independent of language.
 
 In each case the installation has multiple steps, and there may
 be peculiarities for a given server and a given operating system.
@@ -20,12 +24,12 @@ fetch data. You don't have to use these projects - you can query
 the database directly with SQL (Structured Query Language) or using 
 the direct bindings of the different languages (e.g. JDBC, Perl DBI).
 
-BioSQL has two separate components. The first component is a SQL
-database server, currently one of MySQL, Postgres or Oracle (but any SQL
-database will work with a little tweaking - we test regularly against
-these engines). The second component is the client program, usually
-written in one of Perl, Java or Python. Sensible uses of BioSQL
-include:
+BioSQL needs a SQL database server system, currently one of MySQL, 
+Postgres or Oracle (but any SQL database will work with a little 
+tweaking - we test regularly against these engines). BioSQL will
+typically be used with a client program written in one of Perl, 
+Java or Python (for example, the Perl client is the bioperl-db 
+package). Sensible uses of BioSQL include:
 
    (a) Storing the entire GenBank or EMBL or Swissprot public
        repository in the BioSQL schema, providing efficient access to
@@ -37,8 +41,8 @@ include:
 
 Yes, there are many other SQL-compatible databases which can serve
 these purposes. The great thing about BioSQL is the interoperability 
-between the various Bio* projects (see www.open-bio.org for more on all these
-efforts), their respective languages. and a single database.
+between the various Bio* projects (see www.open-bio.org for more on 
+all these efforts).
 
 
 Server Setup
@@ -164,7 +168,7 @@ You may have to be root to do this.
 In some systems, readline is not installed. In this case either:
 
     (a) install the readline package from ftp.gnu.org, or
-    (b) go ./configure --without-readline
+    (b) do ./configure --without-readline
 
 Now make a new postgres user, for example 'psqldb', which will
 actually run the postgres server on your machine. On linux and other
@@ -267,7 +271,7 @@ should you run into trouble. Just as with MySQL and Postgres you will
 probably need to create special users to install the database and
 you will need root privileges. Unlike MySQL and Postgres Oracle uses
 configuration files, such as tnsnames.ora and listener.ora, that keep
-track of essential information, many problems are solved by making 
+track of essential information and many problems are solved by making 
 changes in these files. Other common problems concern the
 environmental variables $ORACLE_HOME and $ORACLE_SID, make sure that
 these are set correctly.
@@ -281,7 +285,7 @@ to load your data. You currently have three options: Perl and BioPerl,
 Java and BioJava and Python and BioPython. You will need to download
 the schema, the same for all three languages, and the supporting modules 
 for each language. In each case the package is a mixture of generic 
-modules for database access and then the bioSQL binding code.
+modules for database access and then the BioSQL binding code.
 
 
 Schema Loading
@@ -335,7 +339,7 @@ To load with Perl, you need to have the DBI module installed as well
 as the driver for your SQL database of choice. The Oracle, MySQL, 
 and Postgres modules are available at CPAN:
 
-  >sudo perl -MCPAN -e 'shell'
+  >sudo perl -MCPAN -e shell
 
 'sudo' is a command that allows users to issue commands as root.
 Alternatively become root.
