@@ -39,7 +39,6 @@ CREATE TABLE rule_conditions (
 
 CREATE TABLE input_dba(
    input_dba_id             int(10) unsigned DEFAULT '0' NOT NULL auto_increment,
-   analysis_id          int(10) DEFAULT '0' NOT NULL,
    dbadaptor_id         int(10) DEFAULT '0' NOT NULL,
    biodbadaptor         varchar(100) DEFAULT '' NOT NULL,
    biodbname            varchar(40) DEFAULT '' NOT NULL,
@@ -104,6 +103,21 @@ CREATE TABLE analysis (
   gff_feature      varchar(40),
 
   PRIMARY KEY (analysis_id)
+);
+
+
+# created new table to relect the fact that many analysis can share an input_dba
+# and that an analysis can have more than 1 input_dba
+
+CREATE TABLE analysis_input_dba(
+  analysis_input_dba_id     int(10) unsigned DEFAULT'0' NOT NULL auto_increment,
+  analysis_id               int(10) NOT NULL,
+  input_dba_id              int(10) NOT NULL,
+
+  PRIMARY KEY (analysis_input_dba),
+  KEY analysis (analysis_id),
+  KEY input_dba (input_dba_id)
+
 );
 
 #Added IO_id, changed module to runnable and removed module_version
