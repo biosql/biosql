@@ -3,7 +3,7 @@
 -- API Package body for general or special purpose SymGene functions and
 -- procedures.
 --
--- $GNF: projects/gi/symgene/src/DB/PkgAPI/SGAPI.pkb,v 1.2 2003/01/16 23:41:11 hlapp Exp $
+-- $GNF: projects/gi/symgene/src/DB/PkgAPI/SGAPI.pkb,v 1.4 2003/05/21 09:33:18 hlapp Exp $
 --
 
 --
@@ -25,10 +25,10 @@ PACKAGE BODY SGAPI IS
 
 CURSOR Ancestor_c (Ent_Oid IN SG_Bioentry.Oid%TYPE)
 IS
-	SELECT Src_Ent_Oid, Level
+	SELECT Subj_Ent_Oid, Level
 	FROM SG_Bioentry_Assoc
-	START WITH Tgt_Ent_Oid = Ent_Oid
-	CONNECT BY PRIOR Src_Ent_Oid = Tgt_Ent_Oid
+	START WITH Obj_Ent_Oid = Ent_Oid
+	CONNECT BY PRIOR Subj_Ent_Oid = Obj_Ent_Oid
 ;
 
 FUNCTION Platonic_Ent(Ent_Oid IN SG_Bioentry.Oid%TYPE)
@@ -42,7 +42,7 @@ BEGIN
 	FOR parent_r IN Ancestor_c (Ent_Oid)
 	LOOP
 		IF parent_r.Level > lvl THEN 
-		   Parent_Oid := parent_r.Src_Ent_Oid;
+		   Parent_Oid := parent_r.Subj_Ent_Oid;
 		   lvl := parent_r.Level;
 		END IF;
 	END LOOP;
@@ -52,7 +52,7 @@ END;
 PROCEDURE delete_mapping(
 		Asm_Name	IN SG_Biodatabase.Name%TYPE,
 		DB_Name		IN SG_Biodatabase.Name%TYPE DEFAULT NULL,
-		FSrc_Name	IN SG_Ontology_Term.Name%TYPE DEFAULT NULL)
+		FSrc_Name	IN SG_Term.Name%TYPE DEFAULT NULL)
 IS
 BEGIN
 	ChrEntA.delete_mapping(Asm_Name  => Asm_Name,

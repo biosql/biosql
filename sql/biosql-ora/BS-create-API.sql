@@ -1,7 +1,7 @@
 --
 -- SQL script to load the API, consisting of views, packages, and triggers.
 --
--- $Id$
+-- $GNF: projects/gi/symgene/src/DB/BS-create-API.sql,v 1.4 2003/05/02 02:24:44 hlapp Exp $
 --
 
 --

@@ -3,7 +3,7 @@
 --
 -- NOTE: You need to execute this as user CTXSYS.
 --
--- $GNF: projects/gi/symgene/src/DB/BS-create-ctx-wproc.sql,v 1.2 2002/11/26 10:07:17 hlapp Exp $
+-- $GNF: projects/gi/symgene/src/DB/BS-create-ctx-wproc.sql,v 1.4 2003/05/15 23:01:30 hlapp Exp $
 --
 
 --
@@ -23,7 +23,7 @@
 --
 -- get settings
 --
-@BS-defs
+@BS-defs-local
 
 --
 -- create wrapper procedures
@@ -67,7 +67,7 @@ start _proc_grants
 --
 BEGIN
 	-- ref_doc multi-col datastore
-	--CTX_DDL.drop_preference('ref_doc_md');
+	CTX_DDL.drop_preference('ref_doc_md');
 	CTX_DDL.create_preference('ref_doc_md', 'MULTI_COLUMN_DATASTORE');
 	CTX_DDL.set_attribute('ref_doc_md', 'columns',
 			      'authors "authors", title "title", location "location"');

@@ -1,7 +1,7 @@
 --
 -- SQL script to create all PL/SQL API packages.
 --
--- $Id$
+-- $GNF: projects/gi/symgene/src/DB/BS-create-pkg.sql,v 1.9 2003/05/21 06:50:13 hlapp Exp $
 --
 
 --
@@ -41,6 +41,10 @@ prompt Creating package for entity Bioentry_Assoc
 
 @PkgAPI/Bioentry_Assoc.pkg
 
+prompt Creating package for entity Bioentry_Path
+
+@PkgAPI/Bioentry_Path.pkg
+
 prompt Creating package for entity Bioentry_Qualifier_Assoc
 
 @PkgAPI/Bioentry_Qualifier_Assoc.pkg
@@ -69,17 +73,21 @@ prompt Creating package for entity Dbxref
 
 @PkgAPI/Dbxref.pkg
 
+prompt Creating package for entity Dbxref_Qualifier_Assoc
+
+@PkgAPI/Dbxref_Qualifier_Assoc.pkg
+
+prompt Creating package for entity Location
+
+@PkgAPI/Location.pkg
+
 prompt Creating package for entity Location_Qualifier_Assoc
 
 @PkgAPI/Location_Qualifier_Assoc.pkg
 
-prompt Creating package for entity Ontology_Term
+prompt Creating package for entity Ontology
 
-@PkgAPI/Ontology_Term.pkg
-
-prompt Creating package for entity Ontology_Term_Assoc
-
-@PkgAPI/Ontology_Term_Assoc.pkg
+@PkgAPI/Ontology.pkg
 
 prompt Creating package for entity Reference
 
@@ -89,13 +97,17 @@ prompt Creating package for entity Seqfeature
 
 @PkgAPI/Seqfeature.pkg
 
+prompt Creating package for entity Seqfeature_Dbxref_Assoc
+
+@PkgAPI/Seqfeature_Dbxref_Assoc.pkg
+
 prompt Creating package for entity Seqfeature_Assoc
 
 @PkgAPI/Seqfeature_Assoc.pkg
 
-prompt Creating package for entity Seqfeature_Location
+prompt Creating package for entity Seqfeature_Path
 
-@PkgAPI/Seqfeature_Location.pkg
+@PkgAPI/Seqfeature_Path.pkg
 
 prompt Creating package for entity Seqfeature_Qualifier_Assoc
 
@@ -108,6 +120,30 @@ prompt Creating package for entity Similarity
 prompt Creating package for entity Taxon
 
 @PkgAPI/Taxon.pkg
+
+prompt Creating package for entity Taxon_Name
+
+@PkgAPI/Taxon_Name.pkg
+
+prompt Creating package for entity Term
+
+@PkgAPI/Term.pkg
+
+prompt Creating package for entity Term_Synonym
+
+@PkgAPI/Term_Synonym.pkg
+
+prompt Creating package for entity Term_Dbxref_Assoc
+
+@PkgAPI/Term_Dbxref_Assoc.pkg
+
+prompt Creating package for entity Term_Assoc
+
+@PkgAPI/Term_Assoc.pkg
+
+prompt Creating package for entity Term_Path
+
+@PkgAPI/Term_Path.pkg
 
 
 --
@@ -132,6 +168,10 @@ prompt Creating package body for entity Bioentry
 prompt Creating package body for entity Bioentry_Assoc
 
 @PkgAPI/Bioentry_Assoc.pkb
+
+prompt Creating package body for entity Bioentry_Path
+
+@PkgAPI/Bioentry_Path.pkb
 
 prompt Creating package body for entity Bioentry_Qualifier_Assoc
 
@@ -161,17 +201,21 @@ prompt Creating package body for entity Dbxref
 
 @PkgAPI/Dbxref.pkb
 
+prompt Creating package body for entity Dbxref_Qualifier_Assoc
+
+@PkgAPI/Dbxref_Qualifier_Assoc.pkb
+
+prompt Creating package body for entity Location
+
+@PkgAPI/Location.pkb
+
 prompt Creating package body for entity Location_Qualifier_Assoc
 
 @PkgAPI/Location_Qualifier_Assoc.pkb
 
-prompt Creating package body for entity Ontology_Term
+prompt Creating package body for entity Ontology
 
-@PkgAPI/Ontology_Term.pkb
-
-prompt Creating package body for entity Ontology_Term_Assoc
-
-@PkgAPI/Ontology_Term_Assoc.pkb
+@PkgAPI/Ontology.pkb
 
 prompt Creating package body for entity Reference
 
@@ -185,9 +229,13 @@ prompt Creating package body for entity Seqfeature_Assoc
 
 @PkgAPI/Seqfeature_Assoc.pkb
 
-prompt Creating package body for entity Seqfeature_Location
+prompt Creating package body for entity Seqfeature_Path
 
-@PkgAPI/Seqfeature_Location.pkb
+@PkgAPI/Seqfeature_Path.pkb
+
+prompt Creating package body for entity Seqfeature_Dbxref_Assoc
+
+@PkgAPI/Seqfeature_Dbxref_Assoc.pkb
 
 prompt Creating package body for entity Seqfeature_Qualifier_Assoc
 
@@ -200,4 +248,28 @@ prompt Creating package body for entity Similarity
 prompt Creating package body for entity Taxon
 
 @PkgAPI/Taxon.pkb
+
+prompt Creating package body for entity Taxon_Name
+
+@PkgAPI/Taxon_Name.pkb
+
+prompt Creating package body for entity Term
+
+@PkgAPI/Term.pkb
+
+prompt Creating package body for entity Term_Synonym
+
+@PkgAPI/Term_Synonym.pkb
+
+prompt Creating package body for entity Term_Dbxref_Assoc
+
+@PkgAPI/Term_Dbxref_Assoc.pkb
+
+prompt Creating package body for entity Term_Assoc
+
+@PkgAPI/Term_Assoc.pkb
+
+prompt Creating package body for entity Term_Path
+
+@PkgAPI/Term_Path.pkb
 

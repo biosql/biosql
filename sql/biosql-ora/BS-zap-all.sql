@@ -3,7 +3,7 @@
 --
 -- Use with caution - the content is gone afterwards - you can't rollback.
 --
--- $Id$
+-- $GNF: projects/gi/symgene/src/DB/BS-zap-all.sql,v 1.3 2003/05/02 02:24:44 hlapp Exp $
 --
 
 set timing off

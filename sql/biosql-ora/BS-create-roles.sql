@@ -1,7 +1,7 @@
 --
 -- SQL script to create the CLONETRAILS roles.
 --
--- $Id$
+-- $GNF: projects/gi/symgene/src/DB/BS-create-roles.sql,v 1.4 2003/05/02 02:24:44 hlapp Exp $
 --
 
 --
@@ -18,7 +18,7 @@
 -- MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 --
 
-@BS-defs
+@BS-defs-local
 
 --
 -- Create the base role for this schema. Because of the grants, SYSTEM

@@ -1,9 +1,7 @@
 --
 -- SQL script to refresh the Data Warehouse views for SYMGENE/BioSQL
 --
--- $Id$
---
--- $GNF: projects/gi/symgene/src/DB/BS-refresh-warehouse.sql,v 1.5 2003/01/16 23:41:11 hlapp Exp $
+-- $GNF: projects/gi/symgene/src/DB/BS-refresh-warehouse.sql,v 1.8 2003/05/15 23:01:30 hlapp Exp $
 --
 
 --
@@ -31,4 +29,5 @@ BEGIN
 END;
 /
 
+-- exit sqlplus
 exit

@@ -1,7 +1,7 @@
 --
 -- SQL script to create the views for SYMGENE/BioSQL
 --
--- $Id$
+-- $GNF: projects/gi/symgene/src/DB/BS-create-views.sql,v 1.20 2003/05/23 21:58:43 hlapp Exp $
 --
 
 --
@@ -27,13 +27,19 @@ PROMPT Creating view SG_Taxa
 CREATE OR REPLACE VIEW SG_Taxa
 AS
 SELECT
-	Tax.Name		Tax_Name,
-	Tax.Variant		Tax_Variant,
-	Tax.Common_Name		Tax_Common_Name,
-	Tax.NCBI_Taxon_ID	Tax_NCBI_Taxon_ID,
-	Tax.Full_Lineage	Tax_Full_Lineage,
-	Tax.Oid			Tax_Oid
-FROM SG_Taxon Tax
+	Tax.Name		Tax_Name
+	, TNam.Name		Tax_Common_Name
+	, TNod.NCBI_Taxon_ID	Tax_NCBI_Taxon_ID
+	, NULL			Tax_Full_Lineage
+	, TNod.Oid		Tax_Oid
+FROM SG_Taxon_Name Tax,
+     SG_Taxon TNod LEFT OUTER JOIN SG_Taxon_Name TNam ON (
+		TNam.Tax_Oid = TNod.Oid
+	AND     TNam.Name_Class = 'common name'
+     )
+WHERE
+     Tax.Tax_Oid          = TNod.Oid
+AND  Tax.Name_Class       = 'scientific name'
 ;
 
 --
@@ -45,11 +51,11 @@ PROMPT Creating view SG_Biodatabases
 CREATE OR REPLACE VIEW SG_Biodatabases
 AS
 SELECT
-	DB.Oid			DB_Oid,
-	DB.Name			DB_Name,
-	DB.Authority		DB_Authority,
-	DB.Acronym		DB_Acronym,
-	DB.URI			DB_URI
+	DB.Oid			DB_Oid
+	, DB.Name		DB_Name
+	, DB.Authority		DB_Authority
+	, DB.Acronym		DB_Acronym
+	, DB.URI		DB_URI
 FROM SG_Biodatabase DB
 ;
 
@@ -62,28 +68,25 @@ PROMPT Creating view SG_Bioentries
 CREATE OR REPLACE VIEW SG_Bioentries
 AS
 SELECT
-	Ent.Accession		Ent_Accession,
-	Ent.Identifier		Ent_Identifier,
-	Ent.Display_ID		Ent_Display_ID,
-	Ent.Description		Ent_Description,
-	Ent.Version		Ent_Version,
-	Sq.Division		Ent_Division,
-	Sq.Alphabet		Ent_Alphabet,
-	Sq.Version		Ent_Seq_Version,
-	Sq.Length		Ent_Length,
-	DB.Name			DB_Name,
-	DB.Acronym		DB_Acronym,
-	Tax.Name		Tax_Name,
-	Tax.Variant		Tax_Variant,
-	Tax.Common_Name		Tax_Common_Name,
-	Tax.NCBI_Taxon_ID	Tax_NCBI_Taxon_ID,
-	Ent.Oid			Ent_Oid,
-	Ent.DB_Oid		DB_Oid,
-	Ent.Tax_Oid		Tax_Oid
-FROM SG_Bioentry Ent, SG_Biodatabase DB, SG_Taxon Tax, SG_Biosequence Sq
+	Ent.Accession		Ent_Accession
+	, Ent.Identifier	Ent_Identifier
+	, Ent.Name		Ent_Name
+	, Ent.Description	Ent_Description
+	, Ent.Version		Ent_Version
+	, Ent.Division		Ent_Division
+	, Sq.Alphabet		Ent_Alphabet
+	, Sq.Version		Ent_Seq_Version
+	, Sq.Length		Ent_Length
+	, DB.Name		DB_Name
+	, DB.Acronym		DB_Acronym
+	, Ent.Oid		Ent_Oid
+	, Ent.DB_Oid		DB_Oid
+	, Ent.Tax_Oid		Tax_Oid
+-- legacy mappings
+	, Ent.Name		Ent_Display_ID
+FROM SG_Bioentry Ent, SG_Biodatabase DB, SG_Biosequence Sq
 WHERE
      Ent.DB_Oid  = DB.Oid
-AND  Ent.Tax_Oid = Tax.Oid (+)
 AND  Ent.Oid     = Sq.Ent_Oid (+)
 ;
 
@@ -96,114 +99,157 @@ PROMPT Creating view SG_Bioentry_Assocs
 CREATE OR REPLACE VIEW SG_Bioentry_Assocs
 AS
 SELECT
-	Ont.Name		Term_Name,
-	Ont.Identifier		Term_Identifier,
-	Cat.Name		Cat_Name,
-	SEnt.Accession		Src_Ent_Accession,
-	SEnt.Identifier		Src_Ent_Identifier,
-	SEnt.Display_ID		Src_Ent_Display_ID,
-	SEnt.Description	Src_Ent_Description,
-	SEnt.Version		Src_Ent_Version,
-	SDB.Name		Src_DB_Name,
-	SDB.Acronym		Src_DB_Acronym,
-	STax.Name		Src_Tax_Name,
-	STax.Variant		Src_Tax_Variant,
-	STax.Common_Name	Src_Tax_Common_Name,
-	STax.NCBI_Taxon_ID	Src_Tax_NCBI_Taxon_ID,
-	TEnt.Accession		Tgt_Ent_Accession,
-	TEnt.Identifier		Tgt_Ent_Identifier,
-	TEnt.Display_ID		Tgt_Ent_Display_ID,
-	TEnt.Description	Tgt_Ent_Description,
-	TEnt.Version		Tgt_Ent_Version,
-	TDB.Name		Tgt_DB_Name,
-	TDB.Acronym		Tgt_DB_Acronym,
-	TTax.Name		Tgt_Tax_Name,
-	TTax.Variant		Tgt_Tax_Variant,
-	TTax.Common_Name	Tgt_Tax_Common_Name,
-	TTax.NCBI_Taxon_ID	Tgt_Tax_NCBI_Taxon_ID,
-	EntA.Oid		EntA_Oid,
-	EntA.Src_Ent_Oid	Src_Ent_Oid,
-	SEnt.DB_Oid		Src_DB_Oid,
-	SEnt.Tax_Oid		Src_Tax_Oid,
-	EntA.Tgt_Ent_Oid	Tgt_Ent_Oid,
-	TEnt.DB_Oid		Tgt_DB_Oid,
-	TEnt.Tax_Oid		Tgt_Tax_Oid,
-	EntA.Ont_Oid		Ont_Oid,
-	Cat.Oid			Cat_Oid
-FROM SG_Bioentry_Assoc EntA,
-     SG_Bioentry SEnt, SG_Biodatabase SDB, SG_Taxon STax,
-     SG_Bioentry TEnt, SG_Biodatabase TDB, SG_Taxon TTax,
-     SG_Ontology_Term Ont, SG_Ontology_Term Cat
+	Trm.Name		Trm_Name
+	, Trm.Identifier	Trm_Identifier
+	, Ont.Name		Ont_Name
+	, SEnt.Accession	Subj_Ent_Accession
+	, SEnt.Identifier	Subj_Ent_Identifier
+	, SEnt.Name		Subj_Ent_Name
+	, SEnt.Description	Subj_Ent_Description
+	, SEnt.Version		Subj_Ent_Version
+	, TEnt.Accession	Obj_Ent_Accession
+	, TEnt.Identifier	Obj_Ent_Identifier
+	, TEnt.Name		Obj_Ent_Name
+	, TEnt.Description	Obj_Ent_Description
+	, TEnt.Version		Obj_Ent_Version
+	, EntA.Oid		EntA_Oid
+	, EntA.Subj_Ent_Oid	Subj_Ent_Oid
+	, SEnt.DB_Oid		Subj_DB_Oid
+	, SEnt.Tax_Oid		Subj_Tax_Oid
+	, EntA.Obj_Ent_Oid	Obj_Ent_Oid
+	, TEnt.DB_Oid		Obj_DB_Oid
+	, TEnt.Tax_Oid		Obj_Tax_Oid
+	, EntA.Trm_Oid		Trm_Oid
+	, Trm.Ont_Oid		Ont_Oid
+FROM SG_Bioentry_Assoc EntA, SG_Bioentry SEnt, SG_Bioentry TEnt, SG_Term Trm,
+     SG_Ontology Ont
 WHERE
-     SEnt.DB_Oid      = SDB.Oid
-AND  TEnt.DB_Oid      = TDB.Oid
-AND  EntA.Src_Ent_Oid = SEnt.Oid
-AND  EntA.Tgt_Ent_Oid = TEnt.Oid
-AND  EntA.Ont_Oid     = Ont.Oid
-AND  Ont.Ont_Oid      = Cat.Oid
-AND  SEnt.Tax_Oid     = STax.Oid (+)
-AND  TEnt.Tax_Oid     = TTax.Oid (+)
+     EntA.Subj_Ent_Oid = SEnt.Oid
+AND  EntA.Obj_Ent_Oid  = TEnt.Oid
+AND  EntA.Trm_Oid      = Trm.Oid
+AND  Trm.Ont_Oid       = Ont.Oid
+;
+
+--
+-- Ontologies
+--
+PROMPT
+PROMPT Creating view SG_Ontologies
+
+CREATE OR REPLACE VIEW SG_Ontologies
+AS
+SELECT
+	Ont.Oid			Ont_Oid,
+	Ont.Name		Ont_Name,
+	Ont.Definition		Ont_Definition
+FROM SG_Ontology Ont
 ;
 
 --
 -- Ontology terms
 --
 PROMPT
-PROMPT Creating view SG_Ontology_Terms
+PROMPT Creating view SG_Terms
 
-CREATE OR REPLACE VIEW SG_Ontology_Terms
+CREATE OR REPLACE VIEW SG_Terms
 AS
 SELECT
-	Ont.Name		Ont_Name,
-	Ont.Identifier		Ont_Identifier,
-	Ont.Definition		Ont_Definition,
-	Cat.Name		Cat_Name,
-	Cat.Identifier		Cat_Identifier,
-	Cat.Definition		Cat_Definition,
-	Ont.Oid			Ont_Oid,
-	Cat.Oid			Cat_Oid
-FROM SG_Ontology_Term Ont, SG_Ontology_Term Cat
+	Trm.Name		Trm_Name
+	, Trm.Identifier	Trm_Identifier
+	, Trm.Definition	Trm_Definition
+	, Trm.Is_Obsolete	Trm_Is_Obsolete
+	, Ont.Name		Ont_Name
+	, Ont.Definition	Ont_Definition
+	, Trm.Oid		Trm_Oid
+	, Trm.Ont_Oid		Ont_Oid
+FROM SG_Term Trm, SG_Ontology Ont
 WHERE
-     Ont.Ont_Oid  = Cat.Oid (+)
+     Trm.Ont_Oid  = Ont.Oid
 ;
 
 --
 -- Ontology term associations; this is root-oriented
 --
 PROMPT
-PROMPT Creating view SG_Ontology_Term_Assocs
+PROMPT Creating view SG_Term_Assocs
 
-CREATE OR REPLACE VIEW SG_Ontology_Term_Assocs
+CREATE OR REPLACE VIEW SG_Term_Assocs
 AS
 SELECT
-	SOnt.Name		Src_Term_Name,
-	SOnt.Identifier		Src_Term_Identifier,
-	SCat.Name		Src_Cat_Name,
-	SCat.Identifier		Src_Cat_Identifier,
-	TOnt.Name		Type_Term_Name,
-	TOnt.Identifier		Type_Term_Identifier,
-	TCat.Name		Type_Cat_Name,
-	TCat.Identifier		Type_Cat_Identifier,
-	Ont.Name		Tgt_Term_Name,
-	Ont.Identifier		Tgt_Term_Identifier,
-	Cat.Name		Tgt_Cat_Name,
-	Cat.Identifier		Tgt_Cat_Identifier,
-	SOnt.Oid		Src_Term_Oid,
-	SOnt.Ont_Oid		Src_Cat_Oid,
-	Ont.Oid			Tgt_Term_Oid,
-	Ont.Ont_Oid		Tgt_Cat_Oid,
-	TOnt.Oid		Type_Term_Oid,
-	TOnt.Ont_Oid		Type_Cat_Oid
-FROM SG_Ontology_Term SOnt, SG_Ontology_Term TOnt, SG_Ontology_Term Ont,
-     SG_Ontology_Term SCat, SG_Ontology_Term TCat, SG_Ontology_Term Cat,
-     SG_Ontology_Term_Assoc OntA
+	AOnt.Name		Ont_Name
+	, STrm.Name		Subj_Trm_Name
+	, STrm.Identifier	Subj_Trm_Identifier
+	, STrm.Is_Obsolete	Subj_Trm_Is_Obsolete
+	, SOnt.Name		Subj_Ont_Name
+	, TTrm.Name		Pred_Trm_Name
+	, TTrm.Identifier	Pred_Trm_Identifier
+	, TTrm.Is_Obsolete	Pred_Trm_Is_Obsolete
+	, TOnt.Name		Pred_Ont_Name
+	, OTrm.Name		Obj_Trm_Name
+	, OTrm.Identifier	Obj_Trm_Identifier
+	, OTrm.Is_Obsolete	Obj_Trm_Is_Obsolete
+	, OOnt.Name		Obj_Ont_Name
+	, TrmA.Oid		TrmA_Oid
+	, TrmA.Ont_Oid		Ont_Oid
+	, TrmA.Subj_Trm_Oid	Subj_Trm_Oid
+	, STrm.Ont_Oid		Subj_Ont_Oid
+	, TrmA.Pred_Trm_Oid	Pred_Trm_Oid
+	, TTrm.Ont_Oid		Pred_Ont_Oid
+	, TrmA.Obj_Trm_Oid	Obj_Trm_Oid
+	, OTrm.Ont_Oid		Obj_Ont_Oid
+FROM SG_Term_Assoc TrmA, SG_Term STrm, SG_Term TTrm, SG_Term OTrm,
+     SG_Ontology SOnt, SG_Ontology TOnt, SG_Ontology OOnt, SG_Ontology AOnt
 WHERE
-     OntA.Src_Ont_Oid  = SOnt.Oid
-AND  OntA.Type_Ont_Oid = TOnt.Oid
-AND  OntA.Tgt_Ont_Oid  = Ont.Oid
-AND  SOnt.Ont_Oid      = SCat.Oid
-AND  Ont.Ont_Oid       = Cat.Oid
-AND  TOnt.Ont_Oid      = TCat.Oid (+)
+     TrmA.Subj_Trm_Oid  = STrm.Oid
+AND  TrmA.Pred_Trm_Oid  = TTrm.Oid
+AND  TrmA.Obj_Trm_Oid   = OTrm.Oid
+AND  TrmA.Ont_Oid	= AOnt.Oid
+AND  STrm.Ont_Oid       = SOnt.Oid
+AND  OTrm.Ont_Oid       = OOnt.Oid
+AND  TTrm.Ont_Oid       = TOnt.Oid
+;
+
+--
+-- Transitive closure over term relationships
+--
+PROMPT
+PROMPT Creating view SG_Term_Paths
+
+CREATE OR REPLACE VIEW SG_Term_Paths
+AS
+SELECT
+	TrmP.Distance		TrmP_Distance
+	, AOnt.Name		Ont_Name
+	, STrm.Name		Subj_Trm_Name
+	, STrm.Identifier	Subj_Trm_Identifier
+	, STrm.Is_Obsolete	Subj_Trm_Is_Obsolete
+	, SOnt.Name		Subj_Ont_Name
+	, TTrm.Name		Pred_Trm_Name
+	, TTrm.Identifier	Pred_Trm_Identifier
+	, TTrm.Is_Obsolete	Pred_Trm_Is_Obsolete
+	, TOnt.Name		Pred_Ont_Name
+	, OTrm.Name		Obj_Trm_Name
+	, OTrm.Identifier	Obj_Trm_Identifier
+	, OTrm.Is_Obsolete	Obj_Trm_Is_Obsolete
+	, OOnt.Name		Obj_Ont_Name
+	, TrmP.Oid		TrmP_Oid
+	, TrmP.Ont_Oid		Ont_Oid
+	, TrmP.Subj_Trm_Oid	Subj_Trm_Oid
+	, STrm.Ont_Oid		Subj_Ont_Oid
+	, TrmP.Pred_Trm_Oid	Pred_Trm_Oid
+	, TTrm.Ont_Oid		Pred_Ont_Oid
+	, TrmP.Obj_Trm_Oid	Obj_Trm_Oid
+	, OTrm.Ont_Oid		Obj_Ont_Oid
+FROM SG_Term_Path TrmP, SG_Term STrm, SG_Term TTrm, SG_Term OTrm,
+     SG_Ontology SOnt, SG_Ontology TOnt, SG_Ontology OOnt, SG_Ontology AOnt
+WHERE
+     TrmP.Subj_Trm_Oid  = STrm.Oid
+AND  TrmP.Pred_Trm_Oid  = TTrm.Oid
+AND  TrmP.Obj_Trm_Oid   = OTrm.Oid
+AND  TrmP.Ont_Oid	= AOnt.Oid
+AND  STrm.Ont_Oid       = SOnt.Oid
+AND  OTrm.Ont_Oid       = OOnt.Oid
+AND  TTrm.Ont_Oid       = TOnt.Oid
 ;
 
 --
@@ -215,12 +261,19 @@ PROMPT Creating view SG_References
 CREATE OR REPLACE VIEW SG_References
 AS
 SELECT
-	Ref.Title		Ref_Title,
-	Ref.Authors		Ref_Authors,
-	Ref.Location		Ref_Location,
-	Ref.Document_ID		Ref_Document_ID,
-	Ref.Oid			Ref_Oid
-FROM SG_Reference Ref
+	Ref.Title		Ref_Title
+	, Ref.Authors		Ref_Authors
+	, Ref.Location		Ref_Location
+	, Ref.CRC		Ref_CRC
+	, DBX.DBName		DBX_DBName
+	, DBX.Accession		DBX_Accession
+	, Ref.Oid		Ref_Oid
+	, Ref.DBX_Oid		DBX_Oid
+-- legacy mappings
+	, DBX.Accession		Ref_Document_ID
+FROM SG_Reference Ref, SG_DBXref DBX
+WHERE
+     Ref.DBX_Oid  = DBX.Oid (+)
 ;
 
 --
@@ -232,10 +285,10 @@ PROMPT Creating view SG_DBXRefs
 CREATE OR REPLACE VIEW SG_DBXRefs
 AS
 SELECT
-	DBX.DBName		DBX_DBName,
-	DBX.Accession		DBX_Accession,
-	DBX.Version		DBX_Version,
-	DBX.Oid			DBX_Oid
+	DBX.DBName		DBX_DBName
+	, DBX.Accession		DBX_Accession
+	, DBX.Version		DBX_Version
+	, DBX.Oid		DBX_Oid
 FROM SG_DBXRef DBX
 ;
 
@@ -248,28 +301,11 @@ PROMPT Creating view SG_Bioentry_Comment_Assocs
 CREATE OR REPLACE VIEW SG_Bioentry_Comment_Assocs
 AS
 SELECT
-	Cmt.Comment_Text	Cmt_Comment_Text,
-	Cmt.Rank		Cmt_Rank,
-	Ent.Accession		Ent_Accession,
-	Ent.Identifier		Ent_Identifier,
-	Ent.Display_ID		Ent_Display_ID,
-	Ent.Description		Ent_Description,
-	Ent.Version		Ent_Version,
-	DB.Name			DB_Name,
-	DB.Acronym		DB_Acronym,
-	Tax.Name		Tax_Name,
-	Tax.Variant		Tax_Variant,
-	Tax.Common_Name		Tax_Common_Name,
-	Tax.NCBI_Taxon_ID	Tax_NCBI_Taxon_ID,
-	Cmt.Oid			Cmt_Oid,
-	Ent.Oid			Ent_Oid,
-	Ent.DB_Oid		DB_Oid,
-	Ent.Tax_Oid		Tax_Oid
-FROM SG_Comment Cmt, SG_Bioentry Ent, SG_Biodatabase DB, SG_Taxon Tax
-WHERE
-     Cmt.Ent_Oid = Ent.Oid
-AND  Ent.DB_Oid  = DB.Oid
-AND  Ent.Tax_Oid = Tax.Oid (+)
+	Cmt.Comment_Text	Cmt_Comment_Text
+	, Cmt.Rank		Cmt_Rank
+	, Cmt.Oid		Cmt_Oid
+	, Cmt.Ent_Oid		Ent_Oid
+FROM SG_Comment Cmt
 ;
 
 --
@@ -281,35 +317,24 @@ PROMPT Creating view SG_Bioentry_Ref_Assocs
 CREATE OR REPLACE VIEW SG_Bioentry_Ref_Assocs
 AS
 SELECT
-	Ref.Title		Ref_Title,
-	Ref.Authors		Ref_Authors,
-	Ref.Location		Ref_Location,
-	Ref.Document_ID		Ref_Document_ID,
-	EntRefA.Start_Pos       EntRefA_Start_Pos,
-	EntRefA.End_Pos		EntRefA_End_Pos,
-	EntRefA.Rank		EntRefA_Rank,
-	Ent.Accession		Ent_Accession,
-	Ent.Identifier		Ent_Identifier,
-	Ent.Display_ID		Ent_Display_ID,
-	Ent.Description		Ent_Description,
-	Ent.Version		Ent_Version,
-	DB.Name			DB_Name,
-	DB.Acronym		DB_Acronym,
-	Tax.Name		Tax_Name,
-	Tax.Variant		Tax_Variant,
-	Tax.Common_Name		Tax_Common_Name,
-	Tax.NCBI_Taxon_ID	Tax_NCBI_Taxon_ID,
-	Ent.Oid			Ent_Oid,
-	Ent.DB_Oid		DB_Oid,
-	Ent.Tax_Oid		Tax_Oid,
-	Ref.Oid			Ref_Oid
-FROM SG_Bioentry Ent, SG_Biodatabase DB, SG_Taxon Tax,
-     SG_Bioentry_Ref_Assoc EntRefA, SG_Reference Ref
+	Ref.Title		Ref_Title
+	, Ref.Authors		Ref_Authors
+	, Ref.Location		Ref_Location
+	, Ref.CRC		Ref_CRC
+	, DBX.DBName 		DBX_DBName
+	, DBX.Accession		DBX_Accession
+	, EntRefA.Start_Pos	EntRefA_Start_Pos
+	, EntRefA.End_Pos	EntRefA_End_Pos
+	, EntRefA.Rank		EntRefA_Rank
+	, EntRefA.Ent_Oid	Ent_Oid
+	, Ref.Oid		Ref_Oid
+	, Ref.DBX_Oid		DBX_Oid
+-- legacy mappings
+	, DBX.Accession		Ref_Document_ID
+FROM SG_Bioentry_Ref_Assoc EntRefA, SG_Reference Ref, SG_DBXRef DBX
 WHERE     
-     Ent.DB_Oid      = DB.Oid
-AND  EntRefA.Ent_Oid = Ent.Oid
-AND  EntRefA.Ref_Oid = Ref.Oid
-AND  Ent.Tax_Oid = Tax.Oid (+)
+     EntRefA.Ref_Oid = Ref.Oid
+AND  Ref.DBX_Oid     = DBX.Oid (+)
 ;
 
 --
@@ -321,31 +346,15 @@ PROMPT Creating view SG_Bioentry_DBXRef_Assocs
 CREATE OR REPLACE VIEW SG_Bioentry_DBXRef_Assocs
 AS
 SELECT
-	DBX.DBName		DBX_DBName,
-	DBX.Accession		DBX_Accession,
-	DBX.Version		DBX_Version,
-	Ent.Accession		Ent_Accession,
-	Ent.Identifier		Ent_Identifier,
-	Ent.Display_ID		Ent_Display_ID,
-	Ent.Description		Ent_Description,
-	Ent.Version		Ent_Version,
-	DB.Name			DB_Name,
-	DB.Acronym		DB_Acronym,
-	Tax.Name		Tax_Name,
-	Tax.Variant		Tax_Variant,
-	Tax.Common_Name		Tax_Common_Name,
-	Tax.NCBI_Taxon_ID	Tax_NCBI_Taxon_ID,
-	DBX.Oid			DBX_Oid,
-	Ent.Oid			Ent_Oid,
-	Ent.DB_Oid		DB_Oid,
-	Ent.Tax_Oid		Tax_Oid
-FROM SG_Bioentry Ent, SG_Biodatabase DB, SG_Taxon Tax,
-     SG_Bioentry_DBXref_Assoc EntDBXA, SG_DBXRef DBX
+	DBX.DBName		DBX_DBName
+	, DBX.Accession		DBX_Accession
+	, DBX.Version		DBX_Version
+	, EntDBXA.Rank		EntDBXA_Rank
+	, EntDBXA.DBX_Oid	DBX_Oid
+	, EntDBXA.Ent_Oid	Ent_Oid
+FROM SG_Bioentry_DBXref_Assoc EntDBXA, SG_DBXRef DBX
 WHERE     
-     Ent.DB_Oid      = DB.Oid
-AND  EntDBXA.Ent_Oid = Ent.Oid
-AND  EntDBXA.DBX_Oid = DBX.Oid
-AND  Ent.Tax_Oid = Tax.Oid (+)
+     EntDBXA.DBX_Oid = DBX.Oid
 ;
 
 --
@@ -357,35 +366,17 @@ PROMPT Creating view SG_Bioentry_Qual_Assocs
 CREATE OR REPLACE VIEW SG_Bioentry_Qual_Assocs
 AS
 SELECT
-	Ont.Name		Term_Name,
-	Ont.Identifier		Term_Identifier,
-	Cat.Name		Cat_Name,
-	EntOntA.Value		Qual_Value,
-	Ent.Accession		Ent_Accession,
-	Ent.Identifier		Ent_Identifier,
-	Ent.Display_ID		Ent_Display_ID,
-	Ent.Description		Ent_Description,
-	Ent.Version		Ent_Version,
-	DB.Name			DB_Name,
-	DB.Acronym		DB_Acronym,
-	Tax.Name		Tax_Name,
-	Tax.Variant		Tax_Variant,
-	Tax.Common_Name		Tax_Common_Name,
-	Tax.NCBI_Taxon_ID	Tax_NCBI_Taxon_ID,
-	Ont.Oid			Term_Oid,
-	Cat.Oid			Cat_Oid,
-	Ent.Oid			Ent_Oid,
-	Ent.DB_Oid		DB_Oid,
-	Ent.Tax_Oid		Tax_Oid
-FROM SG_Bioentry Ent, SG_Biodatabase DB, SG_Taxon Tax,
-     SG_Ontology_Term Ont, SG_Ontology_Term Cat, 
-     SG_Bioentry_Qualifier_Assoc EntOntA
+	Trm.Name		Trm_Name
+	, Trm.Identifier	Trm_Identifier
+	, Ont.Name		Ont_Name
+	, EntTrmA.Value		Qual_Value
+	, EntTrmA.Trm_Oid	Trm_Oid
+	, Trm.Ont_Oid		Ont_Oid
+	, EntTrmA.Ent_Oid	Ent_Oid
+FROM SG_Bioentry_Qualifier_Assoc EntTrmA, SG_Term Trm, SG_Ontology Ont
 WHERE
-     Ont.Ont_Oid     = Cat.Oid
-AND  EntOntA.Ont_Oid = Ont.Oid
-AND  EntOntA.Ent_Oid = Ent.Oid
-AND  Ent.DB_Oid      = DB.Oid
-AND  Ent.Tax_Oid     = Tax.Oid (+)
+     Trm.Ont_Oid     = Ont.Oid
+AND  EntTrmA.Trm_Oid = Trm.Oid
 ;
 
 --
@@ -397,87 +388,48 @@ PROMPT Creating view SG_Seqfeatures
 CREATE OR REPLACE VIEW SG_Seqfeatures
 AS
 SELECT
-	Fea.Rank		Fea_Rank,
-	FType.Name		FType_Name,
-	FTCat.Name		FType_Cat_Name,
-	FSrc.Name		FSrc_Name,
-	Ent.Accession		Ent_Accession,
-	Ent.Identifier		Ent_Identifier,
-	Ent.Display_ID		Ent_Display_ID,
-	Ent.Description		Ent_Description,
-	Ent.Version		Ent_Version,
-	DB.Name			DB_Name,
-	DB.Acronym		DB_Acronym,
-	Tax.Name		Tax_Name,
-	Tax.Variant		Tax_Variant,
-	Tax.Common_Name		Tax_Common_Name,
-	Tax.NCBI_Taxon_ID	Tax_NCBI_Taxon_ID,
-	Fea.Oid			Fea_Oid,
-	FType.Oid		FType_Oid,
-	FSrc.Oid		FSrc_Oid,
-	Ent.Oid			Ent_Oid,
-	Ent.DB_Oid		DB_Oid,
-	Ent.Tax_Oid		Tax_Oid
-FROM SG_Seqfeature Fea, SG_Ontology_Term FType, SG_Ontology_Term FTCat,
-     SG_Ontology_Term FSrc, SG_Bioentry Ent, SG_Biodatabase DB, SG_Taxon Tax
+	Fea.Display_Name	Fea_Display_Name
+	, Fea.Rank		Fea_Rank
+	, FType.Name		Type_Trm_Name
+	, FType.Identifier	Type_Trm_Identifier
+	, FTOnt.Name		Type_Ont_Name
+	, FSrc.Name		Source_Trm_Name
+	, FSrc.Identifier	Source_Trm_Identifier
+	, FSOnt.Name		Source_Ont_Name
+	, Fea.Oid		Fea_Oid
+	, Fea.Type_Trm_Oid	Type_Trm_Oid
+	, FType.Ont_Oid		Type_Ont_Oid
+	, Fea.Source_Trm_Oid	Source_Trm_Oid
+	, FSrc.Ont_Oid		Source_Ont_Oid
+	, Fea.Ent_Oid		Ent_Oid
+FROM SG_Seqfeature Fea, SG_Term FType, SG_Term FSrc, 
+     SG_Ontology FTOnt, SG_Ontology FSOnt
 WHERE
-     Fea.Ent_Oid     = Ent.Oid
-AND  Fea.Ont_Oid     = FType.Oid
-AND  FType.Ont_Oid   = FTCat.Oid
-AND  Ent.DB_Oid      = DB.Oid
-AND  Fea.FSrc_Oid    = FSrc.Oid (+)
-AND  Ent.Tax_Oid     = Tax.Oid (+)
+     Fea.Type_Trm_Oid   = FType.Oid
+AND  FType.Ont_Oid	= FTOnt.Oid
+AND  Fea.Source_Trm_Oid = FSrc.Oid
+AND  FSrc.Ont_Oid	= FSOnt.Oid
 ;
 
 --
 -- Seqfeatures with location(s)
 --
 PROMPT
-PROMPT Creating view SG_Seqfeature_Locs
+PROMPT Creating view SG_Locations
 
-CREATE OR REPLACE VIEW SG_Seqfeature_Locations
+CREATE OR REPLACE VIEW SG_Locations
 AS
 SELECT
-	Loc.Start_Pos		Loc_Start_Pos,
-	Loc.End_Pos		Loc_End_Pos,
-	Loc.Strand		Loc_Strand,
-	Loc.Rank		Loc_Rank,
-	DBX.DBName		Loc_SeqID_DB,
-	DBX.Accession		Loc_SeqID_Acc,
-	Fea.Rank		Fea_Rank,
-	FType.Name		FType_Name,
-	FTCat.Name		FType_Cat_Name,
-	FSrc.Name		FSrc_Name,
-	Ent.Accession		Ent_Accession,
-	Ent.Identifier		Ent_Identifier,
-	Ent.Display_ID		Ent_Display_ID,
-	Ent.Description		Ent_Description,
-	Ent.Version		Ent_Version,
-	DB.Name			DB_Name,
-	DB.Acronym		DB_Acronym,
-	Tax.Name		Tax_Name,
-	Tax.Variant		Tax_Variant,
-	Tax.Common_Name		Tax_Common_Name,
-	Tax.NCBI_Taxon_ID	Tax_NCBI_Taxon_ID,
-	Fea.Oid			Fea_Oid,
-	FType.Oid		FType_Oid,
-	FSrc.Oid		FSrc_Oid,
-	Ent.Oid			Ent_Oid,
-	Ent.DB_Oid		DB_Oid,
-	Ent.Tax_Oid		Tax_Oid
-FROM SG_Seqfeature_Location Loc,
-     SG_Seqfeature Fea, SG_DBXref DBX, SG_Bioentry Ent,
-     SG_Ontology_Term FType, SG_Ontology_Term FTCat,
-     SG_Ontology_Term FSrc, SG_Biodatabase DB, SG_Taxon Tax
+	Loc.Start_Pos		Loc_Start_Pos
+	, Loc.End_Pos		Loc_End_Pos
+	, Loc.Strand		Loc_Strand
+	, Loc.Rank		Loc_Rank
+	, DBX.DBName		Loc_SeqID_DB
+	, DBX.Accession		Loc_SeqID_Acc
+	, Loc.Fea_Oid		Fea_Oid
+FROM SG_Location Loc, SG_DBXref DBX
 WHERE
-     Loc.Fea_Oid     = Fea.Oid
-AND  Fea.Ent_Oid     = Ent.Oid
-AND  Fea.Ont_Oid     = FType.Oid
-AND  FType.Ont_Oid   = FTCat.Oid
-AND  Ent.DB_Oid      = DB.Oid
-AND  Fea.FSrc_Oid    = FSrc.Oid (+)
-AND  Ent.Tax_Oid     = Tax.Oid (+)
-AND  Loc.DBX_Oid     = DBX.Oid (+)
+     Loc.DBX_Oid     = DBX.Oid (+)
 ;
 
 --
@@ -489,122 +441,18 @@ PROMPT Creating view SG_Seqfeature_Qual_Assocs
 CREATE OR REPLACE VIEW SG_Seqfeature_Qual_Assocs
 AS
 SELECT
-	Ont.Name		Term_Name,
-	Ont.Identifier		Term_Identifier,
-	Cat.Name		Cat_Name,
-	FeaOntA.Value		Qual_Value,
-	FeaOntA.Rank		Qual_Rank,
-	Fea.Rank		Fea_Rank,
-	FType.Name		FType_Name,
-	FTCat.Name		FType_Cat_Name,
-	FSrc.Name		FSrc_Name,
-	Ent.Accession		Ent_Accession,
-	Ent.Identifier		Ent_Identifier,
-	Ent.Display_ID		Ent_Display_ID,
-	Ent.Description		Ent_Description,
-	Ent.Version		Ent_Version,
-	DB.Name			DB_Name,
-	DB.Acronym		DB_Acronym,
-	Tax.Name		Tax_Name,
-	Tax.Variant		Tax_Variant,
-	Tax.Common_Name		Tax_Common_Name,
-	Tax.NCBI_Taxon_ID	Tax_NCBI_Taxon_ID,
-	Ent.Oid			Ent_Oid,
-	Ent.DB_Oid		DB_Oid,
-	Ent.Tax_Oid		Tax_Oid
-FROM SG_Seqfeature_Qualifier_Assoc FeaOntA,
-     SG_Ontology_Term Ont, SG_Ontology_Term Cat,
-     SG_Seqfeature Fea, SG_Ontology_Term FType, SG_Ontology_Term FTCat,
-     SG_Ontology_Term FSrc, SG_Bioentry Ent, SG_Biodatabase DB, SG_Taxon Tax
+	Trm.Name		Trm_Name
+	, Trm.Identifier	Trm_Identifier
+	, Ont.Name		Ont_Name
+	, FeaTrmA.Value		Qual_Value
+	, FeaTrmA.Rank		Qual_Rank
+	, FeaTrmA.Fea_Oid	Fea_Oid
+	, FeaTrmA.Trm_Oid	Trm_Oid
+	, Trm.Ont_Oid		Ont_Oid
+FROM SG_Seqfeature_Qualifier_Assoc FeaTrmA, SG_Term Trm, SG_Ontology Ont
 WHERE
-     FeaOntA.Ont_Oid = Ont.Oid
-AND  FeaOntA.Fea_Oid = Fea.Oid
-AND  Ont.Ont_Oid     = Cat.Oid
-AND  Fea.Ent_Oid     = Ent.Oid
-AND  Fea.Ont_Oid     = FType.Oid
-AND  FType.Ont_Oid   = FTCat.Oid
-AND  Ent.DB_Oid      = DB.Oid
-AND  Fea.FSrc_Oid    = FSrc.Oid (+)
-AND  Ent.Tax_Oid     = Tax.Oid (+)
-;
-
---
--- Genome mapping view but without using the materialized view
---
-CREATE OR REPLACE VIEW SG_Chr_Map_Assocs_v
-AS
-SELECT
-	EntLoc.Start_Pos	EntSeg_Start_Pos,
-	EntLoc.End_Pos		EntSeg_End_Pos,
-	NumA.Value		EntSeg_Num,
-	ChrLoc.Start_Pos	ChrSeg_Start_Pos,
-	ChrLoc.End_Pos		ChrSeg_End_Pos,
-	ChrLoc.Strand		ChrSeg_Strand,
-	FeaOntA.Value		ChrSeg_Pct_Identity,
-	FType.Name		FType_Name,
-	FSrc.Name		FSrc_Name,
-	Ent.Accession		Ent_Accession,
-	Ent.Identifier		Ent_Identifier,
-	Ent.Version		Ent_Version,
-	DB.Name			DB_Name,
-	DB.Acronym		DB_Acronym,
-	EntTax.Name		Ent_Tax_Name,
-	EntTax.Variant		Ent_Tax_Variant,
-	EntTax.NCBI_Taxon_ID	Ent_Tax_NCBI_Taxon_ID,
-	Chr.Display_ID		Chr_Name,
-	Chr.Accession		Chr_Accession,
-	Asm.Name		Asm_Name,
-	Asm.Acronym		Asm_Acronym,
-	Tax.Name		Asm_Tax_Name,
-	Tax.Variant		Asm_Tax_Variant,
-	Tax.NCBI_Taxon_ID	Asm_Tax_NCBI_Taxon_ID,
-	Ent.Oid			Ent_Oid,
-	Ent.DB_Oid		DB_Oid,
-	Ent.Tax_Oid		Ent_Tax_Oid,
-	Chr.Oid			Chr_Oid,
-	Chr.DB_Oid		Asm_Oid,
-	Tax.Oid			Asm_Tax_Oid,
-	HSP.Oid			EntSeg_Oid,
-	Exon.Oid		ChrSeg_Oid
-FROM SG_Bioentry Ent, SG_Bioentry Chr,
-     SG_Seqfeature HSP, SG_Seqfeature Exon,
-     SG_Seqfeature_Location EntLoc, SG_Seqfeature_Location ChrLoc,
-     SG_Biodatabase DB, SG_Biodatabase Asm,
-     SG_Seqfeature_Qualifier_Assoc FeaOntA,
-     SG_Seqfeature_Qualifier_Assoc NumA,
-     SG_Seqfeature_Assoc Sim,
-     SG_Ontology_Term FType,
-     SG_Ontology_Term FSrc,
-     SG_Ontology_Term RelType,
-     SG_Ontology_Term Qual,
-     SG_Ontology_Term NumQual,
-     SG_Taxon Tax, SG_Taxon EntTax
-WHERE
-     Ent.DB_Oid      = DB.Oid
-AND  HSP.Ent_Oid     = Ent.Oid
-AND  EntLoc.Fea_Oid  = HSP.Oid
-AND  EntLoc.Rank     = 1
-AND  HSP.Ont_Oid     = FType.Oid
-AND  HSP.FSrc_Oid    = FSrc.Oid
-AND  Chr.DB_Oid      = Asm.Oid
-AND  Exon.Ent_Oid    = Chr.Oid
-AND  ChrLoc.Fea_Oid  = Exon.Oid
-AND  ChrLoc.Rank     = 1
-AND  Sim.Src_Fea_Oid = HSP.Oid
-AND  Sim.Tgt_Fea_Oid = Exon.Oid
-AND  Sim.Ont_Oid     = RelType.Oid
-AND  Sim.Rank	     = 0
-AND  RelType.Name    = 'Genome Alignment'
-AND  FeaOntA.Fea_Oid = HSP.Oid
-AND  FeaOntA.Ont_Oid = Qual.Oid
-AND  FeaOntA.Rank    = 1
-AND  Qual.Name       = 'Pct_Identity'
-AND  NumA.Fea_Oid    = HSP.Oid
-AND  NumA.Ont_Oid    = NumQual.Oid
-AND  NumA.Rank	     = 1
-AND  NumQual.Name    = 'Exon_Num'
-AND  Chr.Tax_Oid     = Tax.Oid
-AND  Ent.Tax_Oid     = EntTax.Oid
+     FeaTrmA.Trm_Oid = Trm.Oid
+AND  Trm.Ont_Oid     = Ont.Oid
 ;
 
 --
@@ -613,47 +461,45 @@ AND  Ent.Tax_Oid     = EntTax.Oid
 CREATE OR REPLACE VIEW SG_DBX_Bioentry_Assocs
 AS
 SELECT
-	SEnt.Accession		Src_Ent_Accession,
-	SEnt.Identifier		Src_Ent_Identifier,
-	SEnt.Display_ID		Src_Ent_Display_ID,
-	SEnt.Description	Src_Ent_Description,
-	SEnt.Version		Src_Ent_Version,
-	SDB.Name		Src_DB_Name,
-	SDB.Acronym		Src_DB_Acronym,
-	SOnt.Name		Src_BEType_Name,
-	STax.Name		Src_Tax_Name,
-	STax.Variant		Src_Tax_Variant,
-	STax.Common_Name	Src_Tax_Common_Name,
-	STax.NCBI_Taxon_ID	Src_Tax_NCBI_Taxon_ID,
-	TEnt.Accession		Tgt_Ent_Accession,
-	TEnt.Identifier		Tgt_Ent_Identifier,
-	TEnt.Display_ID		Tgt_Ent_Display_ID,
-	TEnt.Description	Tgt_Ent_Description,
-	TEnt.Version		Tgt_Ent_Version,
-	DBX.Version		Tgt_DBX_Version,
-	TDB.Name		Tgt_DB_Name,
-	TDB.Acronym		Tgt_DB_Acronym,
-	TOnt.Name		Tgt_BEType_Name,
-	TTax.Name		Tgt_Tax_Name,
-	TTax.Variant		Tgt_Tax_Variant,
-	TTax.Common_Name	Tgt_Tax_Common_Name,
-	TTax.NCBI_Taxon_ID	Tgt_Tax_NCBI_Taxon_ID,
-	SEnt.Oid		Src_Ent_Oid,
-	SEnt.DB_Oid		Src_DB_Oid,
-	SEnt.Tax_Oid		Src_Tax_Oid,
-	TEnt.Oid		Tgt_Ent_Oid,
-	TEnt.DB_Oid		Tgt_DB_Oid,
-	TEnt.Tax_Oid		Tgt_Tax_Oid,
-	DBX.Oid			DBX_Oid
+	SEnt.Accession		Subj_Ent_Accession
+	, SEnt.Identifier	Subj_Ent_Identifier
+	, SEnt.Name		Subj_Ent_Name
+	, SEnt.Description	Subj_Ent_Description
+	, SEnt.Version		Subj_Ent_Version
+	, SDB.Name		Subj_DB_Name
+	, SDB.Acronym		Subj_DB_Acronym
+	, STrm.Name		Subj_BEType_Name
+	, STrm.Identifier	Subj_BEType_Identifier
+	, STNam.Name		Subj_Tax_Name
+	, STax.NCBI_Taxon_ID	Subj_Tax_NCBI_Taxon_ID
+	, TEnt.Accession	Obj_Ent_Accession
+	, TEnt.Identifier	Obj_Ent_Identifier
+	, TEnt.Name		Obj_Ent_Name
+	, TEnt.Description	Obj_Ent_Description
+	, TEnt.Version		Obj_Ent_Version
+	, DBX.Version		Obj_DBX_Version
+	, TDB.Name		Obj_DB_Name
+	, TDB.Acronym		Obj_DB_Acronym
+	, TTrm.Name		Obj_BEType_Name
+	, TTrm.Identifier	Obj_BEType_Identifier
+	, TTNam.Name		Obj_Tax_Name
+	, TTax.NCBI_Taxon_ID	Obj_Tax_NCBI_Taxon_ID
+	, SEnt.Oid		Subj_Ent_Oid
+	, SEnt.DB_Oid		Subj_DB_Oid
+	, SEnt.Tax_Oid		Subj_Tax_Oid
+	, TEnt.Oid		Obj_Ent_Oid
+	, TEnt.DB_Oid		Obj_DB_Oid
+	, TEnt.Tax_Oid		Obj_Tax_Oid
+	, DBX.Oid		DBX_Oid
+	, SEntTrmA.Trm_Oid	Subj_BEType_Oid
+	, TEntTrmA.Trm_Oid	Obj_BEType_Oid
 FROM SG_Bioentry SEnt, SG_Bioentry TEnt, 
      SG_Bioentry_DBXref_Assoc DBXEntA, SG_DBXref DBX,
-     SG_Bioentry_Qualifier_Assoc SEntOntA,
-     SG_Bioentry_Qualifier_Assoc TEntOntA,
-     SG_Ontology_Term SOnt,
-     SG_Ontology_Term SCat,
-     SG_Ontology_Term TOnt,
-     SG_Ontology_Term TCat,
-     SG_Taxon STax, SG_Taxon TTax, 
+     SG_Bioentry_Qualifier_Assoc SEntTrmA,
+     SG_Bioentry_Qualifier_Assoc TEntTrmA,
+     SG_Term STrm, SG_Ontology SOnt,
+     SG_Term TTrm, SG_Ontology TOnt,
+     SG_Taxon STax, SG_Taxon TTax, SG_Taxon_Name STNam, SG_Taxon_Name TTNam,
      SG_Biodatabase SDB, SG_Biodatabase TDB
 WHERE
      DBXEntA.Ent_Oid  = SEnt.Oid
@@ -663,58 +509,19 @@ AND  TEnt.DB_Oid      = TDB.Oid
 AND  TDB.Name	      = DBX.DBName
 AND  TEnt.Accession   = DBX.Accession
 --AND  TEnt.Version     = DBX.Version
-AND  SEntOntA.Ent_Oid = SEnt.Oid
-AND  SEntOntA.Ont_Oid = SOnt.Oid
-AND  SOnt.Ont_Oid     = SCat.Oid
-AND  SCat.Name	      = 'Bioentry Type Ontology'
-AND  TEntOntA.Ent_Oid = TEnt.Oid
-AND  TEntOntA.Ont_Oid = TOnt.Oid
-AND  TOnt.Ont_Oid     = SCat.Oid
-AND  TCat.Name	      = 'Bioentry Type Ontology'
-AND  SEnt.Tax_Oid     = STax.Oid (+)
-AND  TEnt.Tax_Oid     = TTax.Oid (+)
-;
-
---
--- Transcript relationships
---
-CREATE OR REPLACE VIEW SG_DYN_TRANSCRIPTS
-AS
-SELECT
-	SEnt.Accession		Trs_Accession,
-	SEnt.Identifier		Trs_Identifier,
-	SEnt.Display_ID		Trs_Display_ID,
-	SEnt.Description	Trs_Description,
-	SEnt.Version		Trs_Version,
-	SDB.Name		DB_Name,
-	SDB.Acronym		DB_Acronym,
-	TEnt.Accession		Gene_Accession,
-	TEnt.Identifier		Gene_Identifier,
-	TEnt.Display_ID		Gene_Display_ID,
-	TEnt.Description	Gene_Description,
-	TEnt.Version		Gene_Version,
-	TDB.Name		Gene_DB_Name,
-	TDB.Acronym		Gene_DB_Acronym,
-	STax.Name		Tax_Name,
-	STax.Variant		Tax_Variant,
-	STax.Common_Name	Tax_Common_Name,
-	STax.NCBI_Taxon_ID	Tax_NCBI_Taxon_ID,
-	SEnt.Oid		Trs_Oid,
-	SEnt.DB_Oid		DB_Oid,
-	SEnt.Tax_Oid		Tax_Oid,
-	TEnt.Oid		Gene_Oid,
-	TEnt.DB_Oid		Gene_DB_Oid
-FROM SG_Bioentry SEnt, SG_Bioentry TEnt, 
-     SG_Bioentry_DBXref_Assoc DBXEntA, SG_DBXref DBX,
-     SG_Taxon STax, SG_Biodatabase SDB, SG_Biodatabase TDB
-WHERE
-     DBXEntA.Ent_Oid  = TEnt.Oid
-AND  DBXEntA.DBX_Oid  = DBX.Oid
-AND  TEnt.DB_Oid      = TDB.Oid
-AND  SEnt.DB_Oid      = SDB.Oid
-AND  SDB.Name	      = DBX.DBName
-AND  SEnt.Accession   = DBX.Accession
-AND  SEnt.Version     = DBX.Version
-AND  SEnt.Tax_Oid     = STax.Oid (+)
+AND  SEntTrmA.Ent_Oid = SEnt.Oid
+AND  SEntTrmA.Trm_Oid = STrm.Oid
+AND  STrm.Ont_Oid     = SOnt.Oid
+AND  SOnt.Name	      = 'Bioentry Type Ontology'
+AND  TEntTrmA.Ent_Oid = TEnt.Oid
+AND  TEntTrmA.Trm_Oid = TTrm.Oid
+AND  TTrm.Ont_Oid     = SOnt.Oid
+AND  TOnt.Name	      = 'Bioentry Type Ontology'
+AND  SEnt.Tax_Oid     = STax.Oid
+AND  STNam.Tax_Oid    = STax.Oid
+AND  STNam.Name_Class = 'scientific name'
+AND  TEnt.Tax_Oid     = TTax.Oid
+AND  TTNam.Tax_Oid    = TTax.Oid
+AND  TTNam.Name_Class = 'scientific name'
 ;
 
