@@ -482,8 +482,7 @@ CREATE TABLE location (
    	UNIQUE (seqfeature_id, rank)
 ) TYPE=INNODB;
 
-CREATE INDEX seqfeatureloc_start ON location(start_pos);
-CREATE INDEX seqfeatureloc_end   ON location(end_pos);
+CREATE INDEX seqfeatureloc_start ON location(start_pos, end_pos);
 CREATE INDEX seqfeatureloc_dbx   ON location(dbxref_id);
 CREATE INDEX seqfeatureloc_ont   ON location(term_id);
 
@@ -510,16 +509,19 @@ CREATE INDEX locationqual_ont ON location_qualifier_value(term_id);
 --
 
 -- ontology term
+
 ALTER TABLE term ADD CONSTRAINT FKont_term
 	FOREIGN KEY (ontology_id) REFERENCES ontology(ontology_id)
 	ON DELETE CASCADE;
 
 -- term synonyms
+
 ALTER TABLE term_synonym ADD CONSTRAINT FKterm_syn
 	FOREIGN KEY (term_id) REFERENCES term(term_id)
 	ON DELETE CASCADE;
 
 -- term_dbxref
+
 ALTER TABLE term_dbxref ADD CONSTRAINT FKdbxref_ontdbxref
        	FOREIGN KEY (dbxref_id) REFERENCES dbxref(dbxref_id)
 	ON DELETE CASCADE;

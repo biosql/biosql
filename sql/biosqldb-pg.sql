@@ -456,8 +456,7 @@ CREATE TABLE location (
 	 PRIMARY KEY ( location_id ) , 
 	 UNIQUE ( seqfeature_id , rank ) ) ; 
 
-CREATE INDEX seqfeatureloc_start ON location ( start_pos ); 
-CREATE INDEX seqfeatureloc_end ON location ( end_pos ); 
+CREATE INDEX seqfeatureloc_start ON location ( start_pos, end_pos ); 
 CREATE INDEX seqfeatureloc_dbx ON location ( dbxref_id ); 
 CREATE INDEX seqfeatureloc_ont ON location ( term_id ); 
 
