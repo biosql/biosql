@@ -149,9 +149,9 @@ CREATE VIEW Biodatabase_Qualifier_Value
 AS
 SELECT
 	DB_Oid                  Biodatabase_Id
-	, Trm_Oid			    Term_Id
-	, Rank			        Rank
-	, Value			        Value
+	, Trm_Oid               Term_Id
+	, Rank			Rank
+	, Value			Value
 FROM SG_Biodatabase_Qualifier_Assoc
 ;
 
@@ -166,12 +166,12 @@ AS
 SELECT
 	Oid                     Taxon_Id
 	, NCBI_Taxon_ID         NCBI_Taxon_Id
-    , Node_Rank             Node_Rank
-    , Genetic_Code          Genetic_Code
-    , Mito_Genetic_Code     Mito_Genetic_Code
-    , Left_Value            Left_Value
-    , Right_Value           Right_Value
-    , Tax_Oid               Parent_Taxon_Id
+        , Node_Rank             Node_Rank
+        , Genetic_Code          Genetic_Code
+        , Mito_Genetic_Code     Mito_Genetic_Code
+        , Left_Value            Left_Value
+        , Right_Value           Right_Value
+        , Tax_Oid               Parent_Taxon_Id
 FROM SG_Taxon
 ;
 
@@ -259,6 +259,37 @@ SELECT
        , Ont_Oid            Ontology_Id
 FROM SG_Term_Assoc
 ;
+
+
+--
+-- Term relationships as first-class terms (Biojava only at this point) 
+-- http://www.open-bio.org/pipermail/biosql-l/2003-October/000455.html
+-- 
+DROP VIEW Term_Relationship_Term;
+
+CREATE OR REPLACE VIEW Term_Relationship_Term
+AS
+SELECT
+       Oid                  Term_Relationship_Id
+       , Trm_Oid            Term_Id
+FROM SG_Term_Assoc
+;
+
+-- Because this is (unnecessarily) separated out into its own table in
+-- the PostgreSQL and MySQL versions, there will be INSERTs against
+-- this view for existing Term and Term_Assoc entries. We need to
+-- catch that and turn it into an update.
+CREATE OR REPLACE TRIGGER BIR_Term_Relationship_Term
+        INSTEAD OF INSERT
+        ON Term_Relationship_Term
+        REFERENCING NEW AS new OLD AS old
+        FOR EACH ROW
+BEGIN
+        UPDATE SG_Term_Assoc SET
+                Trm_Oid = :new.Term_Id
+        WHERE Oid = :new.Term_Relationship_Id;
+END;
+/
 
 --
 -- Transitive closure table for term relationships
