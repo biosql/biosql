@@ -76,3 +76,12 @@ ALTER TABLE SG_Term_Assoc
                              REFERENCES SG_Term (Oid)
 			     ON DELETE SET NULL ) ;
 
+-- some genbank entries need a lot of space for qualifier value
+PROMPT Fixing width constraint of Bioentry_Qual_Assoc.Value
+
+ALTER TABLE SG_Bioentry_Qual_Assoc MODIFY (Value VARCHAR2(4000));
+
+-- this also affects the seqfeature qualifier value
+PROMPT Fixing width constraint of Seqfeature_Qual_Assoc.Value
+
+ALTER TABLE SG_Seqfeature_Qual_Assoc MODIFY (Value VARCHAR2(4000));
