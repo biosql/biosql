@@ -13,20 +13,21 @@ projects - you can query the database directly with SQL (structured
 query language) or the direct languages bindings (JDBC, Perl DBI etc)
 of different languages.
 
-   BioSQL has two separate components. The first component is a 
-SQL database server, often one of MySQL, Postgres or Oracle (but any 
-SQL database will work with a little tweaking - we test regular against
+   BioSQL has two separate components. The first component is a SQL
+database server, often one of MySQL, Postgres or Oracle (but any SQL
+database will work with a little tweaking - we test regular against
 these engines), and the second component are client programs, usually
-written in one of Perl, Java or Python. Sensible uses of BioSQL include:
+written in one of Perl, Java or Python. Sensible uses of BioSQL
+include:
 
-   (a) Storing the entire GenBank or EMBL or Swissprot public repository
-in the BioSQL schema, providing efficient access to individual records
-there
+   (a) Storing the entire GenBank or EMBL or Swissprot public
+       repository in the BioSQL schema, providing efficient access to
+       individual records there
 
    (b) Storing your own sequences which you are working on in the lab
 
-   (c) Storing a particular genome sequence (though there are many other
-SQL databases which also do this)
+   (c) Storing a particular genome sequence (though there are many
+       other SQL databases which also do this)
 
 
   Quick Start
@@ -48,27 +49,27 @@ SQL databases which also do this)
   ------------
 
   To run BioSQL yourself you need to have a database server. Depending
-on your circumstances there will be different setups to use. Here
-are a couple of examples:
+on your circumstances there will be different setups to use. Here are
+a couple of examples:
 
    - Running a BioSQL database on a laptop providing swissprot in a
-flexible and useable way. Here one might to use MySQL or Postgres
-running locally on the laptop
+     flexible and useable way. Here one might to use MySQL or Postgres
+     running locally on the laptop
 
-   - Running a BioSQL database for a small lab group to share 
-sequence annotations. Here one might use Postgres or MySQL (with
-transaction support. Postgres comes with transaction support).
+   - Running a BioSQL database for a small lab group to share sequence
+     annotations. Here one might use Postgres or MySQL (with
+     transaction support. Postgres comes with transaction support).
 
-   - Running a BioSQL database in a company to manage a mid-scale
-EST project. Here one might use an Oracle or Postgres database.
+   - Running a BioSQL database in a company to manage a mid-scale EST
+     project. Here one might use an Oracle or Postgres database.
 
 
   The database server you use should really be chosen by ease of use
 for people; for example, in a group with alot of Oracle experience,
-use Oracle, similarly for a MySQL group, use MySQL. If you are starting
-out, probably MySQL is the easiest database to work with, but Postgres
-is a very sensible option which comes as a more "standard" database. 
-Below gives you the basic set up of the three databases.
+use Oracle, similarly for a MySQL group, use MySQL. If you are
+starting out, probably MySQL is the easiest database to work with, but
+Postgres is a very sensible option which comes as a more "standard"
+database.  Below gives you the basic set up of the three databases.
 
 
 MYSQL
@@ -77,14 +78,14 @@ MYSQL
    MySQL server
 
 
-   If you are lucky your Linux distribution/Mac or whatever came with SQL.
-Look at your service tools and switch on MySQL. If not, don't worry. Installing
-MySQL is easy.
+   If you are lucky your Linux distribution/Mac or whatever came with
+SQL.  Look at your service tools and switch on MySQL. If not, don't
+worry. Installing MySQL is easy.
 
    - Installing from source:
 
-   Download the tar ball from one of the mirrors linked off www.mysql.com. Uncompress
-and untar the tar ball
+   Download the tar ball from one of the mirrors linked off
+www.mysql.com. Uncompress and untar the tar ball
 
    (in one step)
 
@@ -104,8 +105,9 @@ POSTGRES
 
   Installing postgres. 
 
-  Like Mysql, the best thing is to install from source. Go to www.postgresql.org and
-choose a mirror to download the postgres tar ball. 
+  Like Mysql, the best thing is to install from source. Go to
+www.postgresql.org and choose a mirror to download the postgres tar
+ball.
 
   Unzip and Untar 
 
@@ -124,19 +126,21 @@ choose a mirror to download the postgres tar ball.
   make
   make install (have to be root to do this)
 
-  In some systems, readline is not installed. In this case either (a) install the
-readline package from ftp.gnu.org or (b) go ./configure --without-readline
+  In some systems, readline is not installed. In this case either
+    (a) install the readline package from ftp.gnu.org, or
+    (b) go ./configure --without-readline
 
-  Now make a new postgres user (I called mine psqldb) which will actually run the
-postgres server on your machine. On linux and other unixes this is done by something
-like
+  Now make a new postgres user (I called mine psqldb) which will
+actually run the postgres server on your machine. On linux and other
+unixes this is done by something like
 
   adduser psqldb
 
   On Mac OS X, go to SystemPreferences --> Users --> New User
 
-  You now need to make a place for you data directory for postgres. On my
-laptop (Mac OS X) I built /usr/local/postgres and then /usr/local/postgres/data
+  You now need to make a place for you data directory for postgres. On
+my laptop (Mac OS X) I built /usr/local/postgres and then
+/usr/local/postgres/data
 
   [localhost:/usr/local] root# mkdir postgres
   [localhost:/usr/local] root# mkdir postgres/data
@@ -144,64 +148,67 @@ laptop (Mac OS X) I built /usr/local/postgres and then /usr/local/postgres/data
 
   The chown command makes the directory owned by the psqldb user.
 
-  As this is where the postgres data will be stored, you may well want to 
-have this directory on a separate disk partion. If so, simply build a directory
-tree (eg /somewhere/disk12/postgres/data). Remember that the postgres server will
-be accessing this directory all the time, so wherever possible make sure this disk
-is local storage (*not* network mounted).
+  As this is where the postgres data will be stored, you may well want
+to have this directory on a separate disk partion. If so, simply build
+a directory tree (eg /somewhere/disk12/postgres/data). Remember that
+the postgres server will be accessing this directory all the time, so
+wherever possible make sure this disk is local storage (*not* network
+mounted).
 
   Now log in as the postgres user to install the postgres server data files:
 
   su psqldb 
 
-  The postgres server needs to know where to find the data and where the postgres
-binaries are. For the postgres user, it is best to store this once in a init shell file, eg
-.tcsh
+  The postgres server needs to know where to find the data and where
+the postgres binaries are. For the postgres user, it is best to store
+this once in a init shell file, eg .tcsh
 
   setenv PGDATA /usr/local/postgres/data
   setenv PATH ${PATH}:/usr/local/pgsql/bin
 
-  The PGDATA environment variable tells postgres where the data files are stored; the
-path is to put all the postgres binaries on the path
+  The PGDATA environment variable tells postgres where the data files
+are stored; the path is to put all the postgres binaries on the path
 
-  The initdb command builds all the metadata files and basic starting files for the
-  postgres server. you only need to run this once on your machine
+  The initdb command builds all the metadata files and basic starting
+files for the postgres server. you only need to run this once on your
+machine
 
   /usr/local/pgsql/bin/initdb -D /usr/local/postgres/data/
 
-  *WARNING* in some situations, you need to init the database with the --no-locale command
-(this disables some of the sorting cases in the postgres server). If when you start the
-postmaster command you see a message like:
+  *WARNING* in some situations, you need to init the database with the
+--no-locale command (this disables some of the sorting cases in the
+postgres server). If when you start the postmaster command you see a
+message like:
 
   FATAL:  invalid value for option 'LC_MONETARY': 'en_US'
 
-  then remove the files in /usr/local/postgres/data/ and rerun initdb with --no-locale
-command
+  then remove the files in /usr/local/postgres/data/ and rerun initdb
+with --no-locale command
 
   rm -rf /usr/local/postgres/data/*
   /usr/local/pgsql/bin/initdb -D /usr/local/postgres/data/ --no-locale
 
 
-  Now start the postgres server. This actually pulls up a instance of the postgres
-server for running things:
+  Now start the postgres server. This actually pulls up a instance of
+the postgres server for running things:
 
   /usr/local/pgsql/bin/pg_ctl -D /usr/local/postgres/data/ -l logfile start
   
   
-  To test that your postgres server works, you need to make a test database
-and then connect to the server using the psql command
+  To test that your postgres server works, you need to make a test
+database and then connect to the server using the psql command
 
    createdb test
    psql test
 
-  *WARNING* if the above commands dont work, then perhaps your locale settings
-have got messed up. Check out the logfile in the psqldb user and if it has 
-message like:
+  *WARNING* if the above commands dont work, then perhaps your locale
+settings have got messed up. Check out the logfile in the psqldb user
+and if it has message like:
 
   FATAL:  invalid value for option 'LC_MONETARY': 'en_US'
 
-  then remove the files in /usr/local/postgres/data/ and rerun initdb with --no-locale
-command
+  then remove the files in /usr/local/postgres/data/ and rerun initdb
+with --no-locale command
 
   rm -rf /usr/local/postgres/data/*
   /usr/local/pgsql/bin/initdb -D /usr/local/postgres/data/ --no-locale
@@ -223,18 +230,19 @@ Starting BioSQL and loading the first database
 ----------------------------------------------
 
 
-you have to first choose the language/project you want to load your data in
-via. You have three options: BioPerl, BioJava and BioPython. You will need
-to download the schema (which is the same for all three languages), the supporting
-modules for each language, which in each case is a mixture of generic modules
-for database access and then bioSQL binding code.
+you have to first choose the language/project you want to load your
+data in via. You have three options: BioPerl, BioJava and
+BioPython. You will need to download the schema (which is the same for
+all three languages), the supporting modules for each language, which
+in each case is a mixture of generic modules for database access and
+then bioSQL binding code.
 
 
 Schema Loading
 --------------
 
-The BioSQL schema is distributed separately from the language bindings. Pick
-up the schema from the tar ball available at:
+The BioSQL schema is distributed separately from the language
+bindings. Pick up the schema from the tar ball available at:
 
    XXXXXXXXX
 
@@ -248,7 +256,8 @@ Alternatively use the cvs checkout from the anonymous server:
             :pserver:cvs@cvs.open-bio.org:/home/repository/biosql co biosql-schema
 
 
-Create a database (in this case I will call this bioseqdb) in the data instance:
+Create a database (in this case I will call this bioseqdb) in the data
+instance:
 
 For MySQL do:
 
@@ -263,8 +272,8 @@ For Oracle do
   << contact your DBA >>
  
 
-
-To load the schema, use the appropiate SQL dialect in biosql-schema/sql, being
+To load the schema, use the appropiate SQL dialect in
+biosql-schema/sql, being
 
 For mysql do
 
@@ -279,15 +288,15 @@ For Oracle do
   <<oracle instructions>>
 
 
-At this point we now have a sql instance with the server set up correct; we now
-need to load it with data
+At this point we now have a sql instance with the server set up
+correct; we now need to load it with data
 
 
 Perl Loading
 ------------
 
- To load with Perl, you need to have DBI installed and the driver for your SQL database
-of choice. Both are available at CPAN. go
+ To load with Perl, you need to have DBI installed and the driver for
+your SQL database of choice. Both are available at CPAN. go
 
  sudo perl -MCPAN -e 'shell'
  <<type root password for sudo; alternatively become root>>
@@ -337,8 +346,8 @@ and then reran make and make install
 Downloading bioperl-db and loading your first sequences in
 ----------------------------------------------------------
 
-  With DBI and the driver of choice involved, you now should download the
-bioperl and bioperl-db package
+  With DBI and the driver of choice involved, you now should download
+the bioperl and bioperl-db package
 
   bioperl-1.2 is available from CPAN and/or www.bioperl.org
 
@@ -354,21 +363,22 @@ bioperl and bioperl-db package
             :pserver:cvs@cvs.open-bio.org:/home/repository/bioperl co bioperl-db
 
 
-You can either go through the entire perl Makefile, make install or CPAN installs
-for these. Bioperl-1.2 sometimes fails its tests as it has some rather more esoteric 
-modules which has complex other modules it needs. Don't worry about this; in CPAN just
-do a force install with 
+You can either go through the entire perl Makefile, make install or
+CPAN installs for these. Bioperl-1.2 sometimes fails its tests as it
+has some rather more esoteric modules which has complex other modules
+it needs. Don't worry about this; in CPAN just do a force install with
 
   cpan> install --force bioperl-1.2
 
-You don't have install these packages; The developers generally run with the packages
-just untar'd in your local directory and PERL5LIB set appropiately, eg
+You don't have install these packages; The developers generally run
+with the packages just untar'd in your local directory and PERL5LIB
+set appropiately, eg
 
   setenv PERL5LIB /sw/lib/perl5:/Users/birney/src/bioperl-live:/Users/birney/src/bioperl-db
 
 
-  Then use the load_seqdatabase.pl script in bioperl-db/scripts/biosql/
-to load data: for example
+  Then use the load_seqdatabase.pl script in
+bioperl-db/scripts/biosql/ to load data: for example
 
   perl load_seqdatabase.pl -dbuser psqldb -dbname bioseqdb -namespace swissprot -format swiss swiss.dat
 
@@ -379,16 +389,15 @@ the -dbuser parameter is the user to load this under
 
 the -namespace swissprot provides the string under which this dataset
 is stored. A single bioSQL database can store many different "sequence
-databases" (eg, it can store both Swissprot and EMBL and GenBank). this namespace
-parameter controls what this set is loaded under
+databases" (eg, it can store both Swissprot and EMBL and
+GenBank). this namespace parameter controls what this set is loaded
+under
 
-the -format parameter indicates format of the files provided. All the SeqIO formats
-are supported, though of course not all formats have the same amount of information
+the -format parameter indicates format of the files provided. All the
+SeqIO formats are supported, though of course not all formats have the
+same amount of information
 
 then a list of sequence files to read
-
-
-  
 
 
 
