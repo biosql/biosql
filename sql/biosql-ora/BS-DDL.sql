@@ -2,7 +2,7 @@
 -- SQL script to instantiate the SYMGENE/BioSQL database schema.
 --
 --
--- $GNF: projects/gi/symgene/src/DB/BS-DDL.sql,v 1.30 2003/06/01 21:07:24 hlapp Exp $
+-- $GNF: projects/gi/symgene/src/DB/BS-DDL.sql,v 1.31 2003/06/12 01:03:39 hlapp Exp $
 --
 
 --
@@ -994,7 +994,7 @@ ALTER TABLE SG_Similarity
 
 
 ALTER TABLE SG_Taxon_Name
-       ADD  ( CONSTRAINT FKTax_Tan
+       ADD  ( CONSTRAINT FKTax_Tnm
               FOREIGN KEY (Tax_Oid)
                              REFERENCES SG_Taxon (Oid)
 			     ON DELETE CASCADE ) ;
