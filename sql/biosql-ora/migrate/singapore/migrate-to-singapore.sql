@@ -35,14 +35,8 @@
 @BS-defs-local
 
 -- make sure the above works first before you run the whole script! once
--- you've verified that, just comment out the exit command line (and
--- possibly the PROMPTs) below.
-PROMPT Do you see an error that was just generated? If yes, edit this
-PROMPT file to properly reflect the path tp BS-defs-local.sql. If not,
-PROMPT edit this file to comment out the exit statement that is now
-PROMPT going to terminate this session.
-
-exit
+-- you've verified that, just comment out the line below.
+--exit
 
 --
 -- if there's any error we better stop and rollback what can be rolled

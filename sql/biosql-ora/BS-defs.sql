@@ -37,19 +37,19 @@ define biosql_lob=SYMGENE_LOB
 define schema_creator=CB_MEMBER
 
 -- what shall be name and (initial) pwd of the schema owner
-define biosql_owner=biosql
-define biosql_pwd=XXXXX
+define biosql_owner=sgowner
+define biosql_pwd=sgbio
 
 -- the user role (usually read-only, on views) to be created for the schema
-define biosql_user=bs_user
+define biosql_user=sg_user
 
 -- the upload-permitted role (INSERT permissions for load API views) to be
 -- created for the schema
-define biosql_loader=bs_loader
+define biosql_loader=sg_loader
 
 -- the admin-permitted role (INSERT, UPDATE, DELETE on most things) to be
 -- created for the schema
-define biosql_admin=bs_admin
+define biosql_admin=sg_admin
 
 -- the base role you have for users connecting to the database
 define base_user=cb_user

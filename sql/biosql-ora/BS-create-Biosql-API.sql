@@ -3,7 +3,7 @@
 -- schema.
 --
 --
--- $GNF: projects/gi/symgene/src/DB/BS-create-Biosql-API.sql,v 1.6 2003/05/14 07:10:58 hlapp Exp $
+-- $GNF: projects/gi/symgene/src/DB/BS-create-Biosql-API.sql,v 1.7 2003/06/01 21:07:24 hlapp Exp $
 --
 
 --
@@ -256,3 +256,30 @@ CREATE SYNONYM &biosql.location_qualifier_value FOR SG_LOCATION_QUALIFIER_ASSOC;
 -- We don't have these yet in Biosql
 --CREATE SYNONYM &biosql.CHR_MAP_ASSOC FOR SG_CHR_MAP_ASSOC;
 --CREATE SYNONYM &biosql.SIMILARITY FOR SG_SIMILARITY;
+
+-- We create a separate set of API views here that exactly reflect the column
+-- names as in the MySQL and PostgreSQL versions of Biosql. This is to simplify
+-- things for mass-loading tools that go directly through SQL, like
+-- load_ncbi_taxonomy.pl.
+CREATE OR REPLACE VIEW BS_Taxon
+AS
+SELECT
+	Tax.Oid			Taxon_ID
+	, Tax.NCBI_Taxon_ID	NCBI_Taxon_ID
+	, Tax.Node_Rank		Node_Rank
+	, Tax.Genetic_Code	Genetic_Code
+	, Tax.Mito_Genetic_Code	Mito_Genetic_Code
+	, Tax.Left_Value	Left_Value
+	, Tax.Right_Value	Right_Value
+	, Tax.Tax_Oid		Parent_Taxon_ID
+FROM SG_Taxon Tax
+;
+
+CREATE OR REPLACE VIEW BS_Taxon_Name
+AS
+SELECT
+	Tnm.Tax_Oid		Taxon_ID
+	, Tnm.Name		Name
+	, Tnm.Name_Class	Name_Class
+FROM SG_Taxon_Name Tnm
+;
