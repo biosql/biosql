@@ -29,8 +29,9 @@ CREATE TABLE jobstatus (
   status   varchar(40) DEFAULT 'CREATED' NOT NULL,
   time     datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
 
-  KEY (job_id),
-  KEY status_index (status)
+  KEY intid (job_id),
+  KEY status_index (status),
+  KEY time (time)
 );
 
 CREATE TABLE rule_goal (
