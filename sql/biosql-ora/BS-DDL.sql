@@ -2,7 +2,7 @@
 -- SQL script to instantiate the SYMGENE/BioSQL database schema.
 --
 --
--- $GNF: projects/gi/symgene/src/DB/BS-DDL.sql,v 1.33 2003/06/25 00:14:33 hlapp Exp $
+-- $GNF: projects/gi/symgene/src/DB/BS-DDL.sql,v 1.34 2003/07/08 22:48:35 hlapp Exp $
 --
 
 --
@@ -87,6 +87,7 @@ CREATE TABLE SG_Biodatabase (
        Oid                  INTEGER NOT NULL,
        Name                 VARCHAR2(32) NOT NULL,
        Authority            VARCHAR2(32) NULL,
+       Description	    VARCHAR2(256) NULL,
        Acronym              VARCHAR2(6) NULL,
        URI                  VARCHAR2(128) NULL,
        CONSTRAINT XPKBiodatabase 

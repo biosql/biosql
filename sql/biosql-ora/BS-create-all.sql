@@ -3,7 +3,7 @@
 -- scratch.
 --
 --
--- $GNF: projects/gi/symgene/src/DB/BS-create-all.sql,v 1.7 2003/05/15 23:01:30 hlapp Exp $
+-- $GNF: projects/gi/symgene/src/DB/BS-create-all.sql,v 1.8 2003/07/08 23:15:27 hlapp Exp $
 --
 
 --
@@ -52,14 +52,18 @@
 -- 9) create additional users
 --connect &sysdba/&dbapwd
 --@BS-create-users
+--connect &biosql_owner/&biosql_pwd
 
 -- 10) pre-populate database as necessary
---connect &biosql_owner/&biosql_pwd
+-- Note: there is a high chance that the seed data is not suitable for you
+-- or is not exactly what you want. Check out the script and make sure you
+-- really want the seed data, possibly after editing it, before you uncomment
+-- the following command.
+--
 --@BS-prepopulate-db
 
 -- done, except grants of certain roles to certain users
 
-prompt
-prompt Done. Do not forget to grant specific roles to specific users as needed.
-prompt Also, commit in order to accept the pre-populated data.
-prompt
+prompt ==================================================================
+prompt Do not forget to grant specific roles to specific users as needed.
+prompt ==================================================================
