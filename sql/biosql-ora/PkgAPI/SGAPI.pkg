@@ -3,7 +3,7 @@
 -- API Package for general or special purpose SymGene functions and
 -- procedures.
 --
--- $GNF: projects/gi/symgene/src/DB/PkgAPI/SGAPI.pkg,v 1.3 2003/05/14 07:10:59 hlapp Exp $
+-- $GNF: projects/gi/symgene/src/DB/PkgAPI/SGAPI.pkg,v 1.4 2003/06/11 10:03:20 hlapp Exp $
 --
 
 --
@@ -25,6 +25,15 @@ PACKAGE SGAPI IS
 
 	FUNCTION Platonic_Ent(Ent_Oid IN SG_Bioentry.Oid%TYPE)
 	RETURN SG_Bioentry.Oid%TYPE;
+
+	FUNCTION Ent_Descendants(
+			Ent_Oid		IN SG_Bioentry.Oid%TYPE,
+		 	Trm_Oid		IN SG_Term.Oid%TYPE DEFAULT NULL,
+			Trm_Name	IN SG_Term.Name%TYPE DEFAULT NULL,
+			Trm_Identifier IN SG_Term.Identifier%TYPE DEFAULT NULL,
+			Ont_Oid		IN SG_Ontology.Oid%TYPE DEFAULT NULL,
+			Ont_Name	IN SG_Ontology.Name%TYPE DEFAULT NULL)
+	RETURN Oid_List_t;
 
 	PROCEDURE delete_mapping(
 		Asm_Name	IN SG_Biodatabase.Name%TYPE,

@@ -3,7 +3,7 @@
 -- Package for standard functions and constants used throughout other packages.
 --
 --
--- $GNF: projects/gi/symgene/src/DB/PkgAPI/BSStd.pkg,v 1.4 2003/05/21 01:34:07 hlapp Exp $
+-- $GNF: projects/gi/symgene/src/DB/PkgAPI/BSStd.pkg,v 1.5 2003/06/11 10:03:20 hlapp Exp $
 --
 
 --
@@ -27,6 +27,8 @@ PACKAGE BSStd IS
 	DML_I		NUMBER := 2;
 	DML_UI		NUMBER := 3;	
 	DML_NO		NUMBER := 0;
+
+	TYPE Oid_List_t IS TABLE OF INTEGER;
 
 	FUNCTION translate_bool(bool_var IN VARCHAR2)
 	RETURN VARCHAR2;
