@@ -68,9 +68,12 @@ CREATE TABLE bioentry (
   biodatabase_id  int(10) NOT NULL,
   display_id   varchar(40) NOT NULL,
   accession    varchar(40) NOT NULL,
+  identifier   varchar(40),
+  description  varchar(255),
   entry_version int(10), 
-  division     varchar(3) NOT NULL,
-  UNIQUE (biodatabase_id,accession,entry_version, division),
+  division     varchar(3),
+  UNIQUE (biodatabase_id,accession,entry_version),
+  UNIQUE (identifier,biodatabase_id),
   FOREIGN KEY (biodatabase_id) REFERENCES biodatabase(biodatabase_id)
 );
 CREATE INDEX bioentrydbid ON bioentry(biodatabase_id);
