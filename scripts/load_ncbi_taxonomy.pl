@@ -585,13 +585,15 @@ sub handle_diffs {
 		$o++; $n++;
 	    } elsif ($oldentry->[0] < $newentry->[0]) {
 		# old entry to be removed
-		if($nodelete) {
+                if ($nodelete || (!$delete->(@{$oldentry}))) {
 		    print STDERR "note: node (".
 			join(";",map { defined($_) ? $_ : ""; } @{$oldentry}).
-			") is retired\n" if $verbose;
-		} elsif(!$delete->(@{$oldentry})) {
-		    die "failed to delete node (".join(";",@{$oldentry}).
-			"): ".$dbh->errstr;
+			") is retired" if $verbose || (!$nodelete);
+                    if (!$nodelete) {
+                        # SQL statement failed
+                        print STDERR "; failed to delete: ".$dbh->errstr;
+                    }
+                    print STDERR "\n" if $verbose || (!$nodelete);
 		}
 		$ds++; $o++;
 	    } else {
