@@ -38,11 +38,20 @@ CREATE TABLE datahandler(
     datahandler_id     int(10) unsigned NOT NULL auto_increment,
     iohandler_id        int(10) DEFAULT '0' NOT NULL,
     method              varchar(60) DEFAULT '' NOT NULL,
-    argument            varchar(40) DEFAULT '' ,
     rank                int(10) DEFAULT 1 NOT NULL,
 
     PRIMARY KEY (datahandler_id),
     KEY iohandler (iohandler_id)
+);
+
+CREATE TABLE argument (
+  argument_id     int(10) unsigned NOT NULL auto_increment,
+  datahandler_id  int(10) unsigned NOT NULL ,
+  name            varchar(40) DEFAULT '',
+  rank            int(10) DEFAULT 1 NOT NULL,
+  type            enum('SCALAR','ARRAY') DEFAULT 'SCALAR' NOT NULL,
+
+  PRIMARY KEY (argument_id)
 );
 
 CREATE TABLE dbadaptor (
