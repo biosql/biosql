@@ -9,25 +9,28 @@ CREATE FUNCTION biosql_accelerators_level () RETURNS int AS '
   END;
 ' LANGUAGE 'plpgsql';
 
-DROP FUNCTION intern_ontology_term (test) RETURNS int AS '
-  DECLATE
-    tname ALIAS FOR $1
+DROP FUNCTION intern_ontology_term (text);
+
+CREATE FUNCTION intern_ontology_term (text) RETURNS int AS '
+  DECLARE
+    t_name ALIAS FOR $1;
+    t_id integer;
   BEGIN
-    select into tid ontology_term_id from ontology_term where term_name = tname
+    select into t_id ontology_term_id from ontology_term where term_name = t_name;
     IF NOT FOUND THEN
-      INSERT INTO ontology_term (term_name) VALUES (tname);
+      INSERT INTO ontology_term (term_name) VALUES (t_name);
       RETURN currval(''ontology_term_pkey_seq'');
-    END IF
-    RETURN tid;
-  END
-' LANGIAGE 'plpgsql';
+    END IF;
+    RETURN t_id;
+  END;
+' LANGUAGE 'plpgsql';
 
 DROP FUNCTION intern_seqfeature_source (text);
 
 CREATE FUNCTION intern_seqfeature_source (text) RETURNS int AS '
   DECLARE
     kname ALIAS FOR $1;
-    kid int;
+    kid integer;
   BEGIN
     select into kid seqfeature_source_id from seqfeature_source where source_name = kname;
     IF NOT FOUND THEN
@@ -69,9 +72,9 @@ CREATE FUNCTION create_seqfeature_onespan (integer, text, text, integer, integer
   BEGIN
     INSERT INTO seqfeature 
            (bioentry_id, seqfeature_key_id, seqfeature_source_id)
-    VALUES (cs_bioentry_id, intern_seqfeature_key(cs_key), intern_seqfeature_source(cs_source));
+    VALUES (cs_bioentry_id, intern_ontology_term(cs_key), intern_seqfeature_source(cs_source));
     
-    sf_id := currval(''seqfeature_seqfeature_id_seq'');
+    sf_id := currval(''seqfeature_pkey_seq'');
 
     INSERT INTO seqfeature_location
            (seqfeature_id, seq_start, seq_end, seq_strand, location_rank)

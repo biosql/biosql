@@ -205,9 +205,9 @@ CREATE INDEX sf3 ON seqfeature ( bioentry_id );
 --- seqfeatures can be arranged in containment hierarchies. 
 --- one can imagine storing other relationships between features, 
 --- in this case the ontology_term_id can be used to type the relationship 
-CREATE SEQUENCE seqfeature_relationship_pkey_seq;
+CREATE SEQUENCE seqfeature_rel_pkey_seq;
 CREATE TABLE seqfeature_relationship ( 
-	 seqfeature_relationship_id integer primary key default (nextval ( 'seqfeature_relationship_pkey_seq' )) , 
+	 seqfeature_relationship_id integer primary key default (nextval ( 'seqfeature_rel_pkey_seq' )) , 
 	 parent_seqfeature_id int NOT NULL , 
 	 child_seqfeature_id int NOT NULL , 
 	 relationship_type_id int NOT NULL , 
