@@ -1,11 +1,43 @@
 Here's a rough walk-through.
 
-1) Check BS-defs.sql and make sure the settings reflect what you want.
+0) If you instantiated this schema before in the pre-Singapore version
+   and you would like to upgrade (migrate) your schema, possibly
+   without losing data, follow item 1) below and afterwards skip to
+   migrate/singapore/migrate-to-singapore.sql. Carefully read the
+   disclaimer in that file, and follow the backup instructions (note
+   that having a backup is no guarantee for also being able to restore
+   it, so make sure you can unless you can afford to lose all data in
+   the schema in the worst case). Run the script and see whether you
+   get an error:
+
+	SQL> @migrate/singapore/migrate-to-singapore
+
+   If there is an error saying that BS-defs-local.sql wasn't found,
+   fix that error by editing the path or following item 1) below as I
+   said you should. Once there is no error anymore, edit the
+   migrate-to-singapore.sql script to comment out the line containing
+   the word exit all by itself (you may want to comment out the
+   preceding PROMPT statements too). Then run the script again like
+   above. Cross your fingers. To limit the damage in case of errors
+   the script will exit upon the first error it encounters. Depending
+   on your volume of data that you have in your Biosql instance, the
+   entire migration may take a while. I had 8 Mio bioentries and the
+   whole migration took several hours. You will want to make sure that
+   nobody will change data while the schema is being migrated.
+
+   BTW the migration script did work for me without any error (well,
+   finally). There is a chance it will for you too.
+
+Now for those who instantiate Biosql from scratch.
+
+1) Copy BS-defs.sql to BS-defs-local.sql. Then edit the latter to make
+   sure the settings reflect what you want.
 
 2) BS-create-all.sql is the overall build script. Make sure only those
    commands are commented out that you know you don't want to happen
-   (e.g., you may have the tablespaces already, so skip that). Then
-   run it:
+   (e.g., you may have the tablespaces already, so skip that). Note
+   that the default version may have commands commented out that you
+   may actually want to run. When finished editing it, run it:
 
 	SQL> @BS-create-all
 
@@ -42,7 +74,7 @@ Here's a rough walk-through.
    for instance the user biosql. I.e.,
 
 	SQL> @BS-create-Biosql-usersyns
-	SQL> connect biosql/biosql -- or whatever your usr/pwd is
+	SQL> connect biosql/biosqlpwd -- or whatever your usr/pwd is
 	SQL> @usersyns
 
 6) I also recommend to create a bare-bones test schema under a
