@@ -22,7 +22,7 @@
 -- Definitions for tablespaces and role.
 -- 
 
-@BS-defs.sql
+@BS-defs-local.sql
 
 --
 -- The owner of the schema.

@@ -20,7 +20,7 @@
 -- MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 --
 
-@BS-defs.sql
+@BS-defs.sql-local
 
 --
 -- Create the tablespaces.
