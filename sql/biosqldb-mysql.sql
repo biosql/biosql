@@ -94,6 +94,20 @@ CREATE INDEX bioentrydid  ON bioentry(display_id);
 CREATE INDEX bioentryacc  ON bioentry(accession);
 CREATE INDEX bioentrytax  ON bioentry(taxon_id);
 
+--
+-- bioentry-bioentry relationships: these are typed
+--
+CREATE TABLE bioentry_relationship (
+   	parent_bioentry_id 	INT(10) UNSIGNED NOT NULL,
+   	child_bioentry_id 	INT(10) UNSIGNED NOT NULL,
+   	ontology_term_id 	INT(10) UNSIGNED NOT NULL,
+   	relationship_rank 	INT(5),
+   	PRIMARY KEY (parent_bioentry_id,child_bioentry_id,ontology_term_id)
+) TYPE=INNODB;
+
+CREATE INDEX ber1 ON bioentry_relationship(ontology_term_id);
+CREATE INDEX ber2 ON bioentry_relationship(child_bioentry_id);
+
 -- some bioentries will have a sequence
 -- biosequence because sequence is sometimes 
 -- a reserved word
@@ -207,10 +221,11 @@ CREATE TABLE comment (
 CREATE TABLE bioentry_qualifier_value (
 	bioentry_id   		INT(10) UNSIGNED NOT NULL,
    	ontology_term_id  	INT(10) UNSIGNED NOT NULL,
-   	qualifier_value         TEXT
+   	qualifier_value         TEXT,
+	qualifier_rank		INT(5),
+	UNIQUE (bioentry_id,ontology_term_id,qualifier_rank)
 ) TYPE=INNODB;
 
-CREATE INDEX bqv1 ON bioentry_qualifier_value(bioentry_id);
 CREATE INDEX bqv2 ON bioentry_qualifier_value(ontology_term_id);
 
 -- feature table. We cleanly handle
@@ -227,7 +242,7 @@ CREATE TABLE seqfeature (
    	seqfeature_source_id  	INT(10) UNSIGNED,
    	seqfeature_rank 	INT(5),
 	PRIMARY KEY (seqfeature_id),
-	UNIQUE (bioentry_id,ontology_term_id,seqfeature_rank)
+	UNIQUE (bioentry_id,ontology_term_id,seqfeature_source_id,seqfeature_rank)
 ) TYPE=INNODB;
 
 CREATE INDEX sf1 ON seqfeature(ontology_term_id);
@@ -336,6 +351,16 @@ ALTER TABLE bioentry ADD CONSTRAINT FKtaxon_bioentry
 	FOREIGN KEY (taxon_id) REFERENCES taxon(taxon_id);
 ALTER TABLE bioentry ADD CONSTRAINT FKbiodatabase_bioentry
 	FOREIGN KEY (biodatabase_id) REFERENCES biodatabase(biodatabase_id);
+
+-- bioentry_relationship
+ALTER TABLE bioentry_relationship ADD CONSTRAINT FKontology_bioentryrel
+	FOREIGN KEY (ontology_term_id) REFERENCES ontology_term(ontology_term_id)	ON DELETE CASCADE;
+ALTER TABLE bioentry_relationship ADD CONSTRAINT FKparentent_bioentryrel
+	FOREIGN KEY (parent_bioentry_id) REFERENCES bioentry(bioentry_id)
+	ON DELETE CASCADE;
+ALTER TABLE bioentry_relationship ADD CONSTRAINT FKchildent_bioentryrel
+	FOREIGN KEY (child_bioentry_id) REFERENCES bioentry(bioentry_id)
+	ON DELETE CASCADE;
 
 -- biosequence
 ALTER TABLE biosequence ADD CONSTRAINT FKbioentry_bioseq
