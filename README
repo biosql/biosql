@@ -11,6 +11,14 @@ different Bio* projects, Bioperl, Biojava, Biopython, and Bioruby.
 Entries stored through an application written in, say, Bioperl could
 be retrieved by another written in Biojava.
 
+There are currently three different RDBMSs supported: MySQL,
+PostgreSQL, and Oracle. The MySQL schema DDL is in
+sql/biosqldb-mysql.sql, the PostgreSQL schema is in 
+sql/biosqldb-pg.sql, and the Oracle schema is in multiple files
+in the directory sql/biosql-ora. In order to instantiate the schema, feed
+the respective file or files to your SQL shell (mysql for MySQL, and psql for
+PostgreSQL).
+
 ======================================================================
 INSTALLATION NOTES
 
@@ -40,18 +48,3 @@ will require a database migration.
   names consistent with the Oracle schema, avoiding Oracle reserved
   words.
 
-
-There are currently three different RDBMSs supported: MySQL,
-PostgreSQL, and Oracle.
-
-The MySQL schema DDL is in biosqldb-mysql.sql, and the PostgreSQL
-schema is in biosqldb-pg.sql. In order to instantiate the schema, feed
-the respective file to you SQL shell (mysql for MySQL, and psql for
-PostgreSQL).
-
-The Oracle schema is in the directory biosql-ora; check out the
-INSTALL documentation in that directory for how to instantiate it.
-
-You may also want to read other documentation that comes with this
-distribution, like the INSTALL and README files in the distribution's
-root directory.
