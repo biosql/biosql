@@ -30,6 +30,7 @@ CREATE TABLE biodatabase (
   	name           	VARCHAR(128) NOT NULL,
 	authority	VARCHAR(128),
 	description	LONGVARCHAR,
+        PRIMARY KEY (biodatabase_id),
   	UNIQUE (name)
 );
 
@@ -45,6 +46,7 @@ CREATE TABLE taxon (
        mito_genetic_code TINYINT,
        left_value	INT,
        right_value	INT,
+       PRIMARY KEY (taxon_id),
        UNIQUE (ncbi_taxon_id)
 );
 -- HSQLDB 1.7.1 UNIQUE BUG
@@ -69,6 +71,7 @@ CREATE TABLE ontology (
        	ontology_id        INT NOT NULL IDENTITY,
        	name	   	   VARCHAR(32) NOT NULL,
        	definition	   LONGVARCHAR,
+        PRIMARY KEY (ontology_id),
 	UNIQUE (name)
 );
 
@@ -80,6 +83,7 @@ CREATE TABLE term (
 	identifier	   VARCHAR(40),
 	is_obsolete	   CHAR(1),
 	ontology_id	   INT NOT NULL,
+        PRIMARY KEY (term_id),
 	UNIQUE (name,ontology_id)
 );
 -- HSQLDB 1.7.1 UNIQUE BUG
@@ -88,9 +92,10 @@ CREATE TABLE term (
 CREATE INDEX term_ont ON term(ontology_id);
 
 
--- We use the field name "name" instead of "synonym" (which is a reserved word in some RDBMS)
+-- We should use the field name "name" instead of "synonym" 
+-- (because it is a reserved word in some RDBMS)
 CREATE TABLE term_synonym (
-       name		  VARCHAR(255) NOT NULL,
+       synonym		  VARCHAR(255) NOT NULL,
        term_id		  INT NOT NULL,
        PRIMARY KEY (term_id,name)
 );
@@ -112,6 +117,7 @@ CREATE TABLE term_relationship (
        	predicate_term_id    INT NOT NULL,
        	object_term_id       INT NOT NULL,
 	ontology_id	INT NOT NULL,
+        PRIMARY KEY (term_relationship_id),
 	UNIQUE (subject_term_id,predicate_term_id,object_term_id,ontology_id)
 );
 
@@ -137,6 +143,7 @@ CREATE TABLE term_path (
        	object_term_id       INT NOT NULL,
 	ontology_id          INT NOT NULL,
 	distance	     INT,
+        PRIMARY KEY (term_path_id),
 	UNIQUE (subject_term_id,predicate_term_id,object_term_id,ontology_id,distance)
 );
 
@@ -155,7 +162,9 @@ CREATE TABLE bioentry (
 	division	VARCHAR(6),
   	description  	LONGVARCHAR,
   	version 	SMALLINT NOT NULL, 
-  	UNIQUE (accession,biodatabase_id,version)
+        PRIMARY KEY (bioentry_id),
+  	UNIQUE (accession,biodatabase_id,version),
+        UNIQUE (identifier,biodatabase_id)
 );
 -- HSQLDB 1.7.1 UNIQUE BUG
 --  	UNIQUE (identifier)
@@ -171,6 +180,7 @@ CREATE TABLE bioentry_relationship (
    	subject_bioentry_id 	INT NOT NULL,
    	term_id 		INT NOT NULL,
    	rank 			INT,
+        PRIMARY KEY (bioentry_relationship_id),
 	UNIQUE (object_bioentry_id,subject_bioentry_id,term_id)
 );
 
@@ -210,6 +220,7 @@ CREATE TABLE dbxref (
         dbname          VARCHAR(40) NOT NULL,
         accession       VARCHAR(40) NOT NULL,
 	version		SMALLINT NOT NULL,
+        PRIMARY KEY (dbxref_id),
         UNIQUE(accession, dbname, version)
 );
 
@@ -245,6 +256,7 @@ CREATE TABLE reference (
   	title    	   LONGVARCHAR,
   	authors  	   LONGVARCHAR NOT NULL,
   	crc	   	   VARCHAR(32),
+        PRIMARY KEY (reference_id),
 	UNIQUE (dbxref_id),
 	UNIQUE (crc)
 );
@@ -268,6 +280,7 @@ CREATE TABLE anncomment (
   	bioentry_id    	INT NOT NULL,
   	comment_text   	LONGVARCHAR NOT NULL,
   	rank   		SMALLINT DEFAULT 0 NOT NULL,
+        PRIMARY KEY (comment_id),
   	UNIQUE(bioentry_id, rank)
 );
 
@@ -290,6 +303,7 @@ CREATE TABLE seqfeature (
    	source_term_id  	INT NOT NULL,
 	display_name		VARCHAR(64),
    	rank 			SMALLINT DEFAULT 0 NOT NULL,
+        PRIMARY KEY (seqfeature_id),
 	UNIQUE (bioentry_id,type_term_id,source_term_id,rank)
 );
 
@@ -303,6 +317,7 @@ CREATE TABLE seqfeature_relationship (
    	subject_seqfeature_id 	INT NOT NULL,
    	term_id 	INT NOT NULL,
    	rank 			INT,
+        PRIMARY KEY (seqfeature_relationship_id),
 	UNIQUE (object_seqfeature_id,subject_seqfeature_id,term_id)
 );
 
@@ -352,6 +367,7 @@ CREATE TABLE location (
    	end_pos                	INT,
    	strand             	TINYINT DEFAULT 0 NOT NULL,
    	rank          		SMALLINT DEFAULT 0 NOT NULL,
+        PRIMARY KEY (location_id),
    	UNIQUE (seqfeature_id, rank)
 );
 
