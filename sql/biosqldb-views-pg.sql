@@ -1,3 +1,5 @@
+--- THIS FILE IS EXPERIMENTAL; SOME OR ALL OF THESE COULD CHANGE
+
 CREATE VIEW seqfeature_key_v
  AS SELECT f.*, key_name 
     FROM seqfeature f, seqfeature_key k 

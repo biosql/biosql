@@ -23,6 +23,16 @@ CREATE TABLE taxa (
 	 common_name varchar ( 255 ) NOT NULL , 
 	 ncbi_taxa_id int ); 
 
+--- any controlled vocab term, everything from full ontology 
+--- terms eg GO IDs to the various keys allowed as qualifiers 
+--- 
+--- this replaces the table "seqfeature_qualifier" 
+CREATE SEQUENCE ontology_term_pkey_seq;
+CREATE TABLE ontology_term ( 
+	 ontology_term_id integer primary key default (nextval ( 'ontology_term_pkey_seq' )) , 
+	 term_name char ( 255 ) , 
+	 term_definition text ); 
+
 --- we can be a bioentry without a biosequence, but not visa-versa 
 --- most things are going to be keyed off bioentry_id 
 --- accession is the stable id, display_id is a potentially volatile, 
@@ -37,13 +47,6 @@ CREATE TABLE bioentry (
 	 division varchar ( 3 ) NOT NULL , 
 	 UNIQUE ( biodatabase_id , accession , entry_version , division ) , 
 	 FOREIGN KEY ( biodatabase_id ) REFERENCES biodatabase ( biodatabase_id ) ); 
-
----Bioentries should have one or more dates 
-CREATE TABLE bioentry_date ( 
-	 bioentry_id int NOT NULL , 
-	 date varchar ( 200 ) NOT NULL , 
-	 FOREIGN KEY ( bioentry_id ) REFERENCES bioentry ( bioentry_id ) , 
-	 PRIMARY KEY ( bioentry_id , date ) ); 
 
 --- not all entries have a taxa, but many do. 
 --- one bioentry only has one taxa! (weirdo chimerias are not handled. tough) 
@@ -62,32 +65,59 @@ CREATE TABLE biosequence (
 	 biosequence_id integer primary key default (nextval ( 'biosequence_pkey_seq' )) , 
 	 bioentry_id int NOT NULL , 
 	 seq_version int , 
-	 biosequence_str text NOT NULL , 
+	 seq_length int , 
+	 biosequence_str text , 
 	 molecule varchar ( 10 ) , 
 	 FOREIGN KEY ( bioentry_id ) REFERENCES bioentry ( bioentry_id ) , 
 	 UNIQUE ( bioentry_id ) ); 
+
+--- new table 
+CREATE SEQUENCE dbxref_pkey_seq;
+CREATE TABLE dbxref ( 
+	 dbxref_id integer primary key default (nextval ( 'dbxref_pkey_seq' )) , 
+	 dbname varchar ( 40 ) NOT NULL , 
+	 accession varchar ( 40 ) NOT NULL , 
+	 UNIQUE ( dbname , accession ) ); 
+
+--- new table 
+--- for roundtripping embl/genbank, we need to have the "optional ID" 
+--- for the dbxref. 
+--- 
+--- another use of this table could be for storing 
+--- descriptive text for a dbxref. for example, we may want to 
+--- know stuff about the interpro accessions we store (without 
+--- importing all of interpro), so we can attach the text 
+--- description as a synonym 
+--- 
+CREATE SEQUENCE dbxref_qualifier_value_pkey_seq;
+CREATE TABLE dbxref_qualifier_value ( 
+	 dbxref_qualifier_value_id integer primary key default (nextval ( 'dbxref_qualifier_value_pkey_seq' )) , 
+	 dbxref_id int NOT NULL , 
+	 FOREIGN KEY ( dbxref_id ) REFERENCES dbxref ( dbxref_id ) , 
+	 ontology_term_id int NOT NULL , 
+	 FOREIGN KEY ( ontology_term_id ) REFERENCES ontology_term ( ontology_term_id ) , 
+	 qualifier_value text ); 
 
 --- Direct links. It is tempting to do this 
 --- from bioentry_id to bioentry_id. But that wont work 
 --- during updates of one database - we will have to edit 
 --- this table each time. Better to do the join through accession 
 --- and db each time. Should be almost as cheap 
---- [note - should we normalise this into a dbxref table? 
----  should be faster as we can join by integer ids] 
+--- note: changed to use new dbxref table 
 CREATE SEQUENCE bioentry_direct_links_pkey_seq;
 CREATE TABLE bioentry_direct_links ( 
 	 bio_dblink_id integer primary key default (nextval ( 'bioentry_direct_links_pkey_seq' )) , 
 	 source_bioentry_id int NOT NULL , 
-	 dbname varchar ( 40 ) NOT NULL , 
-	 accession varchar ( 40 ) NOT NULL , 
-	 FOREIGN KEY ( source_bioentry_id ) REFERENCES bioentry ( bioentry_id ) ); 
+	 dbxref_id int NOT NULL , 
+	 FOREIGN KEY ( source_bioentry_id ) REFERENCES bioentry ( bioentry_id ) , 
+	 FOREIGN KEY ( dbxref_id ) REFERENCES dbxref ( dbxref_id ) ); 
 
 ---We can have multiple references per bioentry, but one reference 
 ---can also be used for the same bioentry. 
 CREATE SEQUENCE reference_pkey_seq;
 CREATE TABLE reference ( 
 	 reference_id integer primary key default (nextval ( 'reference_pkey_seq' )) , 
-	 reference_location varchar ( 255 ) NOT NULL , 
+	 reference_location text NOT NULL , 
 	 reference_title text , 
 	 reference_authors text NOT NULL , 
 	 reference_medline int ); 
@@ -116,36 +146,20 @@ CREATE TABLE comment (
 
 --- separate description table separate to save on space when we 
 --- do not store descriptions 
-CREATE TABLE bioentry_description ( 
+--- this table replaces the old 
+---  bioentry_description and bioentry_keywords tables 
+CREATE TABLE bioentry_qualifier_value ( 
 	 bioentry_id int NOT NULL , 
-	 description varchar ( 255 ) NOT NULL , 
-	 FOREIGN KEY ( bioentry_id ) REFERENCES bioentry ( bioentry_id ) ); 
-
---- separate keyword table 
-CREATE TABLE bioentry_keywords ( 
-	 bioentry_id int NOT NULL , 
-	 keywords varchar ( 255 ) NOT NULL , 
 	 FOREIGN KEY ( bioentry_id ) REFERENCES bioentry ( bioentry_id ) , 
-	 PRIMARY KEY ( bioentry_id ) ); 
+	 ontology_term_id int NOT NULL , 
+	 FOREIGN KEY ( ontology_term_id ) REFERENCES ontology_term ( ontology_term_id ) , 
+	 qualifier_value text ); 
 
 --- feature table. We cleanly handle 
 ---   - simple locations 
 ---   - split locations 
 ---   - split locations on remote sequences 
 --- The fuzzies are not handled yet 
---- we expect to share both qualifiers and keys between features. As well as saving 
---- on dataspace and query time, making this more normalised is a "good thing" 
-CREATE SEQUENCE seqfeature_qualifier_pkey_seq;
-CREATE TABLE seqfeature_qualifier ( 
-	 seqfeature_qualifier_id integer primary key default (nextval ( 'seqfeature_qualifier_pkey_seq' )) , 
-	 FOREIGN KEY ( seqfeature_qualifier_id ) REFERENCES seqfeature_qualifier ( seqfeature_qualifier_id ) , 
-	 qualifier_name varchar ( 255 ) NOT NULL ); 
-
-CREATE SEQUENCE seqfeature_key_pkey_seq;
-CREATE TABLE seqfeature_key ( 
-	 seqfeature_key_id integer primary key default (nextval ( 'seqfeature_key_pkey_seq' )) , 
-	 key_name varchar ( 255 ) NOT NULL ); 
-
 CREATE SEQUENCE seqfeature_source_pkey_seq;
 CREATE TABLE seqfeature_source ( 
 	 seqfeature_source_id integer primary key default (nextval ( 'seqfeature_source_pkey_seq' )) , 
@@ -158,16 +172,17 @@ CREATE TABLE seqfeature (
 	 seqfeature_key_id int , 
 	 seqfeature_source_id int , 
 	 seqfeature_rank int , 
+	 FOREIGN KEY ( seqfeature_key_id ) REFERENCES ontology_term ( ontology_term_id ) , 
 	 FOREIGN KEY ( seqfeature_source_id ) REFERENCES seqfeature_source ( seqfeature_source_id ) , 
 	 FOREIGN KEY ( bioentry_id ) REFERENCES bioentry ( bioentry_id ) ); 
 
 CREATE TABLE seqfeature_qualifier_value ( 
 	 seqfeature_id int NOT NULL , 
-	 seqfeature_qualifier_id int NOT NULL , 
-	 seqfeature_qualifier_rank int NOT NULL , 
+	 ontology_term_id int NOT NULL , 
+	 qualifier_rank int NOT NULL , 
 	 qualifier_value text NOT NULL , 
-	 FOREIGN KEY ( seqfeature_qualifier_id ) REFERENCES seqfeature_qualifier ( seqfeature_qualifier_id ) , 
-	 PRIMARY KEY ( seqfeature_id , seqfeature_qualifier_id , seqfeature_qualifier_rank ) ); 
+	 FOREIGN KEY ( ontology_term_id ) REFERENCES ontology_term ( ontology_term_id ) , 
+	 PRIMARY KEY ( seqfeature_id , ontology_term_id , qualifier_rank ) ); 
 
 --- basically we model everything as potentially having 
 --- any number of locations, ie, a split location. SimpleLocations 
@@ -208,21 +223,22 @@ CREATE TABLE remote_seqfeature_name (
 --- most likely ignore these 
 CREATE TABLE location_qualifier_value ( 
 	 seqfeature_location_id int NOT NULL , 
-	 seqfeature_qualifier_id int NOT NULL , 
+	 ontology_term_id int NOT NULL , 
 	 qualifier_value char ( 255 ) NOT NULL , 
 	 qualifier_int_value int , 
-	 FOREIGN KEY ( seqfeature_location_id ) REFERENCES seqfeature_location ( seqfeature_location_id ) ); 
+	 FOREIGN KEY ( seqfeature_location_id ) REFERENCES seqfeature_location ( seqfeature_location_id ) , 
+	 FOREIGN KEY ( ontology_term_id ) REFERENCES ontology_term ( ontology_term_id ) ); 
 
 --- pre-make the fuzzy ontology 
-INSERT INTO seqfeature_qualifier ( qualifier_name ) VALUES ( 'min_start' ); 
-INSERT INTO seqfeature_qualifier ( qualifier_name ) VALUES ( 'min_end' ); 
-INSERT INTO seqfeature_qualifier ( qualifier_name ) VALUES ( 'max_start' ); 
-INSERT INTO seqfeature_qualifier ( qualifier_name ) VALUES ( 'max_end' ); 
-INSERT INTO seqfeature_qualifier ( qualifier_name ) VALUES ( 'unknown_start' ); 
-INSERT INTO seqfeature_qualifier ( qualifier_name ) VALUES ( 'unknown_end' ); 
-INSERT INTO seqfeature_qualifier ( qualifier_name ) VALUES ( 'end_pos_type' ); 
-INSERT INTO seqfeature_qualifier ( qualifier_name ) VALUES ( 'start_pos_type' ); 
-INSERT INTO seqfeature_qualifier ( qualifier_name ) VALUES ( 'location_type' ); 
+INSERT INTO ontology_term ( term_name ) VALUES ( 'min_start' ); 
+INSERT INTO ontology_term ( term_name ) VALUES ( 'min_end' ); 
+INSERT INTO ontology_term ( term_name ) VALUES ( 'max_start' ); 
+INSERT INTO ontology_term ( term_name ) VALUES ( 'max_end' ); 
+INSERT INTO ontology_term ( term_name ) VALUES ( 'unknown_start' ); 
+INSERT INTO ontology_term ( term_name ) VALUES ( 'unknown_end' ); 
+INSERT INTO ontology_term ( term_name ) VALUES ( 'end_pos_type' ); 
+INSERT INTO ontology_term ( term_name ) VALUES ( 'start_pos_type' ); 
+INSERT INTO ontology_term ( term_name ) VALUES ( 'location_type' ); 
 --- coordinate policies? 
 --- 
 --- this is a tiny table to allow a cach'ing corba server to 
