@@ -34,15 +34,14 @@ CREATE INDEX biodatabaseidx1 on biodatabase(authority);
 
 CREATE TABLE taxa (
   taxa_id   int(10) unsigned NOT NULL PRIMARY KEY auto_increment,
-  binomial varchar(96) NOT NULL,
+  binomial varchar(96),
   common_name varchar(255),
   ncbi_taxa_id int(10),
   full_lineage mediumtext NOT NULL,
-  UNIQUE (binomial),
-  UNIQUE (ncbi_taxa_id),
-  UNIQUE (common_name)
 );
 
+CREATE INDEX taxa_ncbiid ON taxa(ncbi_taxa_id);
+CREATE INDEX taxa_common ON taxa(common_name);
 
 # any controlled vocab term, everything from full ontology
 # terms eg GO IDs to the various keys allowed as qualifiers
