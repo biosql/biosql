@@ -548,14 +548,16 @@ sub handle_diffs {
 	    $is++; $n++;
 	} elsif ($ndone) {
 	    # only old's left to remove
-	    if($nodelete) {
-		print STDERR "note: node (".
-		    join(";",map { defined($_) ? $_ : ""; } @{$old->[$o]}).
-		    ") is retired\n" if $verbose;
-	    } elsif(!$delete->(@{$old->[$o]})) {
-		die "failed to delete node (".join(";",@{$old->[$o]}).
-		    "): ".$dbh->errstr;
-	    }
+            if ($nodelete || (!$delete->(@{$old->[$o]}))) {
+                print STDERR "note: node (".
+                    join(";",map { defined($_) ? $_ : ""; } @{$oldentry}).
+                    ") is retired" if $verbose || (!$nodelete);
+                if (!$nodelete) {
+                    # SQL statement failed
+                    print STDERR "; failed to delete: ".$dbh->errstr;
+                }
+                print STDERR "\n" if $verbose || (!$nodelete);
+            }
 	    $ds++; $o++;
 	} else {
 	    # both $o and $n are still valid
