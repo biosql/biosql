@@ -130,11 +130,11 @@ CREATE TABLE streamadaptor (
 CREATE TABLE input (
    input_id         int(10) unsigned DEFAULT '0' NOT NULL auto_increment,
    name             varchar(40) DEFAULT '' NOT NULL,
+   tag              varchar(40) DEFAULT '',
    job_id           int(10) unsigned NOT NULL,
-   iohandler_id     int(10) unsigned NOT NULL,
+   iohandler_id     int(10) unsigned,
 
    PRIMARY KEY (input_id),
-   KEY iohandler (iohandler_id),
    KEY job (job_id)
 
 );
