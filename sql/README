@@ -1,5 +1,0 @@
-ALWAYS use 
-
-scripts/transform_sql -target pg biosqldb-mysql.sql > biosqldb-pg.sql
-
-to generates postgres; modification of the pg (or other sources) will be overwritten
