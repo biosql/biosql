@@ -11,7 +11,7 @@
 -- comments to biosql - biosql-l@open-bio.org
 
 --
--- Migration to InnoDB by Hilmar Lapp <hlapp at gmx.net>
+-- Migration of the MySQL schema to InnoDB by Hilmar Lapp <hlapp at gmx.net> 
 --
 
 -- database have bioentries. That is about it.
@@ -151,7 +151,6 @@ CREATE INDEX dqv2  ON dbxref_qualifier_value(ontology_term_id);
 
 -- note: changed to use new dbxref table
 CREATE TABLE bioentry_dblink (
---     	bioentry_dblink_id INT(10) UNSIGNED NOT NULL auto_increment,
        	bioentry_id        INT(10) UNSIGNED NOT NULL,
        	dbxref_id          INT(10) UNSIGNED NOT NULL,
 	PRIMARY KEY (bioentry_id,dbxref_id)
