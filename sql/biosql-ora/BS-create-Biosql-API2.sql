@@ -277,8 +277,11 @@ FROM SG_Term_Assoc
 
 -- Because this is (unnecessarily) separated out into its own table in
 -- the PostgreSQL and MySQL versions, there will be INSERTs against
--- this view for existing Term and Term_Assoc entries. We need to
--- catch that and turn it into an update.
+-- this view for existing Term and Term_Assoc entries. Similarly, a
+-- DELETE issued against this virtual table conceptually means to
+-- disassociate the term from the relationship, which is equivalent to
+-- setting the foreign key to Term to NULL. 
+-- We need to catch those cases and turn them into updates.
 CREATE OR REPLACE TRIGGER BIR_Term_Relationship_Term
         INSTEAD OF INSERT
         ON Term_Relationship_Term
@@ -288,6 +291,43 @@ BEGIN
         UPDATE SG_Term_Assoc SET
                 Trm_Oid = :new.Term_Id
         WHERE Oid = :new.Term_Relationship_Id;
+END;
+/
+CREATE OR REPLACE TRIGGER BUR_Term_Relationship_Term
+        INSTEAD OF UPDATE
+        ON Term_Relationship_Term
+        REFERENCING NEW AS new OLD AS old
+        FOR EACH ROW
+BEGIN
+        -- if this is an attempt to only change the term relationship
+        -- of the association, we need to disassociate the old one
+        -- first, because we don't want to be changing primary keys
+        -- on term relationships
+        IF :new.Term_Relationship_Id != :old.Term_Relationship_Id THEN
+                UPDATE SG_Term_Assoc SET
+                        Trm_Oid = NULL
+                WHERE Oid = :old.Term_Relationship_Id;
+        END IF;
+        -- now change the term to which the relationship is to be equivalent
+        UPDATE SG_Term_Assoc SET
+                Trm_Oid = :new.Term_Id
+        WHERE Oid = :new.Term_Relationship_Id;
+END;
+/
+CREATE OR REPLACE TRIGGER BDR_Term_Relationship_Term
+        INSTEAD OF DELETE
+        ON Term_Relationship_Term
+        REFERENCING NEW AS new OLD AS old
+        FOR EACH ROW
+BEGIN
+        UPDATE SG_Term_Assoc SET
+                Trm_Oid = NULL
+        WHERE Oid = :old.Term_Relationship_Id;
+        -- there shouldn't be a row anymore matching this, but to be on the
+        -- safe side we'll do it nonetheless
+        UPDATE SG_Term_Assoc SET
+                Trm_Oid = NULL
+        WHERE Trm_Oid = :old.Term_Id;
 END;
 /
 
