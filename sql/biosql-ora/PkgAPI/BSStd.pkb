@@ -1,7 +1,7 @@
 -- Package body for standard functions used throughout other packages.
 --
 --
--- $Id: BSStd.pkb,v 1.1.1.1 2002-08-13 19:51:10 lapp Exp $
+-- $Id: BSStd.pkb,v 1.1.1.2 2003-01-29 08:54:38 lapp Exp $
 --
 
 --

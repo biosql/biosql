@@ -26,7 +26,8 @@
 
 DROP SEQUENCE SG_Sequence ;
 DROP SEQUENCE SG_Sequence_Fea ;
-DROP SEQUENCE SG_Sequence_ID ;
+DROP SEQUENCE SG_Sequence_EntA ;
+DROP SEQUENCE SG_Sequence_Rank ;
 
 CREATE SEQUENCE SG_Sequence 
 INCREMENT BY 1 
@@ -40,11 +41,11 @@ CREATE SEQUENCE SG_Sequence_Fea
 INCREMENT BY 1 
 START WITH 1 
 NOMAXVALUE 
-NOMINVALUE 
+NOMINVALUE
 NOCYCLE
 NOORDER
 ;
-CREATE SEQUENCE SG_Sequence_ID 
+CREATE SEQUENCE SG_Sequence_EntA 
 INCREMENT BY 1 
 START WITH 1 
 NOMAXVALUE 
@@ -52,6 +53,227 @@ NOMINVALUE
 NOCYCLE
 NOORDER
 ;
+CREATE SEQUENCE SG_Sequence_Rank
+INCREMENT BY 1 
+START WITH 1 
+NOMAXVALUE 
+NOMINVALUE 
+NOCYCLE
+NOORDER
+;
+
+
+DROP TABLE SG_Biodatabase CASCADE CONSTRAINTS;
+
+CREATE TABLE SG_Biodatabase (
+       Oid                  INTEGER NOT NULL,
+       Name                 VARCHAR2(32) NOT NULL,
+       Authority            VARCHAR2(32) NULL,
+       Acronym              VARCHAR2(6) NULL,
+       URI                  VARCHAR2(128) NULL,
+       CONSTRAINT XPKBiodatabase 
+              PRIMARY KEY (Oid)
+       USING INDEX
+       TABLESPACE &biosql_index
+       ,
+       CONSTRAINT XAK1Biodatabase
+       UNIQUE (
+              Name
+       )
+       USING INDEX
+       TABLESPACE &biosql_index
+       ,
+       CONSTRAINT XAK2Biodatabase
+       UNIQUE (
+              Acronym
+       )
+       USING INDEX
+       TABLESPACE &biosql_index
+       --
+);
+
+
+DROP TABLE SG_Taxon CASCADE CONSTRAINTS;
+
+CREATE TABLE SG_Taxon (
+       Oid                  INTEGER NOT NULL,
+       Name                 VARCHAR2(96) NOT NULL,
+       Variant              VARCHAR2(64) NOT NULL,
+       Common_Name          VARCHAR2(96) NULL,
+       NCBI_Taxon_ID        NUMBER(8) NULL,
+       Full_Lineage         VARCHAR2(512) NOT NULL,
+       CONSTRAINT XPKTaxon 
+              PRIMARY KEY (Oid)
+       USING INDEX
+       TABLESPACE &biosql_index
+       ,
+       CONSTRAINT XAK1Taxon
+       UNIQUE (
+              Name,
+              Variant
+       )
+       USING INDEX
+       TABLESPACE &biosql_index
+       ,
+       CONSTRAINT XAK3Taxon
+       UNIQUE (
+              NCBI_Taxon_ID
+       )
+       USING INDEX
+       TABLESPACE &biosql_index
+       --
+)
+;
+
+CREATE INDEX XIFTaxon ON SG_Taxon
+(
+       Common_Name
+)
+    	 TABLESPACE &biosql_index
+;
+
+
+DROP TABLE SG_Ontology_Term CASCADE CONSTRAINTS;
+
+CREATE TABLE SG_Ontology_Term (
+       Oid                  INTEGER NOT NULL,
+       Name                 VARCHAR2(256) NOT NULL,
+       Identifier           VARCHAR2(16) NULL,
+       Definition           VARCHAR2(2000) NULL,
+       Ont_Oid              INTEGER NULL,
+       CONSTRAINT XPKOntology_Term 
+              PRIMARY KEY (Oid)
+       USING INDEX
+    	 TABLESPACE &biosql_index
+ 	 ,
+       CONSTRAINT XAK1Ontology_Term
+       UNIQUE (
+              Name,
+              Ont_Oid
+       )
+       USING INDEX
+    	 TABLESPACE &biosql_index
+ 	 ,
+       CONSTRAINT XAK2Ontology_Term
+       UNIQUE (
+              Identifier
+       )
+       USING INDEX
+    	 TABLESPACE &biosql_index
+ 	 --
+)
+;
+
+
+DROP TABLE SG_Ontology_Term_Assoc CASCADE CONSTRAINTS;
+
+CREATE TABLE SG_Ontology_Term_Assoc (
+       Src_Ont_Oid          INTEGER NOT NULL,
+       Type_Ont_Oid         INTEGER NOT NULL,
+       Tgt_Ont_Oid          INTEGER NOT NULL,
+       CONSTRAINT XPKOntology_Term_Assoc 
+              PRIMARY KEY (Tgt_Ont_Oid, Type_Ont_Oid, Src_Ont_Oid)
+       USING INDEX
+       TABLESPACE &biosql_index
+       --
+);
+
+
+DROP TABLE SG_Bioentry CASCADE CONSTRAINTS;
+
+CREATE TABLE SG_Bioentry (
+       Oid                  INTEGER NOT NULL,
+       Accession            VARCHAR2(32) NOT NULL,
+       Identifier           VARCHAR2(32) NULL,
+       Display_ID           VARCHAR2(32) NOT NULL,
+       Description          VARCHAR2(512) NULL,
+       Version              NUMBER(2) DEFAULT 0 NOT NULL,
+       DB_Oid               INTEGER NOT NULL,
+       Tax_Oid              INTEGER NULL,
+       CONSTRAINT XPKBioentry 
+              PRIMARY KEY (Oid)
+       USING INDEX
+    	 TABLESPACE &biosql_index
+ 	 ,
+       CONSTRAINT XAK1Bioentry
+       UNIQUE (
+              Accession,
+              DB_Oid,
+              Version
+       )
+       USING INDEX
+    	 TABLESPACE &biosql_index
+ 	 ,
+       CONSTRAINT XAK2Bioentry
+       UNIQUE (
+              Identifier
+       )
+       USING INDEX
+    	 TABLESPACE &biosql_index
+ 	 --
+)
+;
+
+CREATE INDEX XIF569Bioentry ON SG_Bioentry
+(
+       Tax_Oid
+)
+    	 TABLESPACE &biosql_index
+;
+
+CREATE INDEX XIE1Bioentry ON SG_Bioentry
+(
+       Display_ID               
+)
+    	 TABLESPACE &biosql_index
+;
+
+CREATE INDEX XIE2Bioentry ON SG_Bioentry
+(
+       DB_Oid
+)
+    	 TABLESPACE &biosql_index
+;
+
+
+DROP TABLE SG_Bioentry_Assoc CASCADE CONSTRAINTS;
+
+CREATE TABLE SG_Bioentry_Assoc (
+       Oid                  INTEGER NOT NULL,
+       Src_Ent_Oid          INTEGER NOT NULL,
+       Ont_Oid              INTEGER NOT NULL,
+       Tgt_Ent_Oid          INTEGER NOT NULL,
+       CONSTRAINT XPKBioentry_Assoc 
+              PRIMARY KEY (Oid)
+       USING INDEX
+    	 TABLESPACE &biosql_index
+	 ,
+       CONSTRAINT XAK1Bioentry_Assoc
+       UNIQUE (
+	      Src_Ent_Oid,
+	      Tgt_Ent_Oid,
+	      Ont_Oid
+       )
+       USING INDEX
+    	 TABLESPACE &biosql_index
+ 	 --
+)
+;
+
+CREATE INDEX XIF1Bioentry_Assoc ON SG_Bioentry_Assoc
+(
+       Tgt_Ent_Oid
+)
+    	 TABLESPACE &biosql_index
+;
+
+-- CREATE INDEX XIF2Bioentry_Assoc ON SG_Bioentry_Assoc
+-- (
+--        Ont_Oid
+-- )
+--     	 TABLESPACE &biosql_index
+-- ;
+
 
 DROP TABLE SG_Similarity CASCADE CONSTRAINTS;
 
@@ -73,320 +295,11 @@ CREATE TABLE SG_Similarity (
        Tgt_Start_Pos        NUMBER(10) NOT NULL,
        Tgt_End_Pos          NUMBER(10) NOT NULL,
        Tgt_Strand           NUMBER(1) NULL,
-       Tgt_Frame            NUMBER(1) NULL,
+       Tgt_Frame            NUMBER(1) NULL
+                                   CONSTRAINT Frame9
+                                          CHECK (Tgt_Frame IN (0, 1, 2)),
        CONSTRAINT XPKSimilarity 
               PRIMARY KEY (Oid)
-       USING INDEX
-    	 TABLESPACE &biosql_index
- 	 --
-)
-;
-
-
-DROP TABLE SG_Chr_Map_Assoc CASCADE CONSTRAINTS;
-
-CREATE TABLE SG_Chr_Map_Assoc (
-       Oid                  INTEGER NOT NULL,
-       Chr_Start_Pos        NUMBER(15,4) NOT NULL,
-       Chr_End_Pos          NUMBER(11,0) NULL,
-       Ent_End_Pos          NUMBER(9,0) NULL,
-       Ent_Start_Pos        NUMBER(9,0) NULL,
-       Strand               NUMBER(1) DEFAULT 0 NOT NULL
-                                   CONSTRAINT Strand23
-                                          CHECK (Strand IN (-1, 0, 1)),
-       Num_Mismatch         NUMBER(3,0) NULL,
-       Ent_Oid              INTEGER NOT NULL,
-       Chr_Oid              INTEGER NOT NULL,
-       Rel_Oid              INTEGER NOT NULL,
-       CONSTRAINT XPKChr_Map_Assoc 
-              PRIMARY KEY (Oid)
-       USING INDEX
-    	 TABLESPACE &biosql_index
-	 ,
-       CONSTRAINT XAK1Chr_Map_Assoc
-       UNIQUE (
-              Ent_Oid,
-              Chr_Oid,
-	      Rel_Oid
-       )
-       USING INDEX
-    	 TABLESPACE &biosql_index
- 	 --
-)
-;
-
-CREATE INDEX XIF803Chr_Map_Assoc ON SG_Chr_Map_Assoc
-(
-       Chr_Oid
-)
-    	 TABLESPACE &biosql_index
-;
-
-CREATE INDEX XIF36Chr_Map_Assoc ON SG_Chr_Map_Assoc
-(
-       Rel_Oid
-)
-    	 TABLESPACE &biosql_index
-;
-
-
-DROP TABLE SG_Bioentry_Rel_Assoc CASCADE CONSTRAINTS;
-
-CREATE TABLE SG_Bioentry_Rel_Assoc (
-       Rel_Oid              INTEGER NOT NULL,
-       Ent_Oid              INTEGER NOT NULL,
-       CONSTRAINT XPKBioentry_Rel_Assoc 
-              PRIMARY KEY (Rel_Oid, Ent_Oid)
-       USING INDEX
-    	 TABLESPACE &biosql_index
- 	 --
-)
-;
-
-CREATE INDEX XIF802Bioentry_Rel_Assoc ON SG_Bioentry_Rel_Assoc
-(
-       Ent_Oid
-)
-    	 TABLESPACE &biosql_index
-;
-
-
-DROP TABLE SG_DB_Release CASCADE CONSTRAINTS;
-
-CREATE TABLE SG_DB_Release (
-       Oid                  INTEGER NOT NULL,
-       Version              VARCHAR2(16) NOT NULL,
-       Rel_Date             DATE NULL,
-       DB_Oid               INTEGER NOT NULL,
-       CONSTRAINT XPKDB_Release 
-              PRIMARY KEY (Oid)
-       USING INDEX
-    	 TABLESPACE &biosql_index
- 	 ,
-       CONSTRAINT XAK1DB_Release
-       UNIQUE (
-              Version,
-              DB_Oid
-       )
-       USING INDEX
-    	 TABLESPACE &biosql_index
- 	 --
-)
-;
-
-CREATE INDEX XIF799DB_Release ON SG_DB_Release
-(
-       DB_Oid 
-)
-    	 TABLESPACE &biosql_index
-;
-
-
-DROP TABLE SG_Chromosome CASCADE CONSTRAINTS;
-
-CREATE TABLE SG_Chromosome (
-       Oid                  INTEGER NOT NULL,
-       Name                 VARCHAR2(12) NOT NULL,
-       Length               INTEGER NULL,
-       Tax_Oid              INTEGER NOT NULL,
-       CONSTRAINT XPKChromosome 
-              PRIMARY KEY (Oid)
-       USING INDEX
-    	 TABLESPACE &biosql_index
- 	 ,
-       CONSTRAINT XAK1Chromosome
-       UNIQUE (
-              Name,
-              Tax_Oid
-       )
-       USING INDEX
-    	 TABLESPACE &biosql_index
- 	 --
-)
-;
-
-CREATE INDEX XIF798Chromosome ON SG_Chromosome
-(
-       Tax_Oid
-)
-    	 TABLESPACE &biosql_index
-;
-
-
-DROP TABLE SG_Seqfeature_Assoc CASCADE CONSTRAINTS;
-
-CREATE TABLE SG_Seqfeature_Assoc (
-       Src_Fea_Oid          INTEGER NOT NULL,
-       Tgt_Fea_Oid          INTEGER NOT NULL,
-       Ont_Oid              INTEGER NOT NULL,
-       Rank                 NUMBER(2) NOT NULL,
-       CONSTRAINT XPKSeqfeature_Assoc 
-              PRIMARY KEY (Src_Fea_Oid, Tgt_Fea_Oid, Ont_Oid)
-       USING INDEX
-    	 TABLESPACE &biosql_index
- 	 --
-)
-;
-
-CREATE INDEX XIF795Seqfeature_Assoc ON SG_Seqfeature_Assoc
-(
-       Tgt_Fea_Oid           
-)
-    	 TABLESPACE &biosql_index
-;
-
-CREATE INDEX XIF797Seqfeature_Assoc ON SG_Seqfeature_Assoc
-(
-       Ont_Oid
-)
-    	 TABLESPACE &biosql_index
-;
-
-
-DROP TABLE SG_Location_Qualifier_Assoc CASCADE CONSTRAINTS;
-
-CREATE TABLE SG_Location_Qualifier_Assoc (
-       Loc_Oid              INTEGER NOT NULL,
-       Ont_Oid              INTEGER NOT NULL,
-       Value                VARCHAR2(32) NOT NULL,
-       CONSTRAINT XPKLocation_Qualifier_Assoc 
-              PRIMARY KEY (Loc_Oid, Ont_Oid)
-       USING INDEX
-    	 TABLESPACE &biosql_index
- 	 --
-)
-;
-
-CREATE INDEX XIFLocation_Qualifier_Assoc ON SG_Location_Qualifier_Assoc
-(
-       Ont_Oid
-)
-    	 TABLESPACE &biosql_index
-;
-
-
-DROP TABLE SG_Seqfeature_Location CASCADE CONSTRAINTS;
-
-CREATE TABLE SG_Seqfeature_Location (
-       Oid                  INTEGER NOT NULL,
-       Start_Pos            NUMBER(10) NULL,
-       End_Pos              NUMBER(10) NULL,
-       Strand               NUMBER(1) DEFAULT 0 NOT NULL
-                                   CONSTRAINT Strand24
-                                          CHECK (Strand IN (-1, 0, 1)),
-       Rank                 NUMBER(2) NOT NULL,
-       Fea_Oid              INTEGER NOT NULL,
-       Ent_Oid              INTEGER NULL,
-       CONSTRAINT XPKSeqfeature_Location 
-              PRIMARY KEY (Oid)
-       USING INDEX
-    	 TABLESPACE &biosql_index
- 	 ,
-       CONSTRAINT XAK1Seqfeature_Location
-       UNIQUE (
-              Fea_Oid,
-              Rank
-       )
-       USING INDEX
-    	 TABLESPACE &biosql_index
- 	 --
-)
-;
-
-CREATE INDEX XIF575Seqfeature_Location ON SG_Seqfeature_Location
-(
-       Ent_Oid
-)
-    	 TABLESPACE &biosql_index
-;
-
-CREATE INDEX XIE1Seqfeature_Location ON SG_Seqfeature_Location
-(
-       Start_Pos             
-)
-    	 TABLESPACE &biosql_index
- 	 -- 
-;
-
-CREATE INDEX XIE2Seqfeature_Location ON SG_Seqfeature_Location
-(
-       End_Pos
-)
-    	 TABLESPACE &biosql_index
- 	 -- 
-;
-
-
-DROP TABLE SG_Seqfeature_Qualifier_Assoc CASCADE CONSTRAINTS;
-
-CREATE TABLE SG_Seqfeature_Qualifier_Assoc (
-       Fea_Oid              INTEGER NOT NULL,
-       Ont_Oid              INTEGER NOT NULL,
-       Rank                 NUMBER(2) NOT NULL,
-       Value                VARCHAR2(32) NOT NULL,
-       CONSTRAINT XPKSeqfeature_Qualifier_Assoc 
-              PRIMARY KEY (Fea_Oid, Ont_Oid, Rank)
-       USING INDEX
-    	 TABLESPACE &biosql_index
- 	 --
-)
-;
-
-CREATE INDEX XIFSeqfeature_Qualifier_Assoc ON SG_Seqfeature_Qualifier_Assoc
-(
-       Ont_Oid
-)
-    	 TABLESPACE &biosql_index
-;
-
-
-DROP TABLE SG_Seqfeature CASCADE CONSTRAINTS;
-
-CREATE TABLE SG_Seqfeature (
-       Oid                  INTEGER NOT NULL,
-       Rank                 NUMBER(2) NOT NULL,
-       Ent_Oid              INTEGER NOT NULL,
-       Ont_Oid              INTEGER NOT NULL,
-       FSrc_Oid             INTEGER NULL,
-       CONSTRAINT XPKSeqfeature 
-              PRIMARY KEY (Oid)
-       USING INDEX
-    	 TABLESPACE &biosql_index
- 	 ,
-       CONSTRAINT XAK1Seqfeature
-       UNIQUE (
-              Ent_Oid,
-              Rank,
-              Ont_Oid
-       )
-       USING INDEX
-    	 TABLESPACE &biosql_index
- 	 --
-)
-;
-
-CREATE INDEX XIFSeqfeature ON SG_Seqfeature
-(
-       Ont_Oid
-)
-    	 TABLESPACE &biosql_index
-;
-
-
-DROP TABLE SG_Seqfeature_Source CASCADE CONSTRAINTS;
-
-CREATE TABLE SG_Seqfeature_Source (
-       Oid                  INTEGER NOT NULL,
-       Name                 VARCHAR2(64) NOT NULL,
-       CONSTRAINT XPKSeqfeature_Source 
-              PRIMARY KEY (Oid)
-       USING INDEX
-    	 TABLESPACE &biosql_index
- 	 ,
-       CONSTRAINT XAK1Seqfeature_Source
-       UNIQUE (
-              Name
-       )
        USING INDEX
     	 TABLESPACE &biosql_index
  	 --
@@ -399,9 +312,10 @@ DROP TABLE SG_Bioentry_Qualifier_Assoc CASCADE CONSTRAINTS;
 CREATE TABLE SG_Bioentry_Qualifier_Assoc (
        Ent_Oid              INTEGER NOT NULL,
        Ont_Oid              INTEGER NOT NULL,
-       Value                VARCHAR2(48) NULL,
+       Rank		    NUMBER(5) NOT NULL,
+       Value                VARCHAR2(4000) NULL,
        CONSTRAINT XPKBioentry_Qualifier_Assoc 
-              PRIMARY KEY (Ent_Oid, Ont_Oid)
+              PRIMARY KEY (Ent_Oid, Ont_Oid, Rank)
        USING INDEX
     	 TABLESPACE &biosql_index
  	 --
@@ -416,12 +330,92 @@ CREATE INDEX XIFBioentry_Qualifier_Assoc ON SG_Bioentry_Qualifier_Assoc
 ;
 
 
+DROP TABLE SG_Biosequence CASCADE CONSTRAINTS;
+
+CREATE TABLE SG_Biosequence (
+       Ent_Oid              INTEGER NOT NULL,
+       Version              NUMBER(3,1) NULL,
+       Length               INTEGER NULL,
+       Alphabet             VARCHAR2(12) NULL
+                                   CONSTRAINT Alphabet4
+                                          CHECK (Alphabet IN ('dna', 'protein', 'rna')),
+       Division             VARCHAR2(6) DEFAULT 'UNK' NULL,
+       Seq                  CLOB NULL,
+       CONSTRAINT XPKBiosequence 
+              PRIMARY KEY (Ent_Oid)
+       USING INDEX
+    	 TABLESPACE &biosql_index
+	 --
+)
+       LOB (Seq) STORE AS (
+	   TABLESPACE &biosql_lob CHUNK 4096
+       )
+;
+
+
+DROP TABLE SG_DBXRef CASCADE CONSTRAINTS;
+
+CREATE TABLE SG_DBXRef (
+       Oid                  INTEGER NOT NULL,
+       DBName               VARCHAR2(32) NOT NULL,
+       Accession            VARCHAR2(32) NOT NULL,
+       Version              NUMBER(2) DEFAULT 0 NOT NULL,
+       CONSTRAINT XPKDBXRef 
+              PRIMARY KEY (Oid)
+       USING INDEX
+    	 TABLESPACE &biosql_index
+ 	 ,
+       CONSTRAINT XAK1DBXRef
+       UNIQUE (
+              Accession,
+              DBName,
+              Version
+       )
+       USING INDEX
+    	 TABLESPACE &biosql_index
+	 --
+);
+
+CREATE INDEX XIE1DBXRef ON SG_DBXRef
+(
+       DBName
+)
+      TABLESPACE &biosql_index
+;
+
+
+DROP TABLE SG_Bioentry_DBXRef_Assoc CASCADE CONSTRAINTS;
+
+CREATE TABLE SG_Bioentry_DBXRef_Assoc (
+       DBX_Oid              INTEGER NOT NULL,
+       Ent_Oid              INTEGER NOT NULL,
+       CONSTRAINT XPKBioentry_DBXRef_Assoc 
+              PRIMARY KEY (Ent_Oid, DBX_Oid)
+       USING INDEX
+    	 TABLESPACE &biosql_index
+ 	 --
+);
+
+CREATE INDEX XIE1Bioentry_DBXRef_Assoc ON SG_Bioentry_DBXRef_Assoc
+(
+       DBX_Oid
+)
+      TABLESPACE &biosql_index
+;
+
+
 DROP TABLE SG_Comment CASCADE CONSTRAINTS;
 
 CREATE TABLE SG_Comment (
+       Oid                  INTEGER NOT NULL,
        Rank                 NUMBER(2) NOT NULL,
-       Comment_Text         VARCHAR2(4000) NOT NULL,
+       Comment_Text         CLOB NOT NULL,
        Ent_Oid              INTEGER NOT NULL,
+       CONSTRAINT XPKComment 
+              PRIMARY KEY (Oid)
+       USING INDEX
+       TABLESPACE &biosql_index
+       ,
        CONSTRAINT XAK1Comment
        UNIQUE (
               Ent_Oid,
@@ -431,7 +425,48 @@ CREATE TABLE SG_Comment (
     	 TABLESPACE &biosql_index
  	 --
 )
-    	 TABLESPACE &biosql_lob
+       LOB (Comment_Text) STORE AS (
+	   TABLESPACE &biosql_lob CHUNK 4096
+       )
+;
+
+
+DROP TABLE SG_Reference CASCADE CONSTRAINTS;
+
+CREATE TABLE SG_Reference (
+       Oid                  INTEGER NOT NULL,
+       Title                VARCHAR2(1000) NULL,
+       Authors              VARCHAR2(4000) NOT NULL,
+       Location             VARCHAR2(512) NOT NULL,
+       Document_ID          VARCHAR2(32) NULL,
+       CRC                  VARCHAR2(32) NULL,
+       CONSTRAINT XPKReference 
+              PRIMARY KEY (Oid)
+       USING INDEX
+    	 TABLESPACE &biosql_index
+ 	 ,
+       CONSTRAINT XAK2Reference
+       UNIQUE (
+              Document_ID
+       )
+       USING INDEX
+    	 TABLESPACE &biosql_index
+ 	 ,
+       CONSTRAINT XAK3Reference
+       UNIQUE (
+              CRC
+       )
+       USING INDEX
+    	 TABLESPACE &biosql_index
+ 	 --
+)
+;
+
+CREATE INDEX XIEReference ON SG_Reference
+(
+       Location
+)
+    	 TABLESPACE &biosql_index
 ;
 
 
@@ -459,30 +494,25 @@ CREATE INDEX XIFBioentry_Ref_Assoc ON SG_Bioentry_Ref_Assoc
 ;
 
 
-DROP TABLE SG_Reference CASCADE CONSTRAINTS;
+DROP TABLE SG_Seqfeature CASCADE CONSTRAINTS;
 
-CREATE TABLE SG_Reference (
+CREATE TABLE SG_Seqfeature (
        Oid                  INTEGER NOT NULL,
-       Title                VARCHAR2(256) NOT NULL,
-       Authors              VARCHAR2(512) NOT NULL,
-       Location             VARCHAR2(256) NOT NULL,
-       Document_ID          INTEGER NULL,
-       CONSTRAINT XPKReference 
+       Rank                 NUMBER(9) NOT NULL,
+       Ent_Oid              INTEGER NOT NULL,
+       Ont_Oid              INTEGER NULL,
+       FSrc_Oid             INTEGER NULL,
+       CONSTRAINT XPKSeqfeature 
               PRIMARY KEY (Oid)
        USING INDEX
     	 TABLESPACE &biosql_index
  	 ,
-       CONSTRAINT XAK1Reference
+       CONSTRAINT XAK1Seqfeature
        UNIQUE (
-              Title,
-              Authors
-       )
-       USING INDEX
-    	 TABLESPACE &biosql_index
- 	 ,
-       CONSTRAINT XAK2Reference
-       UNIQUE (
-              Document_ID
+              Ent_Oid,
+              Ont_Oid,
+	      FSrc_Oid,
+              Rank
        )
        USING INDEX
     	 TABLESPACE &biosql_index
@@ -490,37 +520,59 @@ CREATE TABLE SG_Reference (
 )
 ;
 
+CREATE INDEX XIF1Seqfeature ON SG_Seqfeature
+(
+       Ont_Oid
+)
+    	 TABLESPACE &biosql_index
+;
 
-DROP TABLE SG_Bioentry_Assoc CASCADE CONSTRAINTS;
+CREATE INDEX XIF2Seqfeature ON SG_Seqfeature
+(
+       FSrc_Oid
+)
+    	 TABLESPACE &biosql_index
+;
 
-CREATE TABLE SG_Bioentry_Assoc (
-       Oid                  INTEGER NOT NULL,
+
+DROP TABLE SG_Seqfeature_Assoc CASCADE CONSTRAINTS;
+
+CREATE TABLE SG_Seqfeature_Assoc (
+       Src_Fea_Oid          INTEGER NOT NULL,
+       Tgt_Fea_Oid          INTEGER NOT NULL,
        Ont_Oid              INTEGER NOT NULL,
-       Tgt_Ent_Oid          INTEGER NOT NULL,
-       Src_Ent_Oid          INTEGER NOT NULL,
-       CONSTRAINT XPKBioentry_Assoc 
-              PRIMARY KEY (Oid)
+       Rank                 NUMBER(2) NOT NULL,
+       CONSTRAINT XPKSeqfeature_Assoc 
+              PRIMARY KEY (Src_Fea_Oid, Tgt_Fea_Oid, Ont_Oid)
+       USING INDEX
+       TABLESPACE &biosql_index
+       --
+);
+
+CREATE INDEX XIFSeqfeature_Assoc ON SG_Seqfeature_Assoc
+(
+       Tgt_Fea_Oid
+)
+    	 TABLESPACE &biosql_index
+;
+
+
+DROP TABLE SG_Seqfeature_Qualifier_Assoc CASCADE CONSTRAINTS;
+
+CREATE TABLE SG_Seqfeature_Qualifier_Assoc (
+       Fea_Oid              INTEGER NOT NULL,
+       Ont_Oid              INTEGER NOT NULL,
+       Rank                 NUMBER(3) NOT NULL,
+       Value                VARCHAR2(4000) NULL,
+       CONSTRAINT XPKSeqfeature_Qualifier_Assoc 
+              PRIMARY KEY (Fea_Oid, Ont_Oid, Rank)
        USING INDEX
     	 TABLESPACE &biosql_index
  	 --
 )
 ;
 
-CREATE INDEX XIFBioentry_Assoc ON SG_Bioentry_Assoc
-(
-       Src_Ent_Oid           
-)
-    	 TABLESPACE &biosql_index
-;
-
-CREATE INDEX XIF572Bioentry_Assoc ON SG_Bioentry_Assoc
-(
-       Tgt_Ent_Oid           
-)
-    	 TABLESPACE &biosql_index
-;
-
-CREATE INDEX XIF574Bioentry_Assoc ON SG_Bioentry_Assoc
+CREATE INDEX XIFSeqfeature_Qualifier_Assoc ON SG_Seqfeature_Qualifier_Assoc
 (
        Ont_Oid
 )
@@ -528,56 +580,27 @@ CREATE INDEX XIF574Bioentry_Assoc ON SG_Bioentry_Assoc
 ;
 
 
-DROP TABLE SG_Biosequence CASCADE CONSTRAINTS;
+DROP TABLE SG_Seqfeature_Location CASCADE CONSTRAINTS;
 
-CREATE TABLE SG_Biosequence (
+CREATE TABLE SG_Seqfeature_Location (
        Oid                  INTEGER NOT NULL,
-       Version              NUMBER(3,1) NULL,
-       Length               INTEGER NULL,
-       Seq                  CLOB NULL,
-       CONSTRAINT XPKBiosequence 
-              PRIMARY KEY (Oid)
-       USING INDEX
-    	 TABLESPACE &biosql_index
- 	 --
-)
-    	 TABLESPACE &biosql_lob
-;
-
-
-DROP TABLE SG_Bioentry CASCADE CONSTRAINTS;
-
-CREATE TABLE SG_Bioentry (
-       Oid                  INTEGER NOT NULL,
-       Accession            VARCHAR2(32) NOT NULL,
-       Identifier           VARCHAR2(32) NULL,
-       Name                 VARCHAR2(32) NULL,
-       Description          VARCHAR2(128) NULL,
-       Version              NUMBER(2) NULL,
-       Division             VARCHAR2(3) DEFAULT 'UNK' NOT NULL,
-       Molecule             VARCHAR2(6) DEFAULT 'UNK' NOT NULL
-                                   CONSTRAINT Molecule8
-                                          CHECK (Molecule IN ('DNA', 'mRNA', 'RNA', 'PRT', 'UNK')),
-       DB_Oid               INTEGER NOT NULL,
-       Tax_Oid              INTEGER NULL,
-       CONSTRAINT XPKBioentry 
+       Start_Pos            NUMBER(10) NULL,
+       End_Pos              NUMBER(10) NULL,
+       Strand               NUMBER(1) DEFAULT 0 NOT NULL
+                                   CONSTRAINT Strand62
+                                          CHECK (Strand IN (-1, 0, 1)),
+       Rank                 NUMBER(4) NOT NULL,
+       Fea_Oid              INTEGER NOT NULL,
+       DBX_Oid              INTEGER NULL,
+       CONSTRAINT XPKSeqfeature_Location 
               PRIMARY KEY (Oid)
        USING INDEX
     	 TABLESPACE &biosql_index
  	 ,
-       CONSTRAINT XAK1Bioentry
+       CONSTRAINT XAK1Seqfeature_Location
        UNIQUE (
-              Accession,
-              Version,
-              DB_Oid
-       )
-       USING INDEX
-    	 TABLESPACE &biosql_index
- 	 ,
-       CONSTRAINT XAK2Bioentry
-       UNIQUE (
-              Identifier,
-              DB_Oid
+              Fea_Oid,
+              Rank
        )
        USING INDEX
     	 TABLESPACE &biosql_index
@@ -585,172 +608,44 @@ CREATE TABLE SG_Bioentry (
 )
 ;
 
-CREATE INDEX XIFBioentry ON SG_Bioentry
+CREATE INDEX XIE0Seqfeature_Location ON SG_Seqfeature_Location
 (
-       DB_Oid
+       DBX_Oid
 )
     	 TABLESPACE &biosql_index
 ;
 
-CREATE INDEX XIF569Bioentry ON SG_Bioentry
+CREATE INDEX XIE1Seqfeature_Location ON SG_Seqfeature_Location
 (
-       Tax_Oid
+       Start_Pos             
 )
     	 TABLESPACE &biosql_index
 ;
 
-CREATE INDEX XIE1Bioentry ON SG_Bioentry
+CREATE INDEX XIE2Seqfeature_Location ON SG_Seqfeature_Location
 (
-       Name   
+       End_Pos
 )
     	 TABLESPACE &biosql_index
- 	 -- 
 ;
 
-CREATE INDEX XIE2Bioentry ON SG_Bioentry
+
+DROP TABLE SG_Location_Qualifier_Assoc CASCADE CONSTRAINTS;
+
+CREATE TABLE SG_Location_Qualifier_Assoc (
+       Loc_Oid              INTEGER NOT NULL,
+       Ont_Oid              INTEGER NOT NULL,
+       Value                VARCHAR2(32) NOT NULL
+)
+;
+
+CREATE INDEX XIFLocation_Qualifier_Assoc ON SG_Location_Qualifier_Assoc
 (
-       Accession
-)
-    	 TABLESPACE &biosql_index
- 	 -- 
-;
-
-
-DROP TABLE SG_Ontology_Term_Assoc CASCADE CONSTRAINTS;
-
-CREATE TABLE SG_Ontology_Term_Assoc (
-       Src_Ont_Oid          INTEGER NOT NULL,
-       Type_Ont_Oid         INTEGER NOT NULL,
-       Tgt_Ont_Oid          INTEGER NOT NULL,
-       CONSTRAINT XPKOntology_Term_Assoc 
-              PRIMARY KEY (Src_Ont_Oid, Type_Ont_Oid, Tgt_Ont_Oid)
-       USING INDEX
-    	 TABLESPACE &biosql_index
- 	 --
-)
-;
-
-CREATE INDEX XIF30Ontology_Term_Assoc ON SG_Ontology_Term_Assoc
-(
-       Type_Ont_Oid          
+       Loc_Oid, Ont_Oid
 )
     	 TABLESPACE &biosql_index
 ;
 
-CREATE INDEX XIF31Ontology_Term_Assoc ON SG_Ontology_Term_Assoc
-(
-       Tgt_Ont_Oid           
-)
-    	 TABLESPACE &biosql_index
-;
-
-
-DROP TABLE SG_Ontology_Term CASCADE CONSTRAINTS;
-
-CREATE TABLE SG_Ontology_Term (
-       Oid                  INTEGER NOT NULL,
-       Name                 VARCHAR2(72) NOT NULL,
-       Identifier           VARCHAR2(16) NOT NULL,
-       Definition           VARCHAR2(1000) NULL,
-       CONSTRAINT XPKOntology_Term 
-              PRIMARY KEY (Oid)
-       USING INDEX
-    	 TABLESPACE &biosql_index
- 	 ,
-       CONSTRAINT XAK1Ontology_Term
-       UNIQUE (
-              Name
-       )
-       USING INDEX
-    	 TABLESPACE &biosql_index
- 	 ,
-       CONSTRAINT XAK2Ontology_Term
-       UNIQUE (
-              Identifier
-       )
-       USING INDEX
-    	 TABLESPACE &biosql_index
- 	 --
-)
-;
-
-
-DROP TABLE SG_Taxon CASCADE CONSTRAINTS;
-
-CREATE TABLE SG_Taxon (
-       Oid                  INTEGER NOT NULL,
-       Name                 VARCHAR2(96) NOT NULL,
-       Common_Name          VARCHAR2(80) NULL,
-       NCBI_Taxon_ID        NUMBER(8) NULL,
-       Node_Type            VARCHAR2(16) NULL,
-       Tax_Oid              INTEGER NULL,
-       CONSTRAINT XPKTaxon 
-              PRIMARY KEY (Oid)
-       USING INDEX
-    	 TABLESPACE &biosql_index
- 	 ,
-       CONSTRAINT XAK1Taxon
-       UNIQUE (
-              Name,
-	      Tax_Oid
-       )
-       USING INDEX
-    	 TABLESPACE &biosql_index
- 	 ,
-       CONSTRAINT XAK3Taxon
-       UNIQUE (
-              NCBI_Taxon_ID
-       )
-       USING INDEX
-    	 TABLESPACE &biosql_index
- 	 --
-)
-;
-
-CREATE INDEX XIF34Taxon ON SG_Taxon
-(
-       Tax_Oid
-)
-    	 TABLESPACE &biosql_index
-;
-
-CREATE INDEX XIFTaxon ON SG_Taxon
-(
-       Common_Name
-)
-    	 TABLESPACE &biosql_index
-;
-
-
-DROP TABLE SG_Biodatabase CASCADE CONSTRAINTS;
-
-CREATE TABLE SG_Biodatabase (
-       Oid                  INTEGER NOT NULL,
-       Name                 VARCHAR2(32) NOT NULL,
-       Acronym              VARCHAR2(6) NULL,
-       Organization         VARCHAR2(32) NULL,
-       URI                  VARCHAR2(128) NULL,
-       CONSTRAINT XPKBiodatabase 
-              PRIMARY KEY (Oid)
-       USING INDEX
-    	 TABLESPACE &biosql_index
- 	 ,
-       CONSTRAINT XAK1Biodatabase
-       UNIQUE (
-              Name
-       )
-       USING INDEX
-    	 TABLESPACE &biosql_index
- 	 ,
-       CONSTRAINT XAK2Biodatabase
-       UNIQUE (
-              Acronym
-       )
-       USING INDEX
-    	 TABLESPACE &biosql_index
- 	 --
-)
-;
 
 
 ALTER TABLE SG_Similarity
@@ -760,70 +655,17 @@ ALTER TABLE SG_Similarity
                              ON DELETE CASCADE ) ;
 
 
-ALTER TABLE SG_Chr_Map_Assoc
-       ADD  ( CONSTRAINT FKEnt_ChrEntA
+ALTER TABLE SG_Bioentry_DBXRef_Assoc
+       ADD  ( CONSTRAINT FKEnt_DBXEntA
               FOREIGN KEY (Ent_Oid)
                              REFERENCES SG_Bioentry (Oid) 
                              ON DELETE CASCADE ) ;
 
 
-ALTER TABLE SG_Chr_Map_Assoc
-       ADD  ( CONSTRAINT FKRel_ChrEntA
-              FOREIGN KEY (Rel_Oid)
-                             REFERENCES SG_DB_Release (Oid)
-                             ON DELETE CASCADE ) ;
-
-
-ALTER TABLE SG_Chr_Map_Assoc
-       ADD  ( CONSTRAINT FKChr_ChrEntA
-              FOREIGN KEY (Chr_Oid)
-                             REFERENCES SG_Chromosome (Oid)  ) ;
-
-
-ALTER TABLE SG_Bioentry_Rel_Assoc
-       ADD  ( CONSTRAINT FKEnt_EntRelA
-              FOREIGN KEY (Ent_Oid)
-                             REFERENCES SG_Bioentry (Oid) 
-                             ON DELETE CASCADE ) ;
-
-
-ALTER TABLE SG_Bioentry_Rel_Assoc
-       ADD  ( CONSTRAINT FKRel_EntRelA
-              FOREIGN KEY (Rel_Oid)
-                             REFERENCES SG_DB_Release (Oid) 
-                             ON DELETE CASCADE ) ;
-
-
-ALTER TABLE SG_DB_Release
-       ADD  ( CONSTRAINT FKDB_Rel
-              FOREIGN KEY (DB_Oid)
-                             REFERENCES SG_Biodatabase (Oid) 
-                             ON DELETE CASCADE ) ;
-
-
-ALTER TABLE SG_Chromosome
-       ADD  ( CONSTRAINT FKTax_Chr
-              FOREIGN KEY (Tax_Oid)
-                             REFERENCES SG_Taxon (Oid)  ) ;
-
-
-ALTER TABLE SG_Seqfeature_Assoc
-       ADD  ( CONSTRAINT FKOnt_FeaA
-              FOREIGN KEY (Ont_Oid)
-                             REFERENCES SG_Ontology_Term (Oid)  ) ;
-
-
-ALTER TABLE SG_Seqfeature_Assoc
-       ADD  ( CONSTRAINT FKSrcFea_FeaA
-              FOREIGN KEY (Src_Fea_Oid)
-                             REFERENCES SG_Seqfeature (Oid) 
-                             ON DELETE CASCADE ) ;
-
-
-ALTER TABLE SG_Seqfeature_Assoc
-       ADD  ( CONSTRAINT FKTgtFea_FeaA
-              FOREIGN KEY (Tgt_Fea_Oid)
-                             REFERENCES SG_Seqfeature (Oid) 
+ALTER TABLE SG_Bioentry_DBXRef_Assoc
+       ADD  ( CONSTRAINT FKDBX_DBXEntA
+              FOREIGN KEY (DBX_Oid)
+                             REFERENCES SG_DBXRef (Oid)
                              ON DELETE CASCADE ) ;
 
 
@@ -841,9 +683,9 @@ ALTER TABLE SG_Location_Qualifier_Assoc
 
 
 ALTER TABLE SG_Seqfeature_Location
-       ADD  ( CONSTRAINT FKEnt_Loc
-              FOREIGN KEY (Ent_Oid)
-                             REFERENCES SG_Bioentry (Oid)  ) ;
+       ADD  ( CONSTRAINT FKDBX_Loc
+              FOREIGN KEY (DBX_Oid)
+                             REFERENCES SG_DBXRef (Oid) ) ;
 
 
 ALTER TABLE SG_Seqfeature_Location
@@ -863,7 +705,36 @@ ALTER TABLE SG_Seqfeature_Qualifier_Assoc
 ALTER TABLE SG_Seqfeature_Qualifier_Assoc
        ADD  ( CONSTRAINT FKOnt_FeaOntA
               FOREIGN KEY (Ont_Oid)
-                             REFERENCES SG_Ontology_Term (Oid)  ) ;
+                             REFERENCES SG_Ontology_Term (Oid)
+                             ON DELETE CASCADE ) ;
+
+
+ALTER TABLE SG_Seqfeature_Assoc
+       ADD  ( CONSTRAINT FKTgtFea_FeaA
+              FOREIGN KEY (Tgt_Fea_Oid)
+                             REFERENCES SG_Seqfeature (Oid) 
+                             ON DELETE CASCADE ) ;
+
+
+ALTER TABLE SG_Seqfeature_Assoc
+       ADD  ( CONSTRAINT FKOnt_FeaA
+              FOREIGN KEY (Ont_Oid)
+                             REFERENCES SG_Ontology_Term (Oid)
+                             ON DELETE CASCADE ) ;
+
+
+ALTER TABLE SG_Seqfeature_Assoc
+       ADD  ( CONSTRAINT FKSrcFea_FeaA
+              FOREIGN KEY (Src_Fea_Oid)
+                             REFERENCES SG_Seqfeature (Oid) 
+                             ON DELETE CASCADE ) ;
+
+
+ALTER TABLE SG_Seqfeature
+       ADD  ( CONSTRAINT FKOnt_FSrc
+              FOREIGN KEY (FSrc_Oid)
+                             REFERENCES SG_Ontology_Term (Oid)
+                             ON DELETE CASCADE ) ;
 
 
 ALTER TABLE SG_Seqfeature
@@ -871,12 +742,6 @@ ALTER TABLE SG_Seqfeature
               FOREIGN KEY (Ent_Oid)
                              REFERENCES SG_Bioentry (Oid) 
                              ON DELETE CASCADE ) ;
-
-
-ALTER TABLE SG_Seqfeature
-       ADD  ( CONSTRAINT FKFSrc_Fea
-              FOREIGN KEY (FSrc_Oid)
-                             REFERENCES SG_Seqfeature_Source (Oid)  ) ;
 
 
 ALTER TABLE SG_Seqfeature
@@ -888,7 +753,8 @@ ALTER TABLE SG_Seqfeature
 ALTER TABLE SG_Bioentry_Qualifier_Assoc
        ADD  ( CONSTRAINT FKOnt_EntOntA
               FOREIGN KEY (Ont_Oid)
-                             REFERENCES SG_Ontology_Term (Oid)  ) ;
+                             REFERENCES SG_Ontology_Term (Oid)
+                             ON DELETE CASCADE ) ;
 
 
 ALTER TABLE SG_Bioentry_Qualifier_Assoc
@@ -922,7 +788,8 @@ ALTER TABLE SG_Bioentry_Ref_Assoc
 ALTER TABLE SG_Bioentry_Assoc
        ADD  ( CONSTRAINT FKOnt_EntA
               FOREIGN KEY (Ont_Oid)
-                             REFERENCES SG_Ontology_Term (Oid)  ) ;
+                             REFERENCES SG_Ontology_Term (Oid)
+                             ON DELETE CASCADE ) ;
 
 
 ALTER TABLE SG_Bioentry_Assoc
@@ -941,7 +808,7 @@ ALTER TABLE SG_Bioentry_Assoc
 
 ALTER TABLE SG_Biosequence
        ADD  ( CONSTRAINT FKEnt_Seq
-              FOREIGN KEY (Oid)
+              FOREIGN KEY (Ent_Oid)
                              REFERENCES SG_Bioentry (Oid) 
                              ON DELETE CASCADE ) ;
 
@@ -979,56 +846,12 @@ ALTER TABLE SG_Ontology_Term_Assoc
                              REFERENCES SG_Ontology_Term (Oid)  ) ;
 
 
-ALTER TABLE SG_Taxon
-       ADD  ( CONSTRAINT FKTax_Tax
-	      FOREIGN KEY (Tax_Oid)
-                             REFERENCES SG_Taxon (Oid) ) ;
+ALTER TABLE SG_Ontology_Term
+       ADD  ( CONSTRAINT FKOnt_Ont
+              FOREIGN KEY (Ont_Oid)
+                             REFERENCES SG_Ontology_Term ) ;
 
 
-
-CREATE TRIGGER BIR_Chr_Map_Assoc
-  BEFORE INSERT
-  on SG_Chr_Map_Assoc
-  -- 
-  for each row
-/* Template for auto-generation of primary key (H.Lapp, lapp@gnf.org) */
-/* Default body for BIR_Chr_Map_Assoc */
-BEGIN
-IF :new.Oid IS NULL THEN
-    SELECT SG_SEQUENCE.nextval INTO :new.Oid FROM DUAL;
-END IF;
-END;
-/
-
-
-CREATE TRIGGER BIR_DB_Release
-  BEFORE INSERT
-  on SG_DB_Release
-  -- 
-  for each row
-/* Template for auto-generation of primary key (H.Lapp, lapp@gnf.org) */
-/* Default body for BIR_DB_Release */
-BEGIN
-IF :new.Oid IS NULL THEN
-    SELECT SG_SEQUENCE.nextval INTO :new.Oid FROM DUAL;
-END IF;
-END;
-/
-
-
-CREATE TRIGGER BIR_Chromosome
-  BEFORE INSERT
-  on SG_Chromosome
-  -- 
-  for each row
-/* Template for auto-generation of primary key (H.Lapp, lapp@gnf.org) */
-/* Default body for BIR_Chromosome */
-BEGIN
-IF :new.Oid IS NULL THEN
-    SELECT SG_SEQUENCE.nextval INTO :new.Oid FROM DUAL;
-END IF;
-END;
-/
 
 
 CREATE TRIGGER BIR_Seqfeature_Location
@@ -1061,13 +884,13 @@ END;
 /
 
 
-CREATE TRIGGER BIR_Seqfeature_Source
+CREATE TRIGGER BIR_Comment
   BEFORE INSERT
-  on SG_Seqfeature_Source
+  on SG_Comment
   -- 
   for each row
 /* Template for auto-generation of primary key (H.Lapp, lapp@gnf.org) */
-/* Default body for BIR_Seqfeature_Source */
+/* Default body for BIR_Reference */
 BEGIN
 IF :new.Oid IS NULL THEN
     SELECT SG_SEQUENCE.nextval INTO :new.Oid FROM DUAL;
@@ -1100,7 +923,7 @@ CREATE TRIGGER BIR_BioEntry_Assoc
 /* Default body for BIR_BioEntry_Assoc */
 BEGIN
 IF :new.Oid IS NULL THEN
-    SELECT SG_SEQUENCE.nextval INTO :new.Oid FROM DUAL;
+    SELECT SG_SEQUENCE_ENTA.nextval INTO :new.Oid FROM DUAL;
 END IF;
 END;
 /
@@ -1116,10 +939,6 @@ CREATE TRIGGER BIR_BioEntry
 BEGIN
 IF :new.Oid IS NULL THEN
     SELECT SG_SEQUENCE.nextval INTO :new.Oid FROM DUAL;
-END IF;
--- division must have a value
-IF :new.Division IS NULL THEN
-   :new.Division := 'UNK';
 END IF;
 END;
 /
@@ -1137,9 +956,9 @@ IF :new.Oid IS NULL THEN
     SELECT SG_SEQUENCE.nextval INTO :new.Oid FROM DUAL;
 END IF;
 -- identifier must be non-empty
-IF :new.Identifier IS NULL THEN
-   :new.Identifier := 'GNF:' || LTRIM(TO_CHAR(:new.Oid,'0000000'));
-END IF;
+--IF :new.Identifier IS NULL THEN
+--   :new.Identifier := 'GNF:' || LTRIM(TO_CHAR(:new.Oid,'0000000'));
+--END IF;
 END;
 /
 
@@ -1172,5 +991,34 @@ IF :new.Oid IS NULL THEN
 END IF;
 END;
 /
+
+CREATE TRIGGER BIR_DBXRef
+  BEFORE INSERT
+  on SG_DBXRef
+  -- 
+  for each row
+/* Template for auto-generation of primary key (H.Lapp, lapp@gnf.org) */
+/* Default body for BIR_DBXRef */
+BEGIN
+IF :new.Oid IS NULL THEN
+    SELECT SG_SEQUENCE.nextval INTO :new.Oid FROM DUAL;
+END IF;
+END;
+/
+
+-- CREATE TRIGGER BIR_Biosequence
+--   BEFORE INSERT
+--   on SG_Biosequence
+--   -- 
+--   for each row
+-- /* Template for auto-generation of primary key (H.Lapp, lapp@gnf.org) */
+-- /* Default body for BIR_DBXRef */
+-- BEGIN
+-- -- division must have a value
+-- IF :new.Division IS NULL THEN
+--    :new.Division := 'UNK';
+-- END IF;
+-- END;
+-- /
 
 

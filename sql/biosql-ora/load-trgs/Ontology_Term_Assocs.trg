@@ -3,7 +3,7 @@
 -- SGLD_Ontology_Term_Assocs.
 --
 --
--- $Id: Ontology_Term_Assocs.trg,v 1.1.1.1 2002-08-13 19:51:10 lapp Exp $
+-- $Id: Ontology_Term_Assocs.trg,v 1.1.1.2 2003-01-29 08:54:36 lapp Exp $
 --
 
 --
@@ -33,12 +33,15 @@ BEGIN
 	pk := OntA.get_oid(
 			Src_Ont_Oid         => :new.Src_Ont_Oid,
 			Src_Ont_Name	    => :new.Src_Ont_Name,
+			Src_Cat_Oid	    => :new.Src_Cat_Oid,
 			Src_Ont_Identifier  => :new.Src_Ont_Identifier,
 			Type_Ont_Oid        => :new.Type_Ont_Oid,
 			Type_Ont_Name	    => :new.Type_Ont_Name,
+			Type_Cat_Oid        => :new.Type_Cat_Oid,
 			Type_Ont_Identifier => :new.Type_Ont_Identifier,
 			Tgt_Ont_Oid         => :new.Ont_Oid,
 			Tgt_Ont_Name	    => :new.Ont_Name,
+			Tgt_Cat_Oid	    => :new.Ont_Cat_Oid,
 			Tgt_Ont_Identifier  => :new.Ont_Identifier,
 			do_DML              => do_DML);
 END;

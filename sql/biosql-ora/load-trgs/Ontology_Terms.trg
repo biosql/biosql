@@ -3,7 +3,7 @@
 -- SGLD_Ontology_Terms.
 --
 --
--- $Id: Ontology_Terms.trg,v 1.1.1.1 2002-08-13 19:51:10 lapp Exp $
+-- $Id: Ontology_Terms.trg,v 1.1.1.2 2003-01-29 08:54:36 lapp Exp $
 --
 
 --
@@ -20,8 +20,8 @@
 -- MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 --
 
-CREATE OR REPLACE TRIGGER BIUR_Ontology_Terms
-       INSTEAD OF INSERT OR UPDATE
+CREATE OR REPLACE TRIGGER BIR_Ontology_Terms
+       INSTEAD OF INSERT
        ON SGLD_Ontology_Terms
        REFERENCING NEW AS new OLD AS old
        FOR EACH ROW
@@ -35,6 +35,9 @@ BEGIN
 			Ont_Name	   => :new.Ont_Name,
 			Ont_Identifier	   => :new.Ont_Identifier,
 			Ont_Definition	   => :new.Ont_Definition,
+			Ont_Cat_Oid        => :new.Cat_Oid,
+			Cat_Name	   => :new.Cat_Name,
+			Cat_Identifier	   => :new.Cat_Identifier,
 			do_DML             => do_DML);
 END;
 /

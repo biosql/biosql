@@ -21,7 +21,7 @@
 --
 
 -- where do the datafiles for the tablespaces go
-define datalocation='/u02/app/oracle/oradata2/compbio'
+define datalocation='/u02/app/oracle/oradata/gidev'
 
 -- how do you want to name the table tablespace
 define biosql_data=SYMGENE_DATA
