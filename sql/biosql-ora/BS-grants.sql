@@ -1,7 +1,7 @@
 --
 -- SQL script to assign grants to roles as needed.
 -- 
--- $GNF: projects/gi/symgene/src/DB/BS-grants.sql,v 1.7 2003/05/02 02:24:44 hlapp Exp $
+-- $GNF: projects/gi/symgene/src/DB/BS-grants.sql,v 1.8 2003/07/08 22:48:35 hlapp Exp $
 --
 
 --
@@ -61,15 +61,16 @@ WHERE view_name LIKE 'SGLD%'
 ;
 
 --
--- Biosql grants for SG_LOADER: needs insert, update, delete on all BS_
--- objects.
+-- Biosql grants for SG_LOADER: needs insert, update, delete on all views
+-- and synonyms that don't follow the SG% convention.
 -- 
 SELECT 'GRANT INSERT, UPDATE, DELETE ON ' || object_name || 
        ' TO &biosql_loader;'
 FROM user_objects
-WHERE object_name LIKE 'BS_%' 
-AND object_name NOT LIKE '%_PK_SEQ'
-AND object_type IN ('VIEW','SYNONYM')
+WHERE object_name NOT LIKE 'SG_%' 
+AND   object_name NOT LIKE '%$%'
+AND   object_name NOT LIKE '%_PK_SEQ'
+AND   object_type IN ('VIEW','SYNONYM')
 ;
 -- also, we need select on sequences
 SELECT 'GRANT SELECT ON ' || object_name || ' TO &biosql_loader;'
@@ -79,13 +80,15 @@ AND object_type IN ('SYNONYM','SEQUENCE')
 ;
 
 --
--- Biosql grants for SG_USER: needs select on all BS_ objects.
+-- Biosql grants for SG_USER: needs select on all views and synonyms
+-- that don't follow the SG% convention.
 -- 
 SELECT 'GRANT SELECT ON ' || object_name || ' TO &biosql_user;'
 FROM user_objects
-WHERE object_name LIKE 'BS_%' 
-AND object_name NOT LIKE '%_PK_SEQ'
-AND object_type IN ('VIEW','SYNONYM')
+WHERE object_name NOT LIKE 'SG_%' 
+AND   object_name NOT LIKE '%$%'
+AND   object_name NOT LIKE '%_PK_SEQ'
+AND   object_type IN ('VIEW','SYNONYM')
 ;
 
 spool off

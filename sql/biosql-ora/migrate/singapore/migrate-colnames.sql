@@ -13,7 +13,7 @@
 -- WARRANTIES WHATSOEVER. Please read the license under which you may use
 -- this script and those that come with it.
 --
--- $GNF: projects/gi/symgene/src/sql/migrate/singapore/migrate-colnames.sql,v 1.3 2003/06/25 00:14:33 hlapp Exp $
+-- $GNF: projects/gi/symgene/src/sql/migrate/singapore/migrate-colnames.sql,v 1.4 2003/07/08 22:48:35 hlapp Exp $
 --
 
 --
@@ -72,6 +72,13 @@ CREATE INDEX XIF2Seqfeature ON SG_Seqfeature
 )
     	 TABLESPACE &biosql_index
 ;
+
+-- Biodatabase:
+PROMPT     - Biodatabase
+
+ALTER TABLE SG_Biodatabase ADD (
+	Description	VARCHAR2(256) NULL
+);
 
 -- Bioentry: 
 PROMPT     - Bioentry
