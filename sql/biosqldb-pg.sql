@@ -56,7 +56,7 @@ CREATE TABLE bioentry (
     entry_version        INTEGER         ,
     division             VARCHAR(3)      NOT NULL,
     UNIQUE               (biodatabase_id, accession, entry_version, division),
-    FOREIGN KEY          (biodatabase_id) REFERENCES biodatabase(biodatabase_id) ON DELETE CASCASE
+    FOREIGN KEY          (biodatabase_id) REFERENCES biodatabase(biodatabase_id) ON DELETE CASCADE
 );
 
 
@@ -68,8 +68,8 @@ CREATE INDEX bioentryacc ON bioentry(accession);
 CREATE TABLE bioentry_taxa (
     bioentry_id          INTEGER         NOT NULL,
     taxa_id              INTEGER         NOT NULL,
-    FOREIGN KEY          (taxa_id)        REFERENCES taxa(taxa_id) ON DELETE CASCASE,
-    FOREIGN KEY          (bioentry_id)    REFERENCES bioentry(bioentry_id) ON DELETE CASCASE
+    FOREIGN KEY          (taxa_id)        REFERENCES taxa(taxa_id) ON DELETE CASCADE,
+    FOREIGN KEY          (bioentry_id)    REFERENCES bioentry(bioentry_id) ON DELETE CASCADE
 );
 
 
@@ -89,7 +89,7 @@ CREATE TABLE biosequence (
     biosequence_str      TEXT            ,
     molecule             VARCHAR(10)     ,
     UNIQUE               (bioentry_id),
-    FOREIGN KEY          (bioentry_id)    REFERENCES bioentry(bioentry_id) ON DELETE CASCASE
+    FOREIGN KEY          (bioentry_id)    REFERENCES bioentry(bioentry_id) ON DELETE CASCADE
 );
 
 
@@ -123,8 +123,8 @@ CREATE TABLE dbxref_qualifier_value (
     dbxref_id            INTEGER         NOT NULL,
     ontology_term_id     INTEGER          NOT NULL,
     qualifier_value      TEXT            ,
-    FOREIGN KEY          (dbxref_id)      REFERENCES dbxref(dbxref_id) ON DELETE CASCASE,
-    FOREIGN KEY          (ontology_term_id) REFERENCES ontology_term(ontology_term_id) ON DELETE CASCASE
+    FOREIGN KEY          (dbxref_id)      REFERENCES dbxref(dbxref_id) ON DELETE CASCADE,
+    FOREIGN KEY          (ontology_term_id) REFERENCES ontology_term(ontology_term_id) ON DELETE CASCADE
 );
 
 
@@ -141,8 +141,8 @@ CREATE TABLE bioentry_direct_links (
     bio_dblink_id        INTEGER         DEFAULT (NEXTVAL ( 'bioentry_direct_links_pk_seq' )) PRIMARY KEY,
     source_bioentry_id   INTEGER         NOT NULL,
     dbxref_id            INTEGER         NOT NULL,
-    FOREIGN KEY          (source_bioentry_id) REFERENCES bioentry(bioentry_id) ON DELETE CASCASE,
-    FOREIGN KEY          (dbxref_id)      REFERENCES dbxref(dbxref_id) ON DELETE CASCASE
+    FOREIGN KEY          (source_bioentry_id) REFERENCES bioentry(bioentry_id) ON DELETE CASCADE,
+    FOREIGN KEY          (dbxref_id)      REFERENCES dbxref(dbxref_id) ON DELETE CASCADE
 );
 
 
@@ -167,8 +167,8 @@ CREATE TABLE bioentry_reference (
     reference_start      INTEGER         ,
     reference_end        INTEGER         ,
     reference_rank       INTEGER          NOT NULL,
-    FOREIGN KEY          (bioentry_id)    REFERENCES bioentry(bioentry_id) ON DELETE CASCASE,
-    FOREIGN KEY          (reference_id)   REFERENCES reference(reference_id) ON DELETE CASCASE
+    FOREIGN KEY          (bioentry_id)    REFERENCES bioentry(bioentry_id) ON DELETE CASCADE,
+    FOREIGN KEY          (reference_id)   REFERENCES reference(reference_id) ON DELETE CASCADE
 );
 
 
@@ -186,7 +186,7 @@ CREATE TABLE comment (
     comment_text         TEXT            NOT NULL,
     comment_rank         INTEGER         NOT NULL,
     UNIQUE               (bioentry_id, comment_rank),
-    FOREIGN KEY          (bioentry_id)    REFERENCES bioentry(bioentry_id) ON DELETE CASCASE
+    FOREIGN KEY          (bioentry_id)    REFERENCES bioentry(bioentry_id) ON DELETE CASCADE
 );
 
 
@@ -200,8 +200,8 @@ CREATE TABLE bioentry_qualifier_value (
     ontology_term_id     INTEGER          NOT NULL,
     qualifier_rank       INTEGER         ,
     qualifier_value      TEXT            ,
-    FOREIGN KEY          (bioentry_id)    REFERENCES bioentry(bioentry_id) ON DELETE CASCASE,
-    FOREIGN KEY          (ontology_term_id) REFERENCES ontology_term(ontology_term_id) ON DELETE CASCASE
+    FOREIGN KEY          (bioentry_id)    REFERENCES bioentry(bioentry_id) ON DELETE CASCADE,
+    FOREIGN KEY          (ontology_term_id) REFERENCES ontology_term(ontology_term_id) ON DELETE CASCADE
 );
 
 
@@ -227,9 +227,9 @@ CREATE TABLE seqfeature (
     seqfeature_key_id    INTEGER         ,
     seqfeature_source_id INTEGER         ,
     seqfeature_rank      INTEGER         ,
-    FOREIGN KEY          (seqfeature_key_id) REFERENCES ontology_term(ontology_term_id) ON DELETE CASCASE,
-    FOREIGN KEY          (seqfeature_source_id) REFERENCES seqfeature_source(seqfeature_source_id) ON DELETE CASCASE,
-    FOREIGN KEY          (bioentry_id)    REFERENCES bioentry(bioentry_id) ON DELETE CASCASE
+    FOREIGN KEY          (seqfeature_key_id) REFERENCES ontology_term(ontology_term_id) ON DELETE CASCADE,
+    FOREIGN KEY          (seqfeature_source_id) REFERENCES seqfeature_source(seqfeature_source_id) ON DELETE CASCADE,
+    FOREIGN KEY          (bioentry_id)    REFERENCES bioentry(bioentry_id) ON DELETE CASCADE
 );
 
 
@@ -247,9 +247,9 @@ CREATE TABLE seqfeature_relationship (
     relationship_type_id INTEGER         NOT NULL,
     relationship_rank    INTEGER         ,
     UNIQUE               (parent_seqfeature_id, child_seqfeature_id, relationship_type_id),
-    FOREIGN KEY          (relationship_type_id) REFERENCES ontology_term(ontology_term_id) ON DELETE CASCASE,
-    FOREIGN KEY          (parent_seqfeature_id) REFERENCES seqfeature(seqfeature_id) ON DELETE CASCASE,
-    FOREIGN KEY          (child_seqfeature_id) REFERENCES seqfeature(seqfeature_id) ON DELETE CASCASE
+    FOREIGN KEY          (relationship_type_id) REFERENCES ontology_term(ontology_term_id) ON DELETE CASCADE,
+    FOREIGN KEY          (parent_seqfeature_id) REFERENCES seqfeature(seqfeature_id) ON DELETE CASCADE,
+    FOREIGN KEY          (child_seqfeature_id) REFERENCES seqfeature(seqfeature_id) ON DELETE CASCADE
 );
 
 
@@ -261,8 +261,8 @@ CREATE TABLE seqfeature_qualifier_value (
     ontology_term_id     INTEGER         NOT NULL,
     qualifier_rank       INTEGER         NOT NULL,
     qualifier_value      TEXT            NOT NULL,
-    FOREIGN KEY          (ontology_term_id) REFERENCES ontology_term(ontology_term_id) ON DELETE CASCASE,
-    FOREIGN KEY          (seqfeature_id)  REFERENCES seqfeature(seqfeature_id) ON DELETE CASCASE
+    FOREIGN KEY          (ontology_term_id) REFERENCES ontology_term(ontology_term_id) ON DELETE CASCADE,
+    FOREIGN KEY          (seqfeature_id)  REFERENCES seqfeature(seqfeature_id) ON DELETE CASCADE
 );
 
 
@@ -277,8 +277,8 @@ CREATE INDEX sqv4 ON seqfeature_qualifier_value(ontology_term_id, seqfeature_id)
 CREATE TABLE seqfeature_dbxref (
     seqfeature_id        INTEGER         NOT NULL,
     dbxref_id            INTEGER         NOT NULL,
-    FOREIGN KEY          (dbxref_id)      REFERENCES dbxref(dbxref_id) ON DELETE CASCASE,
-    FOREIGN KEY          (seqfeature_id)  REFERENCES seqfeature(seqfeature_id) ON DELETE CASCASE
+    FOREIGN KEY          (dbxref_id)      REFERENCES dbxref(dbxref_id) ON DELETE CASCADE,
+    FOREIGN KEY          (seqfeature_id)  REFERENCES seqfeature(seqfeature_id) ON DELETE CASCADE
 );
 
 
@@ -302,7 +302,7 @@ CREATE TABLE seqfeature_location (
     seq_strand           INTEGER         NOT NULL,
     location_rank        INTEGER         NOT NULL,
     UNIQUE               (seqfeature_id, location_rank),
-    FOREIGN KEY          (seqfeature_id)  REFERENCES seqfeature(seqfeature_id) ON DELETE CASCASE
+    FOREIGN KEY          (seqfeature_id)  REFERENCES seqfeature(seqfeature_id) ON DELETE CASCADE
 );
 
 
@@ -319,7 +319,7 @@ CREATE TABLE remote_seqfeature_name (
     seqfeature_location_id INTEGER         DEFAULT (NEXTVAL ( 'remote_seqfeature_name_pk_seq' )) PRIMARY KEY,
     accession            VARCHAR(40)     NOT NULL,
     version              INTEGER         NOT NULL,
-    FOREIGN KEY          (seqfeature_location_id) REFERENCES seqfeature_location(seqfeature_location_id) ON DELETE CASCASE
+    FOREIGN KEY          (seqfeature_location_id) REFERENCES seqfeature_location(seqfeature_location_id) ON DELETE CASCADE
 );
 
 
@@ -337,8 +337,8 @@ CREATE TABLE location_qualifier_value (
     ontology_term_id     INTEGER         NOT NULL,
     qualifier_value      CHAR(255)       NOT NULL,
     qualifier_int_value  INTEGER         ,
-    FOREIGN KEY          (seqfeature_location_id) REFERENCES seqfeature_location(seqfeature_location_id) ON DELETE CASCASE,
-    FOREIGN KEY          (ontology_term_id) REFERENCES ontology_term(ontology_term_id) ON DELETE CASCASE
+    FOREIGN KEY          (seqfeature_location_id) REFERENCES seqfeature_location(seqfeature_location_id) ON DELETE CASCADE,
+    FOREIGN KEY          (ontology_term_id) REFERENCES ontology_term(ontology_term_id) ON DELETE CASCADE
 );
 
 
