@@ -2,6 +2,17 @@
 -- SQL script to prepopulate tables in the SymGENE/BioSQL database as
 -- far as it is needed.
 --
+--
+-- IMPORTANT NOTE: This script represents one of the early stages of
+-- using the ontology tables to tag what is essentially
+-- meta-information onto tags coming from annotation and feature
+-- tables. I tried to update it so as to at least run without an
+-- error, but review carefully before you execute this with respect to
+-- whether it does exactly what you want. The main reason I didn't
+-- just delete the script from the repository is to shed a little
+-- light on some of the things that you could with the ontology
+-- tables.
+--
 -- $GNF: projects/gi/symgene/src/DB/BS-prepopulate-db.sql,v 1.8 2003/07/08 23:15:27 hlapp Exp $
 --
 
@@ -49,51 +60,60 @@ VALUES ('Alignment Types');
 --
 -- Ontology terms: relationship type ontology
 --
-INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Cat_Name)
+INSERT INTO SGLD_Ontologies (Ont_Name) 
+VALUES ('Relationship Type Ontology');
+
+INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Ont_Name)
 VALUES ('EST','REO:0000345','Relationship Type Ontology');
-INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Cat_Name)
+INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Ont_Name)
 VALUES ('cluster member','REO:1000001','Relationship Type Ontology');
-INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Cat_Name)
+INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Ont_Name)
 VALUES ('splice variant','REO:1000002','Relationship Type Ontology');
-INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Cat_Name)
+INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Ont_Name)
 VALUES ('synonym','REO:1000003','Relationship Type Ontology');
-INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Cat_Name)
+INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Ont_Name)
 VALUES ('protein','REO:1000004','Relationship Type Ontology');
-INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Cat_Name)
+INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Ont_Name)
 VALUES ('ortholog','REO:1000005','Relationship Type Ontology');
-INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Cat_Name)
+INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Ont_Name)
 VALUES ('translation','REO:1000006','Relationship Type Ontology');
-INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Cat_Name)
+INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Ont_Name)
 VALUES ('expression reporter','REO:1000007','Relationship Type Ontology');
-INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Cat_Name)
+INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Ont_Name)
 VALUES ('is-a','REO:1000008','Relationship Type Ontology');
 
 --
 -- Ontology terms: bioentry type ontology
 --
-INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Cat_Name)
+INSERT INTO SGLD_Ontologies (Ont_Name) 
+VALUES ('Bioentry Type Ontology');
+
+INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Ont_Name)
 VALUES ('gene','BEO:0000007','Bioentry Type Ontology');
-INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Cat_Name)
+INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Ont_Name)
 VALUES ('EST','BEO:0000345','Bioentry Type Ontology');
-INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Cat_Name)
+INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Ont_Name)
 VALUES ('protein','BEO:0000608','Bioentry Type Ontology');
-INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Cat_Name)
+INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Ont_Name)
 VALUES ('transcript','BEO:0000673','Bioentry Type Ontology');
-INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Cat_Name)
+INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Ont_Name)
 VALUES ('sequence cluster','BEO:1000001','Bioentry Type Ontology');
-INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Cat_Name)
+INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Ont_Name)
 VALUES ('array sequence','BEO:1000002','Bioentry Type Ontology');
 
 --
 -- Ontology terms: qualifier type ontology
 --
-INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Cat_Name)
+INSERT INTO SGLD_Ontologies (Ont_Name) 
+VALUES ('Qualifier Type Ontology');
+
+INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Ont_Name)
 VALUES ('bioentry name','QUO:1000001','Qualifier Type Ontology');
-INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Cat_Name)
+INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Ont_Name)
 VALUES ('gene name','QUO:1000002','Qualifier Type Ontology');
-INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Cat_Name)
+INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Ont_Name)
 VALUES ('function','QUO:1000003','Qualifier Type Ontology');
-INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Cat_Name)
+INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Ont_Name)
 VALUES ('phenotype','QUO:1000004','Qualifier Type Ontology');
 
 --
@@ -104,60 +124,115 @@ VALUES ('phenotype','QUO:1000004','Qualifier Type Ontology');
 
 -- first pre-create the tags (the uppercase tags are mostly from LocusLink,
 -- some others are from UniGene etc)
-INSERT INTO SGLD_Terms (Trm_Name, Cat_Name)
+INSERT INTO SGLD_Ontologies (Ont_Name) 
+VALUES ('Annotation Tags');
+
+INSERT INTO SGLD_Terms (Trm_Name, Ont_Name)
 VALUES ('PREFERRED_SYMBOL','Annotation Tags');
-INSERT INTO SGLD_Terms (Trm_Name, Cat_Name)
+INSERT INTO SGLD_Terms (Trm_Name, Ont_Name)
 VALUES ('ECNUM','Annotation Tags');
-INSERT INTO SGLD_Terms (Trm_Name, Cat_Name)
+INSERT INTO SGLD_Terms (Trm_Name, Ont_Name)
 VALUES ('ALIAS_SYMBOL','Annotation Tags');
-INSERT INTO SGLD_Terms (Trm_Name, Cat_Name)
+INSERT INTO SGLD_Terms (Trm_Name, Ont_Name)
 VALUES ('gene_name','Annotation Tags');
-INSERT INTO SGLD_Terms (Trm_Name, Cat_Name)
+INSERT INTO SGLD_Terms (Trm_Name, Ont_Name)
 VALUES ('EC_number','Annotation Tags');
-INSERT INTO SGLD_Terms (Trm_Name, Cat_Name)
+INSERT INTO SGLD_Terms (Trm_Name, Ont_Name)
 VALUES ('OFFICIAL_SYMBOL','Annotation Tags');
-INSERT INTO SGLD_Terms (Trm_Name, Cat_Name)
+INSERT INTO SGLD_Terms (Trm_Name, Ont_Name)
 VALUES ('PREFERRED_SYMBOL','Annotation Tags');
-INSERT INTO SGLD_Terms (Trm_Name, Cat_Name)
+INSERT INTO SGLD_Terms (Trm_Name, Ont_Name)
 VALUES ('gene_name','Annotation Tags');
-INSERT INTO SGLD_Terms (Trm_Name, Cat_Name)
+INSERT INTO SGLD_Terms (Trm_Name, Ont_Name)
 VALUES ('OFFICIAL_SYMBOL','Annotation Tags');
-INSERT INTO SGLD_Terms (Trm_Name, Cat_Name)
+INSERT INTO SGLD_Terms (Trm_Name, Ont_Name)
 VALUES ('ALIAS_SYMBOL','Annotation Tags');
-INSERT INTO SGLD_Terms (Trm_Name, Cat_Name)
+INSERT INTO SGLD_Terms (Trm_Name, Ont_Name)
 VALUES ('OFFICIAL_GENE_NAME','Annotation Tags');
-INSERT INTO SGLD_Terms (Trm_Name, Cat_Name)
+INSERT INTO SGLD_Terms (Trm_Name, Ont_Name)
 VALUES ('PREFERRED_GENE_NAME','Annotation Tags');
-INSERT INTO SGLD_Terms (Trm_Name, Cat_Name)
+INSERT INTO SGLD_Terms (Trm_Name, Ont_Name)
 VALUES ('PHENOTYPE','Annotation Tags');
 
 -- second, create the actual associations with the terms used by the warehouse
-INSERT INTO SGLD_Term_Assocs (Subj_Trm_Name, Pred_Trm_Name, Trm_Name)
-VALUES ('PREFERRED_SYMBOL','is-a','bioentry name');
-INSERT INTO SGLD_Term_Assocs (Subj_Trm_Name, Pred_Trm_Name, Obj_Trm_Name)
-VALUES ('ECNUM','is-a','bioentry name');
-INSERT INTO SGLD_Term_Assocs (Subj_Trm_Name, Pred_Trm_Name, Obj_Trm_Name)
-VALUES ('ALIAS_SYMBOL','is-a','bioentry name');
-INSERT INTO SGLD_Term_Assocs (Subj_Trm_Name, Pred_Trm_Name, Obj_Trm_Name)
-VALUES ('gene_name','is-a','bioentry name');
-INSERT INTO SGLD_Term_Assocs (Subj_Trm_Name, Pred_Trm_Name, Obj_Trm_Name)
-VALUES ('EC_number','is-a','bioentry name');
-INSERT INTO SGLD_Term_Assocs (Subj_Trm_Name, Pred_Trm_Name, Obj_Trm_Name)
-VALUES ('OFFICIAL_SYMBOL','is-a','bioentry name');
-INSERT INTO SGLD_Term_Assocs (Subj_Trm_Name, Pred_Trm_Name, Obj_Trm_Name)
-VALUES ('PREFERRED_SYMBOL','is-a','gene name');
-INSERT INTO SGLD_Term_Assocs (Subj_Trm_Name, Pred_Trm_Name, Obj_Trm_Name)
-VALUES ('gene_name','is-a','gene name');
-INSERT INTO SGLD_Term_Assocs (Subj_Trm_Name, Pred_Trm_Name, Obj_Trm_Name)
-VALUES ('OFFICIAL_SYMBOL','is-a','gene name');
-INSERT INTO SGLD_Term_Assocs (Subj_Trm_Name, Pred_Trm_Name, Obj_Trm_Name)
-VALUES ('ALIAS_SYMBOL','is-a','gene name');
-INSERT INTO SGLD_Term_Assocs (Subj_Trm_Name, Pred_Trm_Name, Obj_Trm_Name)
-VALUES ('OFFICIAL_GENE_NAME','is-a','gene name');
-INSERT INTO SGLD_Term_Assocs (Subj_Trm_Name, Pred_Trm_Name, Obj_Trm_Name)
-VALUES ('PREFERRED_GENE_NAME','is-a','gene name');
-INSERT INTO SGLD_Term_Assocs (Subj_Trm_Name, Pred_Trm_Name, Obj_Trm_Name)
-VALUES ('PHENOTYPE','is-a','phenotype');
+INSERT INTO SGLD_Term_Assocs (Subj_Ont_Name, Pred_Ont_Name, Obj_Ont_Name, 
+                              Ont_Name, 
+                              Subj_Trm_Name, Pred_Trm_Name, Obj_Trm_Name)
+VALUES ('Annotation Tags','Qualifier Type Ontology','Qualifier Type Ontology',
+        'Qualifier Type Ontology',
+        'PREFERRED_SYMBOL','is-a','bioentry name');
+INSERT INTO SGLD_Term_Assocs (Subj_Ont_Name, Pred_Ont_Name, Obj_Ont_Name, 
+                              Ont_Name, 
+                              Subj_Trm_Name, Pred_Trm_Name, Obj_Trm_Name)
+VALUES ('Annotation Tags','Qualifier Type Ontology','Qualifier Type Ontology',
+        'Qualifier Type Ontology',
+        'ECNUM','is-a','bioentry name');
+INSERT INTO SGLD_Term_Assocs (Subj_Ont_Name, Pred_Ont_Name, Obj_Ont_Name, 
+                              Ont_Name, 
+                              Subj_Trm_Name, Pred_Trm_Name, Obj_Trm_Name)
+VALUES ('Annotation Tags','Qualifier Type Ontology','Qualifier Type Ontology',
+        'Qualifier Type Ontology',
+        'ALIAS_SYMBOL','is-a','bioentry name');
+INSERT INTO SGLD_Term_Assocs (Subj_Ont_Name, Pred_Ont_Name, Obj_Ont_Name, 
+                              Ont_Name, 
+                              Subj_Trm_Name, Pred_Trm_Name, Obj_Trm_Name)
+VALUES ('Annotation Tags','Qualifier Type Ontology','Qualifier Type Ontology',
+        'Qualifier Type Ontology',
+        'gene_name','is-a','bioentry name');
+INSERT INTO SGLD_Term_Assocs (Subj_Ont_Name, Pred_Ont_Name, Obj_Ont_Name, 
+                              Ont_Name, 
+                              Subj_Trm_Name, Pred_Trm_Name, Obj_Trm_Name)
+VALUES ('Annotation Tags','Qualifier Type Ontology','Qualifier Type Ontology',
+        'Qualifier Type Ontology',
+        'EC_number','is-a','bioentry name');
+INSERT INTO SGLD_Term_Assocs (Subj_Ont_Name, Pred_Ont_Name, Obj_Ont_Name, 
+                              Ont_Name, 
+                              Subj_Trm_Name, Pred_Trm_Name, Obj_Trm_Name)
+VALUES ('Annotation Tags','Qualifier Type Ontology','Qualifier Type Ontology',
+        'Qualifier Type Ontology',
+        'OFFICIAL_SYMBOL','is-a','bioentry name');
+INSERT INTO SGLD_Term_Assocs (Subj_Ont_Name, Pred_Ont_Name, Obj_Ont_Name, 
+                              Ont_Name, 
+                              Subj_Trm_Name, Pred_Trm_Name, Obj_Trm_Name)
+VALUES ('Annotation Tags','Qualifier Type Ontology','Qualifier Type Ontology',
+        'Qualifier Type Ontology',
+        'PREFERRED_SYMBOL','is-a','gene name');
+INSERT INTO SGLD_Term_Assocs (Subj_Ont_Name, Pred_Ont_Name, Obj_Ont_Name, 
+                              Ont_Name, 
+                              Subj_Trm_Name, Pred_Trm_Name, Obj_Trm_Name)
+VALUES ('Annotation Tags','Qualifier Type Ontology','Qualifier Type Ontology',
+        'Qualifier Type Ontology',
+        'gene_name','is-a','gene name');
+INSERT INTO SGLD_Term_Assocs (Subj_Ont_Name, Pred_Ont_Name, Obj_Ont_Name, 
+                              Ont_Name, 
+                              Subj_Trm_Name, Pred_Trm_Name, Obj_Trm_Name)
+VALUES ('Annotation Tags','Qualifier Type Ontology','Qualifier Type Ontology',
+        'Qualifier Type Ontology',
+        'OFFICIAL_SYMBOL','is-a','gene name');
+INSERT INTO SGLD_Term_Assocs (Subj_Ont_Name, Pred_Ont_Name, Obj_Ont_Name, 
+                              Ont_Name, 
+                              Subj_Trm_Name, Pred_Trm_Name, Obj_Trm_Name)
+VALUES ('Annotation Tags','Qualifier Type Ontology','Qualifier Type Ontology',
+        'Qualifier Type Ontology',
+        'ALIAS_SYMBOL','is-a','gene name');
+INSERT INTO SGLD_Term_Assocs (Subj_Ont_Name, Pred_Ont_Name, Obj_Ont_Name, 
+                              Ont_Name, 
+                              Subj_Trm_Name, Pred_Trm_Name, Obj_Trm_Name)
+VALUES ('Annotation Tags','Qualifier Type Ontology','Qualifier Type Ontology',
+        'Qualifier Type Ontology',
+        'OFFICIAL_GENE_NAME','is-a','gene name');
+INSERT INTO SGLD_Term_Assocs (Subj_Ont_Name, Pred_Ont_Name, Obj_Ont_Name, 
+                              Ont_Name, 
+                              Subj_Trm_Name, Pred_Trm_Name, Obj_Trm_Name)
+VALUES ('Annotation Tags','Qualifier Type Ontology','Qualifier Type Ontology',
+        'Qualifier Type Ontology',
+        'PREFERRED_GENE_NAME','is-a','gene name');
+INSERT INTO SGLD_Term_Assocs (Subj_Ont_Name, Pred_Ont_Name, Obj_Ont_Name, 
+                              Ont_Name, 
+                              Subj_Trm_Name, Pred_Trm_Name, Obj_Trm_Name)
+VALUES ('Annotation Tags','Qualifier Type Ontology','Qualifier Type Ontology',
+        'Qualifier Type Ontology',
+        'PHENOTYPE','is-a','phenotype');
 
 --
 -- Done
