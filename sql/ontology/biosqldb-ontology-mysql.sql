@@ -40,13 +40,25 @@ CREATE TABLE ontology_relationship (
 CREATE INDEX ontrel_predicateid ON ontology_relationship(predicate_id);
 CREATE INDEX ontrel_objectid ON ontology_relationship(object_id);
 
-CREATE TABLE ontology_dbxref (
-       	ontology_term_id	INT(10) UNSIGNED NOT NULL,
-       	dbxref_id               INT(10) UNSIGNED NOT NULL,
-	PRIMARY KEY (ontology_term_id, dbxref_id)
+-- the infamous transitive closure table on ontology term relationships
+-- this is a warehouse approach - you will need to update this regularly
+--
+-- the triple of (subject, predicate, object) is the same as for ontology
+-- relationships, with the exception of predicate being the least common
+-- denominator of relationships types visited in the path
+--
+-- See the GO database or Chado schema for other (and possibly better
+-- documented) implementations of the transitive closure table approach.
+CREATE TABLE ontology_path (
+       	subject_id	INT(10) UNSIGNED NOT NULL,
+       	predicate_id    INT(10) UNSIGNED NOT NULL,
+       	object_id       INT(10) UNSIGNED NOT NULL,
+	distance	INT(10) UNSIGNED,
+	PRIMARY KEY (subject_id,predicate_id,object_id)
 ) TYPE=INNODB;
 
-CREATE INDEX ontdbxref_dbxrefid ON ontology_dbxref(dbxref_id);
+CREATE INDEX ontpath_predicateid ON ontology_path(predicate_id);
+CREATE INDEX ontpath_objectid ON ontology_path(object_id);
 
 -- 
 -- add foreign key constraints
@@ -64,12 +76,16 @@ ALTER TABLE ontology_relationship ADD CONSTRAINT FKontobject_ont
        	FOREIGN KEY (object_id) REFERENCES ontology_term(ontology_term_id)
 	ON DELETE CASCADE;
 
--- ontology_dbxref
+-- ontology_path
 
-ALTER TABLE ontology_dbxref ADD CONSTRAINT FKdbxref_ontdbxref
-       	FOREIGN KEY (dbxref_id) REFERENCES dbxref(dbxref_id)
+ALTER TABLE ontology_path ADD CONSTRAINT FKontsubject_ontpath
+	FOREIGN KEY (subject_id) REFERENCES ontology_term(ontology_term_id)
 	ON DELETE CASCADE;
-ALTER TABLE ontology_dbxref ADD CONSTRAINT FKontology_ontdbxref
-      FOREIGN KEY (ontology_term_id) REFERENCES ontology_term(ontology_term_id)
+ALTER TABLE ontology_path ADD CONSTRAINT FKontpredicate_ontpath
+       	FOREIGN KEY (predicate_id) REFERENCES ontology_term(ontology_term_id)
 	ON DELETE CASCADE;
+ALTER TABLE ontology_path ADD CONSTRAINT FKontobject_ontpath
+       	FOREIGN KEY (object_id) REFERENCES ontology_term(ontology_term_id)
+	ON DELETE CASCADE;
+
 

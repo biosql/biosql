@@ -500,7 +500,7 @@ CREATE TABLE SG_Seqfeature (
        Oid                  INTEGER NOT NULL,
        Rank                 NUMBER(9) NOT NULL,
        Ent_Oid              INTEGER NOT NULL,
-       Ont_Oid              INTEGER NULL,
+       Ont_Oid              INTEGER NOT NULL,
        FSrc_Oid             INTEGER NULL,
        CONSTRAINT XPKSeqfeature 
               PRIMARY KEY (Oid)

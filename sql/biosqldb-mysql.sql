@@ -38,35 +38,128 @@ CREATE TABLE biodatabase (
 --
 -- no organelle/sub species
 
+-- CREATE TABLE taxon (
+--   	taxon_id   	INT(10) UNSIGNED NOT NULL auto_increment,
+--   	binomial 	VARCHAR(96) NOT NULL,
+-- 	variant         VARCHAR(64) NOT NULL,
+--   	common_name 	VARCHAR(255),
+--   	ncbi_taxon_id 	INT(10),
+--   	full_lineage 	TEXT NOT NULL,
+-- 	PRIMARY KEY (taxon_id),
+--   	UNIQUE (binomial,variant),
+--   	UNIQUE (ncbi_taxon_id)
+-- ) TYPE=INNODB;
+
 CREATE TABLE taxon (
-  	taxon_id   	INT(10) UNSIGNED NOT NULL auto_increment,
-  	binomial 	VARCHAR(96) NOT NULL,
-	variant         VARCHAR(64) NOT NULL,
-  	common_name 	VARCHAR(255),
-  	ncbi_taxon_id 	INT(10),
-  	full_lineage 	TEXT NOT NULL,
-	PRIMARY KEY (taxon_id),
-  	UNIQUE (binomial,variant),
-  	UNIQUE (ncbi_taxon_id)
+       taxon_id		INT(10) UNSIGNED NOT NULL auto_increment,
+       ncbi_taxon_id 	INT(10),
+       parent_taxon_id	INT(10) UNSIGNED,
+       node_rank	VARCHAR(32),
+       genetic_code	TINYINT UNSIGNED,
+       mito_genetic_code TINYINT UNSIGNED,
+       left_id		INT(10) UNSIGNED,
+       right_id		INT(10) UNSIGNED,
+       PRIMARY KEY (taxon_id),
+       UNIQUE (ncbi_taxon_id)
 ) TYPE=INNODB;
 
+CREATE INDEX taxparent ON taxon(parent_taxon_id);
+CREATE INDEX taxleft ON taxon(left_id);
+CREATE INDEX taxright ON taxon(right_id);
+
+CREATE TABLE taxon_name (
+       taxon_id		INT(10) UNSIGNED NOT NULL,
+       name		VARCHAR(255) NOT NULL,
+       unique_name	VARCHAR(255),
+       name_class	VARCHAR(32) NOT NULL,
+       UNIQUE (taxon_id,name,name_class),
+       UNIQUE (unique_name)
+) TYPE=INNODB;
+
+CREATE INDEX taxnametaxonid ON taxon_name(taxon_id);
+CREATE INDEX taxnamename    ON taxon_name(name);
+
+-- this is the namespace (controlled vocabulary) ontology terms live in
+-- we chose to have a separate table for this instead of reusing biodatabase
+CREATE TABLE ontology (
+       	ontology_id        INT(10) UNSIGNED NOT NULL auto_increment,
+       	name	   	   VARCHAR(32) NOT NULL,
+       	definition	   TEXT,
+	PRIMARY KEY (ontology_id),
+	UNIQUE (name)
+) TYPE=INNODB;
 
 -- any controlled vocab term, everything from full ontology
 -- terms eg GO IDs to the various keys allowed as qualifiers
 --
--- this replaces the table "seqfeature_qualifier"
 CREATE TABLE ontology_term (
-       	ontology_term_id INT(10) UNSIGNED NOT NULL auto_increment,
-       	term_name        VARCHAR(255) NOT NULL,
-       	term_definition  TEXT,
-	term_identifier	 VARCHAR(40),
-	category_id      INT(10) UNSIGNED,
+       	ontology_term_id   INT(10) UNSIGNED NOT NULL auto_increment,
+       	name	   	   VARCHAR(255) NOT NULL,
+       	definition	   TEXT,
+	identifier	   VARCHAR(40),
+	ontology_id	   INT(10) UNSIGNED NOT NULL,
 	PRIMARY KEY (ontology_term_id),
-	UNIQUE (term_name,category_id),
-	UNIQUE (term_identifier)
+	UNIQUE (name,ontology_id),
+	UNIQUE (identifier)
 ) TYPE=INNODB;
 
-CREATE INDEX ont_cat ON ontology_term(category_id);
+CREATE INDEX ont_cat ON ontology_term(ontology_id);
+
+-- ontology terms to dbxref association: ontology terms have dbxrefs
+CREATE TABLE ontology_dbxref (
+       	ontology_term_id	INT(10) UNSIGNED NOT NULL,
+       	dbxref_id               INT(10) UNSIGNED NOT NULL,
+	PRIMARY KEY (ontology_term_id, dbxref_id)
+) TYPE=INNODB;
+
+CREATE INDEX ontdbxref_dbxrefid ON ontology_dbxref(dbxref_id);
+
+-- relationship between controlled vocabulary / ontology term
+-- we use subject/predicate/object but this could also
+-- be thought of as child/relationship-type/parent.
+-- the subject/predicate/object naming is better as we
+-- can think of the graph as composed of statements.
+--
+-- we also treat the relationshiptypes / predicates as
+-- controlled terms in themselves; this is quite useful
+-- as a lot of systems (eg GO) will soon require
+-- ontologies of relationship types (eg subtle differences
+-- in the partOf relationship)
+--
+-- this table probably won''t be filled for a while, the core
+-- will just treat ontologies as flat lists of terms
+
+CREATE TABLE ontology_relationship (
+        ontology_relationship_id INT(10) UNSIGNED NOT NULL auto_increment,
+       	subject_id	INT(10) UNSIGNED NOT NULL,
+       	predicate_id    INT(10) UNSIGNED NOT NULL,
+       	object_id       INT(10) UNSIGNED NOT NULL,
+	PRIMARY KEY (ontology_relationship_id),
+	UNIQUE (subject_id,predicate_id,object_id)
+) TYPE=INNODB;
+
+CREATE INDEX ontrel_predicateid ON ontology_relationship(predicate_id);
+CREATE INDEX ontrel_objectid ON ontology_relationship(object_id);
+
+-- the infamous transitive closure table on ontology term relationships
+-- this is a warehouse approach - you will need to update this regularly
+--
+-- the triple of (subject, predicate, object) is the same as for ontology
+-- relationships, with the exception of predicate being the least common
+-- denominator of relationships types visited in the path
+--
+-- See the GO database or Chado schema for other (and possibly better
+-- documented) implementations of the transitive closure table approach.
+CREATE TABLE ontology_path (
+       	subject_id	INT(10) UNSIGNED NOT NULL,
+       	predicate_id    INT(10) UNSIGNED NOT NULL,
+       	object_id       INT(10) UNSIGNED NOT NULL,
+	distance	INT(10) UNSIGNED,
+	PRIMARY KEY (subject_id,predicate_id,object_id)
+) TYPE=INNODB;
+
+CREATE INDEX ontpath_predicateid ON ontology_path(predicate_id);
+CREATE INDEX ontpath_objectid ON ontology_path(object_id);
 
 -- we can be a bioentry without a biosequence, but not visa-versa
 -- most things are going to be keyed off bioentry_id
@@ -85,9 +178,9 @@ CREATE TABLE bioentry (
   	accession    	VARCHAR(40) NOT NULL,
   	identifier   	VARCHAR(40),
   	description  	TEXT,
-  	entry_version 	TINYINT, 
+  	version 	SMALLINT UNSIGNED, 
 	PRIMARY KEY (bioentry_id),
-  	UNIQUE (accession,biodatabase_id,entry_version),
+  	UNIQUE (accession,biodatabase_id,version),
   	UNIQUE (identifier)
 ) TYPE=INNODB;
 
@@ -99,28 +192,29 @@ CREATE INDEX bioentry_tax  ON bioentry(taxon_id);
 -- bioentry-bioentry relationships: these are typed
 --
 CREATE TABLE bioentry_relationship (
+        bioentry_relationship_id INT(10) UNSIGNED NOT NULL auto_increment,
    	parent_bioentry_id 	INT(10) UNSIGNED NOT NULL,
    	child_bioentry_id 	INT(10) UNSIGNED NOT NULL,
    	ontology_term_id 	INT(10) UNSIGNED NOT NULL,
-   	relationship_rank 	INT(5),
-   	PRIMARY KEY (parent_bioentry_id,child_bioentry_id,ontology_term_id)
+   	rank 			INT(5),
+   	PRIMARY KEY (bioentry_relationship_id),
+	UNIQUE (parent_bioentry_id,child_bioentry_id,ontology_term_id)
 ) TYPE=INNODB;
 
 CREATE INDEX bioentryrel_ont   ON bioentry_relationship(ontology_term_id);
 CREATE INDEX bioentryrel_child ON bioentry_relationship(child_bioentry_id);
 
 -- some bioentries will have a sequence
--- biosequence because sequence is sometimes 
--- a reserved word
+-- biosequence because sequence is sometimes a reserved word
 -- removed not null for seq_version; cjm
 
 CREATE TABLE biosequence (
   	bioentry_id     INT(10) UNSIGNED NOT NULL,
-  	seq_version     SMALLINT, 
-  	seq_length      INT(10), 
+  	version     	SMALLINT, 
+  	length      	INT(10), 
   	alphabet        VARCHAR(10),
 	division	VARCHAR(6),
-  	biosequence_str LONGTEXT,
+  	seq 		LONGTEXT,
 	PRIMARY KEY (bioentry_id)
 ) TYPE=INNODB;
 
@@ -130,7 +224,7 @@ CREATE TABLE dbxref (
         dbxref_id	INT(10) UNSIGNED NOT NULL auto_increment,
         dbname          VARCHAR(40) NOT NULL,
         accession       VARCHAR(40) NOT NULL,
-	version		TINYINT NOT NULL,
+	version		SMALLINT UNSIGNED NOT NULL,
 	PRIMARY KEY (dbxref_id),
         UNIQUE(accession, dbname, version)
 ) TYPE=INNODB;
@@ -151,7 +245,7 @@ CREATE TABLE dbxref_qualifier_value (
 	dbxref_qualifier_value_id  INT(10) UNSIGNED NOT NULL auto_increment,
        	dbxref_id 		INT(10) UNSIGNED NOT NULL,
        	ontology_term_id 	INT(10) UNSIGNED NOT NULL,
-       	qualifier_value		TEXT,
+       	value			TEXT,
 	PRIMARY KEY (dbxref_qualifier_value_id)
 ) TYPE=INNODB;
 
@@ -174,27 +268,30 @@ CREATE INDEX dblink_dbx  ON bioentry_dblink(dbxref_id);
 
 -- We can have multiple references per bioentry, but one reference
 -- can also be used for the same bioentry.
+--
+-- No two references can reference the same reference database entry
+-- (dbxref_id). This is where the MEDLINE id goes: PUBMED:123456.
 
 CREATE TABLE reference (
   	reference_id       INT(10) UNSIGNED NOT NULL auto_increment,
-  	reference_location TEXT NOT NULL,
-  	reference_title    TEXT,
-  	reference_authors  TEXT NOT NULL,
-  	reference_identifier VARCHAR(32),
-  	reference_crc	   VARCHAR(32),
+	dbxref_id	   INT(10) UNSIGNED,
+  	location 	   TEXT NOT NULL,
+  	title    	   TEXT,
+  	authors  	   TEXT NOT NULL,
+  	crc	   	   VARCHAR(32),
 	PRIMARY KEY (reference_id),
-	UNIQUE (reference_identifier),
-	UNIQUE (reference_crc)
+	UNIQUE (dbxref_id),
+	UNIQUE (crc)
 ) TYPE=INNODB;
 
-
+-- bioentry to reference associations
 CREATE TABLE bioentry_reference (
   	bioentry_id 	INT(10) UNSIGNED NOT NULL,
   	reference_id 	INT(10) UNSIGNED NOT NULL,
-  	reference_start INT(10),
-  	reference_end   INT(10),
-  	reference_rank  SMALLINT NOT NULL,
-  	PRIMARY KEY(bioentry_id,reference_id,reference_rank)
+  	start_pos	INT(10),
+  	end_pos	  	INT(10),
+  	rank  		SMALLINT NOT NULL,
+  	PRIMARY KEY(bioentry_id,reference_id,rank)
 ) TYPE=INNODB;
 
 CREATE INDEX bioentryref_ref ON bioentry_reference(reference_id);
@@ -207,9 +304,9 @@ CREATE TABLE comment (
   	comment_id  	INT(10) UNSIGNED NOT NULL auto_increment,
   	bioentry_id    	INT(10) UNSIGNED NOT NULL,
   	comment_text   	TEXT NOT NULL,
-  	comment_rank   	SMALLINT NOT NULL,
+  	rank   		SMALLINT NOT NULL,
 	PRIMARY KEY (comment_id),
-  	UNIQUE(bioentry_id, comment_rank)
+  	UNIQUE(bioentry_id, rank)
 ) TYPE=INNODB;
 
 
@@ -221,9 +318,9 @@ CREATE TABLE comment (
 CREATE TABLE bioentry_qualifier_value (
 	bioentry_id   		INT(10) UNSIGNED NOT NULL,
    	ontology_term_id  	INT(10) UNSIGNED NOT NULL,
-   	qualifier_value         TEXT,
-	qualifier_rank		INT(5),
-	UNIQUE (bioentry_id,ontology_term_id,qualifier_rank)
+   	value         		TEXT,
+	rank			INT(5),
+	UNIQUE (bioentry_id,ontology_term_id,rank)
 ) TYPE=INNODB;
 
 CREATE INDEX bioentryqual_ont ON bioentry_qualifier_value(ontology_term_id);
@@ -238,11 +335,12 @@ CREATE INDEX bioentryqual_ont ON bioentry_qualifier_value(ontology_term_id);
 CREATE TABLE seqfeature (
    	seqfeature_id 		INT(10) UNSIGNED NOT NULL auto_increment,
    	bioentry_id   		INT(10) UNSIGNED NOT NULL,
-   	ontology_term_id	INT(10) UNSIGNED,
+   	ontology_term_id	INT(10) UNSIGNED NOT NULL,
    	seqfeature_source_id  	INT(10) UNSIGNED,
-   	seqfeature_rank 	INT(6),
+	display_name		VARCHAR(64),
+   	rank 			SMALLINT UNSIGNED NOT NULL,
 	PRIMARY KEY (seqfeature_id),
-	UNIQUE (bioentry_id,ontology_term_id,seqfeature_source_id,seqfeature_rank)
+	UNIQUE (bioentry_id,ontology_term_id,seqfeature_source_id,rank)
 ) TYPE=INNODB;
 
 CREATE INDEX seqfeature_ont  ON seqfeature(ontology_term_id);
@@ -253,11 +351,13 @@ CREATE INDEX seqfeature_fsrc ON seqfeature(seqfeature_source_id);
 -- in this case the ontology_term_id can be used to type the relationship
 
 CREATE TABLE seqfeature_relationship (
+        seqfeature_relationship_id INT(10) UNSIGNED NOT NULL auto_increment,
    	parent_seqfeature_id	INT(10) UNSIGNED NOT NULL,
    	child_seqfeature_id 	INT(10) UNSIGNED NOT NULL,
    	ontology_term_id 	INT(10) UNSIGNED NOT NULL,
-   	relationship_rank 	INT(5),
-   	PRIMARY KEY (parent_seqfeature_id,child_seqfeature_id,ontology_term_id)
+   	rank 			INT(5),
+   	PRIMARY KEY (seqfeature_relationship_id),
+	UNIQUE (parent_seqfeature_id,child_seqfeature_id,ontology_term_id)
 ) TYPE=INNODB;
 
 CREATE INDEX seqfeaturerel_ont   ON seqfeature_relationship(ontology_term_id);
@@ -266,9 +366,9 @@ CREATE INDEX seqfeaturerel_child ON seqfeature_relationship(child_seqfeature_id)
 CREATE TABLE seqfeature_qualifier_value (
 	seqfeature_id 		INT(10) UNSIGNED NOT NULL,
    	ontology_term_id 	INT(10) UNSIGNED NOT NULL,
-   	qualifier_rank 		SMALLINT NOT NULL,
-   	qualifier_value  	TEXT NOT NULL,
-   	PRIMARY KEY (seqfeature_id,ontology_term_id,qualifier_rank)
+   	rank 			SMALLINT NOT NULL,
+   	value  			TEXT NOT NULL,
+   	PRIMARY KEY (seqfeature_id,ontology_term_id,rank)
 ) TYPE=INNODB;
 
 CREATE INDEX seqfeaturequal_ont ON seqfeature_qualifier_value(ontology_term_id);
@@ -293,16 +393,16 @@ CREATE TABLE seqfeature_location (
    	seqfeature_id		INT(10) UNSIGNED NOT NULL,
 	dbxref_id		INT(10) UNSIGNED,
 	ontology_term_id	INT(10) UNSIGNED,
-   	seq_start              	INT(10),
-   	seq_end                	INT(10),
-   	seq_strand             	TINYINT NOT NULL,
-   	location_rank          	SMALLINT,
+   	start_pos              	INT(10),
+   	end_pos                	INT(10),
+   	strand             	TINYINT NOT NULL,
+   	rank          		SMALLINT,
 	PRIMARY KEY (seqfeature_location_id),
-   	UNIQUE (seqfeature_id, location_rank)
+   	UNIQUE (seqfeature_id, rank)
 ) TYPE=INNODB;
 
-CREATE INDEX seqfeatureloc_start ON seqfeature_location(seq_start);
-CREATE INDEX seqfeatureloc_end   ON seqfeature_location(seq_end);
+CREATE INDEX seqfeatureloc_start ON seqfeature_location(start_pos);
+CREATE INDEX seqfeatureloc_end   ON seqfeature_location(end_pos);
 CREATE INDEX seqfeatureloc_dbx   ON seqfeature_location(dbxref_id);
 CREATE INDEX seqfeatureloc_ont   ON seqfeature_location(ontology_term_id);
 
@@ -317,8 +417,8 @@ CREATE INDEX seqfeatureloc_ont   ON seqfeature_location(ontology_term_id);
 CREATE TABLE location_qualifier_value (
 	seqfeature_location_id	INT(10) UNSIGNED NOT NULL,
    	ontology_term_id 	INT(10) UNSIGNED NOT NULL,
-   	qualifier_value  	VARCHAR(255) NOT NULL,
-   	qualifier_int_value 	INT(10),
+   	value  			VARCHAR(255) NOT NULL,
+   	int_value 		INT(10),
 	PRIMARY KEY (seqfeature_location_id,ontology_term_id)
 ) TYPE=INNODB;
 
@@ -342,8 +442,48 @@ CREATE TABLE cache_corba_support (
 
 -- ontology
 ALTER TABLE ontology_term ADD CONSTRAINT FKontology_ontology
-	FOREIGN KEY (category_id) REFERENCES ontology_term(ontology_term_id)
+	FOREIGN KEY (ontology_id) REFERENCES ontology(ontology_id)
 	ON DELETE CASCADE;
+
+-- ontology_dbxref
+ALTER TABLE ontology_dbxref ADD CONSTRAINT FKdbxref_ontdbxref
+       	FOREIGN KEY (dbxref_id) REFERENCES dbxref(dbxref_id)
+	ON DELETE CASCADE;
+ALTER TABLE ontology_dbxref ADD CONSTRAINT FKontology_ontdbxref
+      FOREIGN KEY (ontology_term_id) REFERENCES ontology_term(ontology_term_id)
+	ON DELETE CASCADE;
+
+-- ontology_relationship
+
+ALTER TABLE ontology_relationship ADD CONSTRAINT FKontsubject_ont
+	FOREIGN KEY (subject_id) REFERENCES ontology_term(ontology_term_id)
+	ON DELETE CASCADE;
+ALTER TABLE ontology_relationship ADD CONSTRAINT FKontpredicate_ont
+       	FOREIGN KEY (predicate_id) REFERENCES ontology_term(ontology_term_id)
+	ON DELETE CASCADE;
+ALTER TABLE ontology_relationship ADD CONSTRAINT FKontobject_ont
+       	FOREIGN KEY (object_id) REFERENCES ontology_term(ontology_term_id)
+	ON DELETE CASCADE;
+
+-- ontology_path
+
+ALTER TABLE ontology_path ADD CONSTRAINT FKontsubject_ontpath
+	FOREIGN KEY (subject_id) REFERENCES ontology_term(ontology_term_id)
+	ON DELETE CASCADE;
+ALTER TABLE ontology_path ADD CONSTRAINT FKontpredicate_ontpath
+       	FOREIGN KEY (predicate_id) REFERENCES ontology_term(ontology_term_id)
+	ON DELETE CASCADE;
+ALTER TABLE ontology_path ADD CONSTRAINT FKontobject_ontpath
+       	FOREIGN KEY (object_id) REFERENCES ontology_term(ontology_term_id)
+	ON DELETE CASCADE;
+
+-- taxon, taxon_name
+ALTER TABLE taxon ADD CONSTRAINT FKtaxon_taxon
+        FOREIGN KEY (parent_taxon_id) REFERENCES taxon(taxon_id)
+        ON DELETE CASCADE;
+ALTER TABLE taxon_name ADD CONSTRAINT FKtaxon_taxonname
+        FOREIGN KEY (taxon_id) REFERENCES taxon(taxon_id)
+        ON DELETE CASCADE;
 
 -- bioentry
 ALTER TABLE bioentry ADD CONSTRAINT FKtaxon_bioentry
