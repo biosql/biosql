@@ -569,7 +569,8 @@ ALTER TABLE term_path ADD CONSTRAINT FKterm_ontpath
 
 ALTER TABLE taxon ADD CONSTRAINT FKtaxon_taxon
         FOREIGN KEY (parent_taxon_id) REFERENCES taxon(taxon_id)
-        ON DELETE CASCADE;
+        ON DELETE CASCADE
+		DEFERRABLE;
 ALTER TABLE taxon_name ADD CONSTRAINT FKtaxon_taxonname
         FOREIGN KEY (taxon_id) REFERENCES taxon(taxon_id)
         ON DELETE CASCADE;

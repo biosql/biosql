@@ -73,7 +73,7 @@ my $dbh = DBI->connect($dsn,
 		       $user,
 		       $pass,
 		       { RaiseError => 1,
-			 AutoCommit => 1,
+			 AutoCommit => 0,
 			 PrintError => 1
 		       }
 		      ) or die $DBI::errstr;
@@ -116,9 +116,14 @@ UPDATE taxon SET right_value = ? WHERE taxon_id = ?
 @sth{keys %sth} = map { $dbh->prepare($_) } values %sth;
 
 my @locktables = qw(taxon taxon_name);
-# lock all the tables we'll need, if MySQL:
-$dbh->do('LOCK TABLES ' . join(", ", map { $_ .= ' WRITE' } @locktables))
-    if $driver =~ m/mysql/i;
+if ($driver =~ m/mysql/i) {
+    # lock all the tables we'll need, if MySQL:
+    $dbh->do('LOCK TABLES ' . join(", ", map { $_ .= ' WRITE' } @locktables));
+} elsif ($driver =~ m/pg/i) {
+    # turn on deferrable, start a transaction:
+    $dbh->do('SET CONSTRAINTS ALL DEFERRED');
+}
+
 
 my @new;
 my @old;
