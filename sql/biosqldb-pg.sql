@@ -7,9 +7,9 @@
 --- (there is no concept of versions of database). There is a concept of 
 --- versions of entries. Versions of databases deserve their own table and 
 --- join to bioentry table for tracking with versions of entries  
-CREATE SEQUENCE biodatabase_pkey_seq;
+CREATE SEQUENCE biodatabase_pk_seq;
 CREATE TABLE biodatabase ( 
-	 biodatabase_id integer primary key default (nextval ( 'biodatabase_pkey_seq' )) , 
+	 biodatabase_id integer primary key default (nextval ( 'biodatabase_pk_seq' )) , 
 	 name varchar ( 40 ) NOT NULL ); 
 
 CREATE INDEX biodatabaseidx1 on biodatabase ( name ); 
@@ -17,9 +17,9 @@ CREATE INDEX biodatabaseidx1 on biodatabase ( name );
 --- an optional extra line, as many flat file formats do not have the NCBI id 
 --- full lineage is : delimited string starting with species. 
 --- no organelle/sub species 
-CREATE SEQUENCE taxa_pkey_seq;
+CREATE SEQUENCE taxa_pk_seq;
 CREATE TABLE taxa ( 
-	 taxa_id integer primary key default (nextval ( 'taxa_pkey_seq' )) , 
+	 taxa_id integer primary key default (nextval ( 'taxa_pk_seq' )) , 
 	 full_lineage text NOT NULL , 
 	 common_name varchar ( 255 ) NOT NULL , 
 	 ncbi_taxa_id int ); 
@@ -30,9 +30,9 @@ CREATE INDEX taxaname ON taxa ( common_name );
 --- terms eg GO IDs to the various keys allowed as qualifiers 
 --- 
 --- this replaces the table "seqfeature_qualifier" 
-CREATE SEQUENCE ontology_term_pkey_seq;
+CREATE SEQUENCE ontology_term_pk_seq;
 CREATE TABLE ontology_term ( 
-	 ontology_term_id integer primary key default (nextval ( 'ontology_term_pkey_seq' )) , 
+	 ontology_term_id integer primary key default (nextval ( 'ontology_term_pk_seq' )) , 
 	 term_name char ( 255 ) , 
 	 term_definition text ); 
 
@@ -41,9 +41,9 @@ CREATE INDEX otn ON ontology_term ( term_name );
 --- most things are going to be keyed off bioentry_id 
 --- accession is the stable id, display_id is a potentially volatile, 
 --- human readable name. 
-CREATE SEQUENCE bioentry_pkey_seq;
+CREATE SEQUENCE bioentry_pk_seq;
 CREATE TABLE bioentry ( 
-	 bioentry_id integer primary key default (nextval ( 'bioentry_pkey_seq' )) , 
+	 bioentry_id integer primary key default (nextval ( 'bioentry_pk_seq' )) , 
 	 biodatabase_id int NOT NULL , 
 	 display_id varchar ( 40 ) NOT NULL , 
 	 accession varchar ( 40 ) NOT NULL , 
@@ -68,9 +68,9 @@ CREATE INDEX bioentrytax ON bioentry_taxa ( taxa_id );
 --- biosequence because sequence is sometimes  
 --- a reserved word 
 --- removed not null for seq_version; cjm 
-CREATE SEQUENCE biosequence_pkey_seq;
+CREATE SEQUENCE biosequence_pk_seq;
 CREATE TABLE biosequence ( 
-	 biosequence_id integer primary key default (nextval ( 'biosequence_pkey_seq' )) , 
+	 biosequence_id integer primary key default (nextval ( 'biosequence_pk_seq' )) , 
 	 bioentry_id int NOT NULL , 
 	 seq_version int , 
 	 seq_length int , 
@@ -81,9 +81,9 @@ CREATE TABLE biosequence (
 
 CREATE INDEX biosequenceeid ON biosequence ( bioentry_id ); 
 --- new table 
-CREATE SEQUENCE dbxref_pkey_seq;
+CREATE SEQUENCE dbxref_pk_seq;
 CREATE TABLE dbxref ( 
-	 dbxref_id integer primary key default (nextval ( 'dbxref_pkey_seq' )) , 
+	 dbxref_id integer primary key default (nextval ( 'dbxref_pk_seq' )) , 
 	 dbname varchar ( 40 ) NOT NULL , 
 	 accession varchar ( 40 ) NOT NULL , 
 	 UNIQUE ( dbname , accession ) ); 
@@ -100,9 +100,9 @@ CREATE INDEX dbxrefacc ON dbxref ( accession );
 --- importing all of interpro), so we can attach the text 
 --- description as a synonym 
 --- 
-CREATE SEQUENCE dbxref_qualifier_value_pkey_seq;
+CREATE SEQUENCE dbxref_qualifier_value_pk_seq;
 CREATE TABLE dbxref_qualifier_value ( 
-	 dbxref_qualifier_value_id integer primary key default (nextval ( 'dbxref_qualifier_value_pkey_seq' )) , 
+	 dbxref_qualifier_value_id integer primary key default (nextval ( 'dbxref_qualifier_value_pk_seq' )) , 
 	 dbxref_id int NOT NULL , 
 	 FOREIGN KEY ( dbxref_id ) REFERENCES dbxref ( dbxref_id ) , 
 	 ontology_term_id int NOT NULL , 
@@ -117,9 +117,9 @@ CREATE INDEX dqv2 ON dbxref_qualifier_value ( ontology_term_id );
 --- this table each time. Better to do the join through accession 
 --- and db each time. Should be almost as cheap 
 --- note: changed to use new dbxref table 
-CREATE SEQUENCE bioentry_direct_links_pkey_seq;
+CREATE SEQUENCE bioentry_direct_links_pk_seq;
 CREATE TABLE bioentry_direct_links ( 
-	 bio_dblink_id integer primary key default (nextval ( 'bioentry_direct_links_pkey_seq' )) , 
+	 bio_dblink_id integer primary key default (nextval ( 'bioentry_direct_links_pk_seq' )) , 
 	 source_bioentry_id int NOT NULL , 
 	 dbxref_id int NOT NULL , 
 	 FOREIGN KEY ( source_bioentry_id ) REFERENCES bioentry ( bioentry_id ) , 
@@ -129,9 +129,9 @@ CREATE INDEX bdl1 ON bioentry_direct_links ( source_bioentry_id );
 CREATE INDEX bdl2 ON bioentry_direct_links ( dbxref_id ); 
 ---We can have multiple references per bioentry, but one reference 
 ---can also be used for the same bioentry. 
-CREATE SEQUENCE reference_pkey_seq;
+CREATE SEQUENCE reference_pk_seq;
 CREATE TABLE reference ( 
-	 reference_id integer primary key default (nextval ( 'reference_pkey_seq' )) , 
+	 reference_id integer primary key default (nextval ( 'reference_pk_seq' )) , 
 	 reference_location text NOT NULL , 
 	 reference_title text , 
 	 reference_authors text NOT NULL , 
@@ -155,9 +155,9 @@ CREATE INDEX reference_rank_idx4 ON bioentry_reference ( reference_rank );
 CREATE INDEX reference_rank_idx5 ON bioentry_reference ( bioentry_id , reference_rank ); 
 --- We can have multiple comments per seqentry, and 
 --- comments can have embedded '\n' characters 
-CREATE SEQUENCE comment_pkey_seq;
+CREATE SEQUENCE comment_pk_seq;
 CREATE TABLE comment ( 
-	 comment_id integer primary key default (nextval ( 'comment_pkey_seq' )) , 
+	 comment_id integer primary key default (nextval ( 'comment_pk_seq' )) , 
 	 bioentry_id int NOT NULL , 
 	 comment_text text NOT NULL , 
 	 comment_rank int NOT NULL , 
@@ -183,14 +183,14 @@ CREATE INDEX bqv3 ON bioentry_qualifier_value ( bioentry_id , ontology_term_id )
 ---   - split locations 
 ---   - split locations on remote sequences 
 --- The fuzzies are not handled yet 
-CREATE SEQUENCE seqfeature_source_pkey_seq;
+CREATE SEQUENCE seqfeature_source_pk_seq;
 CREATE TABLE seqfeature_source ( 
-	 seqfeature_source_id integer primary key default (nextval ( 'seqfeature_source_pkey_seq' )) , 
+	 seqfeature_source_id integer primary key default (nextval ( 'seqfeature_source_pk_seq' )) , 
 	 source_name varchar ( 255 ) NOT NULL ); 
 
-CREATE SEQUENCE seqfeature_pkey_seq;
+CREATE SEQUENCE seqfeature_pk_seq;
 CREATE TABLE seqfeature ( 
-	 seqfeature_id integer primary key default (nextval ( 'seqfeature_pkey_seq' )) , 
+	 seqfeature_id integer primary key default (nextval ( 'seqfeature_pk_seq' )) , 
 	 bioentry_id int NOT NULL , 
 	 seqfeature_key_id int , 
 	 seqfeature_source_id int , 
@@ -205,9 +205,9 @@ CREATE INDEX sf3 ON seqfeature ( bioentry_id );
 --- seqfeatures can be arranged in containment hierarchies. 
 --- one can imagine storing other relationships between features, 
 --- in this case the ontology_term_id can be used to type the relationship 
-CREATE SEQUENCE seqfeature_rel_pkey_seq;
+CREATE SEQUENCE seqfeature_relationship_pk_seq;
 CREATE TABLE seqfeature_relationship ( 
-	 seqfeature_relationship_id integer primary key default (nextval ( 'seqfeature_rel_pkey_seq' )) , 
+	 seqfeature_relationship_id integer primary key default (nextval ( 'seqfeature_relationship_pk_seq' )) , 
 	 parent_seqfeature_id int NOT NULL , 
 	 child_seqfeature_id int NOT NULL , 
 	 relationship_type_id int NOT NULL , 
@@ -239,9 +239,9 @@ CREATE INDEX sqv3 ON seqfeature_qualifier_value ( seqfeature_id );
 --- work. Check out the ensembl schema for this. 
 --- we allow nulls for start/end - this is useful for fuzzies as 
 --- standard range queries will not be included 
-CREATE SEQUENCE seqfeature_location_pkey_seq;
+CREATE SEQUENCE seqfeature_location_pk_seq;
 CREATE TABLE seqfeature_location ( 
-	 seqfeature_location_id integer primary key default (nextval ( 'seqfeature_location_pkey_seq' )) , 
+	 seqfeature_location_id integer primary key default (nextval ( 'seqfeature_location_pk_seq' )) , 
 	 seqfeature_id int NOT NULL , 
 	 seq_start int , 
 	 seq_end int , 

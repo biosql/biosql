@@ -15,9 +15,9 @@
 --- 
 --- this table probably won't be filled for a while, the core 
 --- will just treat ontologies as flat lists of terms 
-CREATE SEQUENCE ontology_relationship_pkey_seq;
+CREATE SEQUENCE ontology_relationship_pk_seq;
 CREATE TABLE ontology_relationship ( 
-	 ontology_relationship_id integer primary key default (nextval ( 'ontology_relationship_pkey_seq' )) , 
+	 ontology_relationship_id integer primary key default (nextval ( 'ontology_relationship_pk_seq' )) , 
 	 subject_id int NOT NULL , 
 	 predicate_id int NOT NULL , 
 	 object_id int NOT NULL , 
@@ -25,9 +25,9 @@ CREATE TABLE ontology_relationship (
 	 FOREIGN KEY ( predicate_id ) REFERENCES ontology_term ( ontology_term_id ) , 
 	 FOREIGN KEY ( object_id ) REFERENCES ontology_term ( ontology_term_id ) ); 
 
-CREATE SEQUENCE ontology_dbxref_pkey_seq;
+CREATE SEQUENCE ontology_dbxref_pk_seq;
 CREATE TABLE ontology_dbxref ( 
-	 ontology_term_id integer primary key default (nextval ( 'ontology_dbxref_pkey_seq' )) , 
+	 ontology_term_id integer primary key default (nextval ( 'ontology_dbxref_pk_seq' )) , 
 	 FOREIGN KEY ( ontology_term_id ) REFERENCES ontology_term ( ontology_term_id ) , 
 	 dbxref_id int NOT NULL , 
 	 FOREIGN KEY ( dbxref_id ) REFERENCES dbxref ( dbxref_id ) ); 

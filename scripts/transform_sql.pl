@@ -237,7 +237,7 @@ sub pg {
             if (grep {/^auto_increment$/i} map {$_->children->[0]->data}@qs) {
                 my $table = $ref->{table} || die("asserion error");
                 # postgres needs a sequence datatype
-                my $seqn = $table."_pkey_seq";
+                my $seqn = $table."_pk_seq";
                 $ref->{seqnh} = {} unless $ref->{seqnh};
                 $ref->{seqnh}->{$table} = $seqn;
                 @c = (node->new( [['inttype', 'integer'],  # type
