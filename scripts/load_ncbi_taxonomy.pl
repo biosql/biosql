@@ -134,13 +134,12 @@ The number of rows after which to commit and possibly recompute
 statistics.
 
 This presently only applies to the nested set rebuild phase. It tries
-to address the marked performance degradation in PostgreSQL while
-updating the taxon rows. The default value is 40,000 for PostgreSQL
-and disabled for other drivers. The downside of this approach is that
-because computing statistics in PostgreSQL cannot run within a
-transaction, partially rebuilt nested set values have to be committed
-at regular intervals. You can disable the chunked commits by supplying
-a value of 0.
+to address the potentially marked performance degradation in
+PostgreSQL while updating the taxon rows. The downside of this
+approach is that because computing statistics in PostgreSQL cannot run
+within a transaction, partially rebuilt nested set values have to be
+committed at regular intervals. You can disable the chunked commits by
+supplying a value of 0.
 
 If you run on PostgreSQL and you are not sure about the performance
 win, try --chunksize=0 --verbose=2. Watch the performance statistics
@@ -148,6 +147,9 @@ during the nested set rebuild phase. If you see a marked decrease in
 rows/s over time down to values significantly below 100 rows/s, you
 may want to run a chunked rebuild. Otherwise keep it disabled. For
 database and query consistency disabling it is generally preferrable.
+
+The default presently is to disable it. A suitable value for
+PostgreSQL according to test runs would be 40,000.
 
 =head1 Authors
 
@@ -183,7 +185,7 @@ our $allow_truncate = 0; # whether or not to allow the names delete and reload
                        # to span more than one transaction
 my $pgchunk = 40000;   # the number of rows after which to vacuum in the
                        # nested set rebuilding phase
-our $chunksize;        # dto.
+our $chunksize = 0;    # disable by default
 our $verbose = 1;      # guess what
 our $nodelete = 0;     # whether not to delete retired taxon nodes
 
@@ -331,13 +333,21 @@ my %sth = (
 	   set_nested_set => 
 'UPDATE '.$taxontbl.' SET left_value = ?, right_value = ? WHERE taxon_id = ?'
 	   ,
-	   unset_nested_set => 
+	   unset_nested_set => $driver eq "mysql" ?
+           # Mysql sometimes is horribly broken. The statement that works for
+	   # everybody else is horribly slow in MySQL because it does a
+	   # full table scan. Ugh.
+['UPDATE '.$taxontbl.' SET left_value = NULL, right_value = NULL WHERE left_value = ?',
+ 'UPDATE '.$taxontbl.' SET left_value = NULL, right_value = NULL WHERE right_value = ?']
+	   :
 'UPDATE '.$taxontbl.' SET left_value = NULL, right_value = NULL WHERE left_value = ? OR right_value = ?'
 	   ,
 	   );
 
 # prepare all our statements
-@sth{keys %sth} = map { $dbh->prepare($_) } values %sth;
+@sth{keys %sth} = map { 
+    ref($_) ? [map { $dbh->prepare($_); } @$_] : $dbh->prepare($_); 
+} values %sth;
 
 # install the exit handler
 END {
@@ -456,8 +466,10 @@ end_work($driver,$dbh,1);
 
 # clean up statement/database handles:
 for my $sth (values %sth) {
-    $sth->finish()
-	if (ref($sth) && $sth->{Active});
+    my @stmts = ref($sth) eq "ARRAY" ? @$sth : ($sth);
+    foreach (@stmts) {
+	$_->finish() if ref($_) && $_->{Active};
+    }
 }
 
 $dbh->disconnect();
@@ -484,7 +496,13 @@ print STDERR "Done.\n" if $verbose;
 	    # think is right, because another node that we haven't reached
 	    # yet for update may carry this value (left_value and right_value
 	    # are constrained for uniqueness)
-	    $sth{unset_nested_set}->execute($left_value, $right_value);
+	    if(($driver eq "mysql") && ref($sth{unset_nested_set})) {
+		# ugly mysql
+		$sth{unset_nested_set}->[0]->execute($left_value);
+		$sth{unset_nested_set}->[1]->execute($right_value);
+	    } else {
+		$sth{unset_nested_set}->execute($left_value, $right_value);
+	    }
 	    if(!$sth{set_nested_set}->execute($left_value,
 					      $right_value, $id)) {
 		die "update of nested set values failed (taxonID: $id): ".
@@ -739,9 +757,9 @@ sub unconstrain_taxon{
     # (and potentially dangerous as I guess cascading deletes will be disabled
     # while this in effect)
     if($driver eq "mysql") {
-	if(!$dbh->do('SET FOREIGN_KEY_CHECKS=0')) {
-	    warn "failed to disable foreign key checks: ".$dbh->errstr;
-	}
+	#if(!$dbh->do('SET FOREIGN_KEY_CHECKS=0')) {
+	#    warn "failed to disable foreign key checks: ".$dbh->errstr;
+	#}
     }
     # if this is PostgreSQL, it can defer foreign key constraints, but it
     # is for some reason still incredibly slow, with performance degrading
@@ -782,7 +800,7 @@ sub end_work{
     return unless $driver && $dbh && $dbh->{Active};
     if ($driver eq "mysql") {
 	# make sure unsetting this is reverted
-	$dbh->do('SET FOREIGN_KEY_CHECKS=1');
+	#$dbh->do('SET FOREIGN_KEY_CHECKS=1');
 	# unlock all the tables, if MySQL:
 	$dbh->do('UNLOCK TABLES');
     }
