@@ -149,11 +149,12 @@ CREATE INDEX dqv2  ON dbxref_qualifier_value(ontology_term_id);
 
 -- note: changed to use new dbxref table
 CREATE TABLE bioentry_dblink (
-       	bioentry_dblink_id INT(10) UNSIGNED NOT NULL auto_increment,
+--     	bioentry_dblink_id INT(10) UNSIGNED NOT NULL auto_increment,
        	bioentry_id        INT(10) UNSIGNED NOT NULL,
        	dbxref_id          INT(10) UNSIGNED NOT NULL,
-	PRIMARY KEY (bioentry_dblink_id),
-	UNIQUE (bioentry_id,dbxref_id)
+--	PRIMARY KEY (bioentry_dblink_id),
+--	UNIQUE (bioentry_id,dbxref_id)
+	PRIMARY KEY (bioentry_id,dbxref_id)
 ) TYPE=INNODB;
 
 CREATE INDEX bdl2  ON bioentry_dblink(dbxref_id);
@@ -167,7 +168,8 @@ CREATE TABLE reference (
   	reference_title    TEXT,
   	reference_authors  TEXT NOT NULL,
   	reference_medline  INT(10),
-	PRIMARY KEY (reference_id)
+	PRIMARY KEY (reference_id),
+	UNIQUE (reference_medline)
 ) TYPE=INNODB;
 
 CREATE INDEX medlineidx ON reference(reference_medline);
@@ -231,14 +233,16 @@ CREATE TABLE seqfeature (
    	seqfeature_id 		INT(10) UNSIGNED NOT NULL auto_increment,
    	bioentry_id   		INT(10) UNSIGNED NOT NULL,
    	ontology_term_id	INT(10) UNSIGNED,
-   	seqfeature_source_id  	INT(10) UNSIGNED,
+--   	seqfeature_source_id  	INT(10) UNSIGNED,
    	seqfeature_rank 	INT(5),
+	seqfeature_source	VARCHAR(96),
 	PRIMARY KEY (seqfeature_id),
 	UNIQUE (bioentry_id,ontology_term_id,seqfeature_rank)
 ) TYPE=INNODB;
 
 CREATE INDEX sf1 ON seqfeature(ontology_term_id);
-CREATE INDEX sf2 ON seqfeature(seqfeature_source_id);
+-- CREATE INDEX sf2 ON seqfeature(seqfeature_source_id);
+CREATE INDEX sf3 ON seqfeature(seqfeature_source);
 
 -- seqfeatures can be arranged in containment hierarchies.
 -- one can imagine storing other relationships between features,
@@ -390,8 +394,8 @@ ALTER TABLE bioentry_qualifier_value ADD CONSTRAINT FKontology_entqual
 -- seqfeature
 ALTER TABLE seqfeature ADD CONSTRAINT FKontology_seqfeature
 	FOREIGN KEY (ontology_term_id) REFERENCES ontology_term(ontology_term_id);
-ALTER TABLE seqfeature ADD CONSTRAINT FKfeatsource_seqfeature
-	FOREIGN KEY (seqfeature_source_id) REFERENCES seqfeature_source(seqfeature_source_id);
+-- ALTER TABLE seqfeature ADD CONSTRAINT FKfeatsource_seqfeature
+-- 	FOREIGN KEY (seqfeature_source_id) REFERENCES seqfeature_source(seqfeature_source_id);
 ALTER TABLE seqfeature ADD CONSTRAINT FKbioentry_seqfeature
 	FOREIGN KEY (bioentry_id) REFERENCES bioentry(bioentry_id)
 	ON DELETE CASCADE;
