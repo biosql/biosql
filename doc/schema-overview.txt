@@ -1,0 +1,436 @@
+
+bioSQL Primary Datatypes or "Entities"
+
+bioentry
+
+This is the core entity of the bioSQL schema; a bioentry is any single
+entry or record in a biological database.  The bioentry contains
+information about the record's public name (display_id), public
+accession and version (called entry_version here to distinguish from
+seq_version later), its description and an optional foreign-database
+identifier field.  Finally, for working convenience with GenBank
+records, the division of GenBank can be specified in a 3 character
+field.
+
+For example, this GenBank record:
+
+LOCUS       P09488                   218 aa            linear   PRI	15-JUN-2002
+DEFINITION  Glutathione S-transferase Mu 1 (GSTM1-1) (HB subunit 4) (GTH4)
+            (GSTM1a-1a) (GSTM1b-1b) (GST class-mu 1).
+ACCESSION   P09488
+VERSION     P09488  GI:121735
+...
+//
+
+Would be stored as:
+
+display_id:	P09488
+accession:	P09488
+version:	<NULL>
+description:	Glutathione S-transferase Mu 1 (GSTM1-1) (HB subunit 4) ... class-mu 1).
+identifier:     121735
+division:       PRI
+
+Another example:
+
+LOCUS       At1g01280               1533 bp    mRNA    linear   PLN	20-AUG-2002
+DEFINITION  Arabidopsis thaliana chromosome 1  CHR1v07142002 genomic sequence.
+ACCESSION   NM_100010
+VERSION     NM_100010.1  GI:18378820
+...
+//
+
+is stored as:
+
+display_id:	At1g01280
+accession:	NM_100010
+version:	1
+description:	Arabidopsis thaliana chromosome 1  CHR1v07142002 genomic sequence.
+identifier:	18378820
+division:       PLN
+
+bioentries need not come from a public database; a bioentry from a
+private lab database might look like this:
+
+display_id:	MyFavGene1
+accession:	MFD12345
+version:	10
+description:	Gene prediction from my secret organism
+identifier:     902772
+division:       <NULL>
+
+In this case, the identifier 902772 is not an NCBI GI number, but is a
+key to lookup this entry in the private database, "My Favorite
+Database" (MFD).
+
+
+biodatabase
+
+A biodatabase is simply a collection of bioentries; one bioentry may
+only belong to one biodatabase, but one biodatabase may contain many
+bioentries.  biodatabase entities are identified by their name:
+"GenBank", "TrEMBL", "MyFavoriteGenes", etc.  Databases may also be
+further identified by an authority: the organization under which this
+database name is officially mandated.
+
+SQL example: Fetch the accessions of all sequences from SwissProt:
+
+SELECT DISTINCT bioentry.accession
+FROM   bioentry JOIN biodatabase USING (biodatabase_id)
+WHERE  biodatabase.name = 'SwissProt'
+
+SQL example: Find the database (GenBank or GenPept) that contains the
+GI number 123456:
+
+SELECT biodatabase.name
+FROM   bioentry JOIN biodatabase USING (biodatabase_id)
+WHERE  bioentry.identifier = '123456'
+  AND  biodatabase.name IN ('GenBank', 'GenPept')
+
+SQL example: How many unique entries are there in GenBank:
+
+SELECT COUNT(DISTINCT bioentry.accession)
+FROM   bioentry JOIN biodatabase USING (biodatabase_id)
+WHERE  biodatabase.name = 'GenBank'
+
+SQL example: Fetch the locus names for the latest versions of all
+entries in GenPept:
+
+SELECT bioentry.display_id
+FROM   bioentry JOIN biodatabase USING (biodatabase_id)
+WHERE  biodatabase.name = 'GenPept'
+  AND  biodatabase.version = (
+		SELECT MAX(version)
+                FROM   bioentry AS bv
+                WHERE  bv.accession = bioentry.accession
+                  AND  bv.biodatabase_id = biodatabase.biodatabase_id )
+
+Or, the ugly MySQL without-subselects version:
+
+SELECT MID(MAX(CONCAT(RPAD(LPAD(bioentry.version, 5), 10), bioentry.display_id), 11) AS disp_id
+FROM   bioentry JOIN biodatabase USING (biodatabase_id)
+WHERE  biodatabase.name = 'GenPept'
+
+Note: version may be NULL; if you wanted the above query to work over
+both versioned and non-versioned bioentries, you'd add "OR version IS
+NULL", with the appropriate parentheses.
+
+
+biosequence
+
+In bioSQL, all databases have bioentries, but not all bioentries need
+have raw sequence data associated with the entry.  The biosequence
+table contains the raw sequence information associated with a
+bioentry, and molecule type (letter alphabet) information (protein,
+DNA, RNA; in all-lower case).  One bioentry may have only one
+biosequence associated with it, and vice versa: a given biosequence
+applies to only one bioentry.  Sequences may have their own version
+number, independent of its bioentry version information.  The length
+of the sequence is also stored for precalculated convenience.
+
+Note: while the schema's basic structure might imply that bioentries
+could be associated with multiple biosequences (i.e. in a one-to-many
+relationship between bioentry and biosequence), this is not the case:
+the bioentry_id foreign key present in the biosequence table is
+constrained to be unique, thus enforcing the one-to-one relationship
+between the two tables.
+
+Example SQL: What is the description of the longest sequence in GenPept?
+
+SELECT	bioentry.description
+FROM	bioentry
+	JOIN biodatabase USING (biodatabase_id)
+	JOIN biosequence USING (bioentry_id)
+ORDER BY biosequence.seq_len DESC
+LIMIT 1
+
+Example SQL: Find examples of "ELVIS" in any protein database:
+
+SELECT	bioentry.*
+FROM	bioentry JOIN biosequence USING (bioentry_id)
+WHERE   bioentry.biosequence_str LIKE "%ELVIS%"
+  AND   bioentry.alphabet = 'protein'
+
+
+taxon
+
+This is a small, lightweight table to store basic information about
+the organism to which a given bioentry refers.  Each bioentry can be
+associated with only one taxon, but many bioentries can be associated
+with the same taxon.  The taxon table makes no explicit attempt to
+store the taxonomic relationship between species (although some
+information can be gleaned implicitly from the full_lineage field).
+The organism's genus and species name are stored in the "binomial"
+field (e.g. Escherichia coli), while any subspecies nomenclature
+(e.g. Escherichia coli O157:H7 EDL933) is stored under the variant
+field ("O157:H7 EDL933" in this case; it should never be NULL,
+defaulting to "-").  The ubiquitous NCBI taxon_id is kept for each
+organism, and is required to be unique.
+
+Note: Taxon is optional for bioentries. This is because certain
+bioentries may not have a clearly identified taxon, or because the
+concept of taxon may not be meaningful for the bioentry.
+
+Note: currently, taxon information is as provided by the bioentry
+(e.g. the GenBank SOURCE field), and therefore may be mildly incorrect
+(misspelled scientific and/or common names are the main culprits);
+this may mean that the same taxon has differring names under different
+bioSQL instantiations.  In the future this problem should probably be
+resolved by prepopulating this table with canonical data from the NCBI
+taxonomy database, which would also allow richer taxonomical
+operations.  "Round-tripping" is already theoretically broken by the
+current implementation, so no concerns there.
+
+Example SQL: Find all human sequences:
+
+SELECT biosequence.*
+FROM   biosequence
+       JOIN bioentry USING (bioentry_id)
+       JOIN taxon USING (taxon_id)
+WHERE  taxon.common_name = 'human' -- or this:
+                                   -- taxon.binomial = 'Homo sapiens'
+
+
+reference
+
+Entries in a database may have cross-references to the literature.
+The reference table stores each journal article, book chapter,
+etc. that may be associated with a bioentry (or multiple bioentries).
+A reference's location refers to the journal (including volume, index,
+and possibly pages) or book in which the reference is found.  Neither
+the location nor author fields have any canonical format; they are as
+found in the bioentry record.  To help ensure uniqueness, a calculated
+checksum (reference_crc) is kept over the author, location, title
+fields. Also, if provided by the data source, reference_identifier
+will contain the MEDLINE number, or any other identifier if the
+reference is indexed in another resource than MEDLINE.
+
+bioentry_reference
+
+A given literature reference may be associated with many bioentries,
+and a given bioentry may be associated with multiple references (thus
+calling for the intermediate "bioentry_reference" table to map the
+associations between each).  Furthermore, the "reference_rank" field
+may be used to define the order of the references for each associated
+bioentry.  Lastly, "reference_start" and "reference_end" may be used
+to associate references with specific locations on the bioentry.
+
+Note: the start/end paradigm here seems like a job better suited for a
+location table (seqFeatureLocation could be co-opted to simply be a
+Location table - there's nothing inherently seqFeature-ish about it,
+although one could argue that you'd need proper entity subtyping to
+make it work with the current constraints).
+
+
+comments
+
+Each bioentry can have one or more simple textual comments associated
+with it; the order of the comments may be specified by the
+"comment_rank" field.
+
+
+dbxref, bioentry_dbxref
+
+Database cross references are links to records in other databases
+(whether they be sequence databases or not).  The relationship between
+bioentries and dbxrefs is many-to-many: one bioentry may have multiple
+associated dbxrefs, and one dbxref may be associated with many
+bioentries.  
+
+
+Beyond primary entities: everything else about a biosequence
+
+
+seqfeature
+
+Any and all other information pertaining to a bioentry is stored as a
+generic "feature" of the sequence, the semantics of which are defined
+by associations with a specific "source" term and optional qualifiers
+(see below under "ontology_term").  seqfeatures may themselves have
+sub-seqfeatures (with potentially many-to-many parent-child relationships
+stored in the seqfeature_relationship table).
+
+
+seqfeature_location
+
+The location of each seqfeature (or sub-seqfeature) is defined by a
+seqfeature_location entity, describing the stop and start coordinates
+and strand.  A seqfeature may have multiple locations (i.e. split
+locations are handled).  Start and stop coordinates may be left NULL
+to accomodate some forms of "fuzzy" locations.  Additionally, a
+location may refer to a "remote" sequence, i.e. not the sequence
+associated with the bioentry; this is accomplished by a dbxref link.
+
+
+Adding meaning to entities and relationships:
+
+ontology_term
+
+An ontology (in the current usage) is essentially a dictionary of
+terms in a somewhat-controlled vocabulary.  An ontology_term is used
+to "label" a seqfeature's name ("exon", "CDS", "5' UTR", etc), as well
+as its source ("GeneWise", "Glimmer", etc), and to define the types of
+relationships between seqfeatures and their sub-seqfeatures (e.g. "is
+composed of", "gives rise to", "transmembrane segments of").  While a
+seqfeature may have only one term to describe its name and source,
+relationships between seqfeatures and sub-seqfeatures may have
+multiple terms associated with them.
+
+*_qualifier_value
+
+Furthermore, ontology terms may be used to qualify dbxrefs,
+bioentries, seqfeatures, and locations (via dbxref_qualifier_value,
+bioentry_qualifier_value, etc); multiple qualifier values can be
+associated with each entity.  Together, this allows one to put
+meaningful "labelled" data on these otherwise generic objects.  For
+example, a SwissProt dbxref might have an additional qualifier value
+that was the SwissProt name (GTM1_HUMAN) of the dbxref.
+
+An alternative design philosophy is to breakout overtly common
+entities into their own entity table with explicitly named fields (as
+has been done for literature references and taxa).  While an
+ontology-driven seqfeature "metatable" is theoretically capable of
+storing any information about a bioentry, it is sometimes more useful
+to have extraordinarily common entities represented by their own
+tables; in a "views"-capable relational database, precomputed SQL
+SELECT statements may be used to generate a read-only view to obtain
+entity-specific tables.  For example, a "SwissProt_dbxref" view could
+be made that had all the dbxref fields plus a "SwissProt_name" field
+containing the qualifier value discussed previously.
+
+ontology_relationship
+
+However, the powerful utility of ontology terms is that they can be
+associated with each other in hierarchies; e.g. a "sequence similarity
+search" is a general term that includes more specific terms like
+"BLAST result" or "HMMER PFAM result".  "BLAST result" may also be a
+more specific term for "pairwise sequence alignment".  One might like
+to further qualify these relationships by putting names on them: a
+"BLAST result" is a "result from" a "sequence similarity search" and a
+"example of" a "pairwise sequence alignment".  We refer to these as
+"subject", "predicate", "object" (or, "parent", "relationship type",
+"child").  The ontology_relationship table performs this mapping
+between terms, using the subject/predicate/object terminology.
+Finally, ontology terms themselves can be linked to external databases
+via a many-to-many relationship with dbxrefs.
+
+
+Overall notes:
+
+* TODO: add more Example SQL bits, especially for seqfeatures with
+  sub-seqfeatures, and ontology terms (nested terms would be good too,
+  but I refuse to do this without a transitive closure accessory
+  table).
+
+* consistency issues: some entities get rich ontology qualifiers and
+  dbxref functionality, others don't; e.g., instead of
+  reference_identifier, why isn't there a reference_dbxref
+  relationship?  Instead of a database authority, why not an
+  "authority" qualifier value (especially if we expect authority to be
+  little-used)?
+
+* more consistency issues: table_field prefix naming - need to be
+  consistent (suggest getting rid of them, e.g. reference.reference_crc).
+
+* GenBank-specific "hacks" feel dirty (e.g. reference start/end
+  location)
+
+* db versioning: suggest a simple "date in - date out" 1-many table
+
+CREATE TABLE bioentry_history (
+  bioentry_history_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  bioentry_id INT UNSIGNED NOT NULL FOREIGN KEY REFERENCES (bioentry.bioentry.id)
+  startdate DATE NOT NULL DEFAULT CURRENT_DATE,
+  enddate DATE NULL
+);
+
+Example SQL: Give me all the entries from GenBank as they existed on
+Jan 1, 2002
+
+SELECT bioentry.*
+FROM   bioentry
+       JOIN biodatabase USING (biodatabase_id)
+       JOIN bioentry_history USING (bioentry_id)
+WHERE  biodatabase.name = 'GenBank'
+  AND  bioentry_history.startdate <= 2002-01-01 
+  AND  (bioentry_history.enddate IS NULL
+        OR bioentry_history.enddate > 2002-01-01)
+
+  Alternative, if you want db history info as well:
+
+CREATE TABLE biodatabase_history (
+  biodatabase_history_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  biodatabase_id INT UNSIGNED NOT NULL FOREIGN KEY REFERENCES (biodatabase.biodatabase_id)
+  entrydate DATE NOT NULL DEFAULT CURRENT_DATE   -- date db was updated
+  comment TEXT -- optional; maybe you want versioning here, I dunno
+);
+
+CREATE TABLE bioentry_history (
+  bioentry_history_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  bioentry_id INT UNSIGNED NOT NULL FOREIGN KEY REFERENCES (bioentry.bioentry_id)
+  entered INT UNSIGNED NOT NULL FOREIGN KEY REFERENCES (biodatabase_history.biodatabase_history_id)
+  removed INT UNSIGNED NULL FOREIGN KEY REFERENCES (biodatabase_history.biodatabase_history_id)
+);
+
+ALTER TABLE bioentry_history ADD CONSTRAINT check_entered_removed (
+  bioentry_history.removed IS NULL OR bioentry_history.entered <> bioentry_history.removed
+);
+
+Example SQL: same as before, retrieve all bioentries from GenBank as
+they were on Jan 1, 2002
+
+SELECT bioentry.*
+FROM   bioentry
+       JOIN biodatabase USING (biodatabase_id)
+       JOIN bioentry_history USING (bioentry_id)
+       LEFT JOIN biodatabase_history AS enter
+	    ON (bioentry_history.entered = entered.bioentry_history_id)
+       LEFT JOIN biodatabase_history AS exit
+	    ON (bioentry_history.removed = exit.bioentry_history_id)
+WHERE  biodatabase.name = 'GenBank'
+  AND  entered.entrydate <= 2002-01-01
+  AND  (exit.entrydate IS NULL OR exit.entrydate > 2002-01-01)
+
+Advantage: you don't need to store N*M rows for every M database
+updates, only N rows of date ranges (or database version refs).
+
+Disadvantage: all historical bioentries remain in the database, even
+ones that are no longer "current" - simple SELECTs must specify
+enddate IS NULL (optionally, a "is_current" flag can be added to
+bioentry) - again, a bioentry_current VIEW may be the best solution.
+
+* there is no utility here for handling biosequence redundancy;
+  i.e. the biosequence table cannot be easily used to generate
+  non-redundant sequence views.  An accessory table
+  "biosequence_redundancy" could be used to store redundant pairs
+  (including a self-self pair) for those who need it.
+
+CREATE TABLE biosequence_redundancy (
+  biosequence_redundancy_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  biosequence_a INT UNSIGNED NOT NULL FOREIGN KEY REFERENCES (biosequence.biosequence_id),
+  biosequence_b INT UNSIGNED NOT NULL FOREIGN KEY REFERENCES (biosequence.biosequence_id),
+  UNIQUE(biosequence_a, biosequence_b)
+);
+
+This redundancy table could be further "typed" by ontology terms.
+Alternatively, all redundancies could be stored as pairwise
+seqfeatures.
+
+Example SQL: Give me all nonredundant biosequences from GenPept
+(i.e. the NCBI "nr" database)
+
+[ Nasty cross joining SQL to be delivered ... ]
+
+* feature set versioning - could already be accomplished with "dated"
+  source ontology terms, but that seems like a bastardization.
+
+* qualifier's should probably have ranks (default = 0) on them, for ordering.
+
+* taxon suggestions as made previously
+
+* seqfeature name and source could have greater cardinality (although
+  the use case currently escapes me)
+
+These small additions would make bioSQL much more useful in an
+ongoing, dynamic research environment.
+
