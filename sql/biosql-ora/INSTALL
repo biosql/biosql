@@ -1,7 +1,7 @@
 Here's a rough walk-through.
 
 0) If you instantiated this schema before in the pre-Singapore version
-   and you would like to upgrade (migrate) your schema, possibly
+   (2/03) and you would like to upgrade (migrate) your schema, possibly
    without losing data, follow item 1) below and afterwards skip to
    migrate/singapore/migrate-to-singapore.sql. Carefully read the
    disclaimer in that file, and follow the backup instructions (note
@@ -14,21 +14,21 @@ Here's a rough walk-through.
 
    If there is an error saying that BS-defs-local.sql wasn't found,
    fix that error by editing the path or following item 1) below as I
-   said you should. Once there is no error anymore, edit the
+   said you should. Once there is no error edit the
    migrate-to-singapore.sql script to comment out the line containing
    the word exit all by itself (you may want to comment out the
    preceding PROMPT statements too). Then run the script again like
    above. Cross your fingers. To limit the damage in case of errors
    the script will exit upon the first error it encounters. Depending
    on your volume of data that you have in your Biosql instance, the
-   entire migration may take a while. I had 8 Mio bioentries and the
+   entire migration may take a while. I had 8 million bioentries and the
    whole migration took several hours. You will want to make sure that
-   nobody will change data while the schema is being migrated.
+   nobody changes the data while the schema is being migrated.
 
    BTW the migration script did work for me without any error (well,
    finally). There is a chance it will for you too.
 
-Now for those who instantiate Biosql from scratch.
+Now for those who want to instantiate Biosql from scratch.
 
 1) Copy BS-defs.sql to BS-defs-local.sql. Then edit the latter to make
    sure the settings reflect what you want.
@@ -37,26 +37,26 @@ Now for those who instantiate Biosql from scratch.
    commands are commented out that you know you don't want to happen
    (e.g., you may have the tablespaces already, so skip that). Note
    that the default version may have commands commented out that you
-   may actually want to run. When finished editing it, run it:
+   may actually want to run. After editing it, run it:
 
 	SQL> @BS-create-all
 
    Currently this will leave certain objects as invalid, because they
-   depend on SG_Chr_Map_Assocs, which is only created in the warehouse
+   depend on SG_Chr_Map_Assocs, which are only created in the warehouse
    script.
 
 3) Creation of the warehouse components and the context indexes is not
-   yet included in the overall build script. In order to enable that,
-   you need to
+   yet included in the overall build script. In order to enable that
+   you need to do:
 
 	SQL> @BS-create-warehouse
 	SQL> @BS-create-ctx  -- read the comments to check your settings
 
    After issuing the first command SG_Chr_Map_Assocs should be
-   present. Also, there should be no objects anymore which don't
-   compile. If there still are, send email to biosql-l@open-bio.org.
+   present. Also, there should be no objects which don't compile. 
+   If there still are, send email to biosql-l@open-bio.org.
 
-4) To create the Biosql API used by the Oracle driver in bioperl-db,
+4) To create the Biosql API used by the Oracle driver in bioperl-db
    run BS-create-Biosql-API.sql:
 
 	SQL> @BS-create-Biosql-API
@@ -64,20 +64,20 @@ Now for those who instantiate Biosql from scratch.
    Bioperl-db will *not* work without running this command. The schema
    will, though.
 
-5) I strongly recommend to create one or more separate users under
+5) I strongly recommend that you create one or more separate users under
    which to load (and retrieve data), rather than using the schema
    owner. Because the aforementioned Biosql-API is not public (I chose
    that to limit cluttering of the public namespace), every user who
    wants to use the API needs to establish synonyms. There is a script
    BS-create-Biosql-usersyns.sql which creates a script usersyns.sql,
-   which is then to be run under every user who wants to use the API,
-   for instance the user biosql. I.e.,
+   which can be run for every user who wants to use the API, for
+   instance the user biosql:
 
 	SQL> @BS-create-Biosql-usersyns
 	SQL> connect biosql/biosqlpwd -- or whatever your usr/pwd is
 	SQL> @usersyns
 
-6) I also recommend to create a bare-bones test schema under a
+6) I also recommend that you create a bare-bones test schema under a
    different schema owner specifically for the bioperl-db test suite
    (or any other Bio* test suite for that matter), using a trimmed
    down version of BS-create-all.sql. For those object-relational
