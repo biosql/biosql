@@ -2,7 +2,7 @@
 -- SQL script to prepopulate tables in the SymGENE/BioSQL database as
 -- far as it is needed.
 --
--- $GNF: projects/gi/symgene/src/DB/BS-prepopulate-db.sql,v 1.7 2003/05/14 07:10:58 hlapp Exp $
+-- $GNF: projects/gi/symgene/src/DB/BS-prepopulate-db.sql,v 1.8 2003/07/08 23:15:27 hlapp Exp $
 --
 
 --
@@ -90,7 +90,7 @@ VALUES ('array sequence','BEO:1000002','Bioentry Type Ontology');
 INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Cat_Name)
 VALUES ('bioentry name','QUO:1000001','Qualifier Type Ontology');
 INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Cat_Name)
-VALUES ('genename','QUO:1000002','Qualifier Type Ontology');
+VALUES ('gene name','QUO:1000002','Qualifier Type Ontology');
 INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Cat_Name)
 VALUES ('function','QUO:1000003','Qualifier Type Ontology');
 INSERT INTO SGLD_Terms (Trm_Name, Trm_Identifier, Cat_Name)
@@ -145,17 +145,17 @@ VALUES ('EC_number','is-a','bioentry name');
 INSERT INTO SGLD_Term_Assocs (Subj_Trm_Name, Pred_Trm_Name, Obj_Trm_Name)
 VALUES ('OFFICIAL_SYMBOL','is-a','bioentry name');
 INSERT INTO SGLD_Term_Assocs (Subj_Trm_Name, Pred_Trm_Name, Obj_Trm_Name)
-VALUES ('PREFERRED_SYMBOL','is-a','genename');
+VALUES ('PREFERRED_SYMBOL','is-a','gene name');
 INSERT INTO SGLD_Term_Assocs (Subj_Trm_Name, Pred_Trm_Name, Obj_Trm_Name)
-VALUES ('gene_name','is-a','genename');
+VALUES ('gene_name','is-a','gene name');
 INSERT INTO SGLD_Term_Assocs (Subj_Trm_Name, Pred_Trm_Name, Obj_Trm_Name)
-VALUES ('OFFICIAL_SYMBOL','is-a','genename');
+VALUES ('OFFICIAL_SYMBOL','is-a','gene name');
 INSERT INTO SGLD_Term_Assocs (Subj_Trm_Name, Pred_Trm_Name, Obj_Trm_Name)
-VALUES ('ALIAS_SYMBOL','is-a','genename');
+VALUES ('ALIAS_SYMBOL','is-a','gene name');
 INSERT INTO SGLD_Term_Assocs (Subj_Trm_Name, Pred_Trm_Name, Obj_Trm_Name)
-VALUES ('OFFICIAL_GENE_NAME','is-a','genename');
+VALUES ('OFFICIAL_GENE_NAME','is-a','gene name');
 INSERT INTO SGLD_Term_Assocs (Subj_Trm_Name, Pred_Trm_Name, Obj_Trm_Name)
-VALUES ('PREFERRED_GENE_NAME','is-a','genename');
+VALUES ('PREFERRED_GENE_NAME','is-a','gene name');
 INSERT INTO SGLD_Term_Assocs (Subj_Trm_Name, Pred_Trm_Name, Obj_Trm_Name)
 VALUES ('PHENOTYPE','is-a','phenotype');
 

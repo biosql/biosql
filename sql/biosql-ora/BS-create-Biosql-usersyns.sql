@@ -3,7 +3,7 @@
 -- schema.
 --
 --
--- $GNF: projects/gi/symgene/src/DB/BS-create-Biosql-usersyns.sql,v 1.4 2003/05/14 07:10:58 hlapp Exp $
+-- $GNF: projects/gi/symgene/src/DB/BS-create-Biosql-usersyns.sql,v 1.5 2003/07/08 22:48:35 hlapp Exp $
 --
 
 --
@@ -36,7 +36,8 @@ spool usersyns.sql
 SELECT 'CREATE SYNONYM ' || object_name || 
        ' FOR &biosql_owner..' || object_name || ';' 
 FROM user_objects 
-WHERE object_name NOT LIKE 'SG%' 
+WHERE object_name NOT LIKE 'SG%'
+AND   object_name NOT LIKE '%$%'
 AND   object_type in ('SYNONYM', 'VIEW', 'SEQUENCE')
 ORDER BY object_type, object_name;
 

@@ -1,7 +1,7 @@
 --
 -- SQL script to create all PL/SQL API packages.
 --
--- $GNF: projects/gi/symgene/src/DB/BS-create-pkg.sql,v 1.10 2003/06/11 10:03:20 hlapp Exp $
+-- $GNF: projects/gi/symgene/src/DB/BS-create-pkg.sql,v 1.11 2003/07/08 23:15:27 hlapp Exp $
 --
 
 --
@@ -22,6 +22,7 @@
 -- a few package depend on a list type being present, so create it right here
 --
 CREATE TYPE Oid_List_t AS TABLE OF INTEGER;
+/
 
 --
 -- Package headers
