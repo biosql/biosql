@@ -258,7 +258,7 @@ Create a database, which we'll call 'bioseqdb', in the data instance:
 
 For MySQL do:
 
-  >mysqladmin create bioseqdb
+  >mysqladmin -u root create bioseqdb
 
 For postgres do, as the postgres user:
 
@@ -269,7 +269,7 @@ biosql-schema/sql.
 
 For mysql do:
 
-  >mysql -u root -p bioseqdb < biosqldb-mysql.sql
+  >mysql -u root bioseqdb < biosqldb-mysql.sql
 
 For postgres do:
 
