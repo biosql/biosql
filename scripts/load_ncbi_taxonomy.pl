@@ -306,10 +306,9 @@ print STDERR "\t... retrieving all taxon nodes in the database\n" if $verbose;
 # retrieve all nodes currently in the database
 @old = @{
     $dbh->selectall_arrayref(
-      q{SELECT taxon_id, ncbi_taxon_id, parent_taxon_id, node_rank, 
-       	       genetic_code, mito_genetic_code
-	FROM taxon 
-	ORDER BY taxon_id}
+      'SELECT taxon_id, ncbi_taxon_id, parent_taxon_id, node_rank, '.
+	     'genetic_code, mito_genetic_code '.
+      'FROM '.$taxontbl.' ORDER BY taxon_id'
 			     ) || []
 };
 
