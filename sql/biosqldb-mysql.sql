@@ -83,11 +83,11 @@ CREATE TABLE bioentry (
   	display_id   	VARCHAR(40) NOT NULL,
   	accession    	VARCHAR(40) NOT NULL,
   	identifier   	VARCHAR(40),
-  	description  	VARCHAR(255),
+  	description  	TEXT,
   	entry_version 	TINYINT, 
 	PRIMARY KEY (bioentry_id),
   	UNIQUE (biodatabase_id,accession,entry_version),
-  	UNIQUE (identifier,biodatabase_id)
+  	UNIQUE (identifier)
 ) TYPE=INNODB;
 
 CREATE INDEX bioentrydid  ON bioentry(display_id);
@@ -104,7 +104,7 @@ CREATE TABLE biosequence (
   	seq_version     SMALLINT, 
   	seq_length      INT(10), 
   	alphabet        VARCHAR(10),
-	division	VARCHAR(3),
+	division	VARCHAR(6),
   	biosequence_str LONGTEXT,
 	PRIMARY KEY (bioentry_id)
 ) TYPE=INNODB;
@@ -260,17 +260,24 @@ CREATE INDEX sqv1 ON seqfeature_qualifier_value(ontology_term_id);
    
 -- basically we model everything as potentially having
 -- any number of locations, ie, a split location. SimpleLocations
--- just have one location. We need to have a location id so for remote
--- split locations we can specify the start/end point
+-- just have one location. We need to have a location id for the qualifier
+-- associations of fuzzy locations.
 
 -- please do not try to model complex assemblies with this thing. It wont
 -- work. Check out the ensembl schema for this.
 
 -- we allow nulls for start/end - this is useful for fuzzies as
 -- standard range queries will not be included
+
+-- for remote locations, the join to make is to DBXref
+-- the FK to ontology_term is a possibility to store the type of the
+-- location for determining in one hit whether it's a fuzzy or not
+
 CREATE TABLE seqfeature_location (
 	seqfeature_location_id 	INT(10) UNSIGNED NOT NULL auto_increment,
    	seqfeature_id		INT(10) UNSIGNED NOT NULL,
+	dbxref_id		INT(10) UNSIGNED,
+	ontology_term_id	INT(10) UNSIGNED,
    	seq_start              	INT(10),
    	seq_end                	INT(10),
    	seq_strand             	TINYINT NOT NULL,
@@ -279,23 +286,10 @@ CREATE TABLE seqfeature_location (
    	UNIQUE (seqfeature_id, location_rank)
 ) TYPE=INNODB;
 
--- CREATE INDEX sfl1 ON seqfeature_location(seqfeature_id);
 CREATE INDEX sfl2 ON seqfeature_location(seq_start);
 CREATE INDEX sfl3 ON seqfeature_location(seq_end);
-
--- for remote locations, this is the join to make.
--- beware - in the object layer it has to make a double SQL query to figure out
--- whether this is remote location or not
-
--- like DR links, we do not link directly to a bioentry_id - we have to do
--- this run-time
-
-CREATE TABLE remote_seqfeature_name (
-       	seqfeature_location_id 	INT(10) UNSIGNED NOT NULL,
-       	accession 		VARCHAR(40) NOT NULL,
-       	version   		TINYINT NOT NULL,
-	PRIMARY KEY (seqfeature_location_id)
-) TYPE=INNODB;
+CREATE INDEX sfl4 ON seqfeature_location(dbxref_id);
+CREATE INDEX sfl5 ON seqfeature_location(ontology_term_id);
 
 -- location qualifiers - mainly intended for fuzzies but anything
 -- can go in here
@@ -416,10 +410,11 @@ ALTER TABLE seqfeature_qualifier_value ADD CONSTRAINT FKseqfeature_featqual
 ALTER TABLE seqfeature_location ADD CONSTRAINT FKseqfeature_featloc
 	FOREIGN KEY (seqfeature_id) REFERENCES seqfeature(seqfeature_id)
 	ON DELETE CASCADE;
-
--- remote_seqfeature_name
-ALTER TABLE remote_seqfeature_name ADD CONSTRAINT FKfeatloc_remotefeat
-	FOREIGN KEY (seqfeature_location_id) REFERENCES seqfeature_location(seqfeature_location_id)
+ALTER TABLE seqfeature_location ADD CONSTRAINT FKdbxref_featloc
+	FOREIGN KEY (dbxref_id) REFERENCES dbxref(dbxref_id)
+	ON DELETE CASCADE;
+ALTER TABLE seqfeature_location ADD CONSTRAINT FKontologyterm_featloc
+	FOREIGN KEY (ontology_term_id) REFERENCES ontology_term(ontology_term_id)
 	ON DELETE CASCADE;
 
 -- location_qualifier_value
