@@ -1,4 +1,3 @@
-%pdflatex
 \documentclass{article}
 \usepackage{url}
 \usepackage{fullpage}
@@ -21,9 +20,53 @@
 \begin{document}
 
 \title{Basic BioSQL with Biopython}
-\author{Brad Chapman (chapmanb@arches.uga.edu)}
+\author{Brad Chapman (chapmanb@arches.uga.edu), Michael Hoffman
+(grouse@mail.utexas.edu)}
 
 \maketitle
+\tableofcontents
+
+\section{Other BioSQL documentation}
+
+This documentation provides basic descriptions of using BioSQL from
+python. To keep it simple, it does not go into non-python specific parts
+of the documentation. The other documentation which will be helpful for
+using BioSQL from Biopython is currently available only from CVS. You
+can get this documentation anonymously from the \verb|biosql-schema|
+directory in the open-bio CVS servers. There are two ways to get these
+docs:
+
+\begin{enumerate}
+\item You can use a commandline CVS client to get the code with the
+following commands:
+
+\begin{verbatim}
+$ cvs -d :pserver:cvs@cvs.open-bio.org:/home/repository/biosql login
+(Logging in to cvs@cvs.open-bio.org)
+CVS password: <<PASSWORD is cvs (lowercase)>>
+$ cvs -d :pserver:cvs@cvs.open-bio.org:/home/repository/biosql co
+biosql-schema
+\end{verbatim}
+
+\item You can browse and download the code from the web interfaces to
+CVS. The biosql CVS repository is located at:
+\ahrefurl{\url{http://cvs.open-bio.org/cgi-bin/viewcvs/viewcvs.cgi/?cvsroot=biosql}}.
+Click the \verb|Download tarball| link to get a \verb|tar.gz| file
+containing the current CVS.
+\end{enumerate}
+
+Once you have gotten this code, there are two documents worth reading in
+the \verb|doc| directory:
+
+\begin{itemize}
+  \item \verb|install.txt| -- This document contains basic information
+  about BioSQL, installation instructions for the MySQL and PostgreSQL
+  databases, and information about loading the BioSQL schema into a
+  database.
+
+  \item \verb|schema-overview.txt| -- This is a description of the
+  current SQL schema making up the BioSQL databases.
+\end{itemize}
 
 \section{Installing python database packages}
 
@@ -37,12 +80,15 @@ various UNIXes, Mac OS X).
 
 For all of these installations, you'll need to have at least a database
 client installed, and also need to have the development libraries and
-hearder files installed. On some systems that use packaging systems
+header files installed. On some systems that use packaging systems
 (Red Hat, Debian, OS X) this means that you'll need to install a
 development package (for example, mysql-dev or mysql-headers or 
 mysql-libs) separately. If you start trying to install one of the python
 interfaces below and start getting errors are missing libraries or
 header files, you should check to make sure these are installed.
+
+The \verb|install.txt| document mentioned above provides information on
+install and configuring MySQL and PostgreSQL.
 
 \subsection{MySQL}
 
@@ -51,6 +97,7 @@ adaptor which is regularly developed and which most people use.
 
 \subsubsection{MySQLdb}
 
+The MySQLdb package is a library for accessing MySQL databases.
 This interface is quite stable and completely DB API-2.0 compliant and
 seems to definitely be the one to use for MySQL access. The latest
 releases are available from: 
@@ -117,18 +164,18 @@ If this works happily, then you should be all set.
   \verb|ld: can't locate file for: -lmysqlclient_r|
   
   The setup.py file
-  is apparently looking for a specially name thread-safe library. To fix
-  this, I changed the line:
-  
-\verb|mysqlclient = thread_safe_library and "mysqlclient_r" or "mysqlclient"|
+  is apparently looking for a specially named thread-safe library, which
+  I didn't have installed by default. To fix this you can either
+  install the latest mysql-devel from
+  \ahrefurl{\url{http://www.mysql.com/}}, or edit MySQLdb's
+  \verb|setup.py| file, changing this line:
+
+  \verb|thread_safe_library = YES|
 
   to:
 
-\verb|mysqlclient = thread_safe_library and "mysqlclient"|
-
-  in the setup.py file.
-
-
+  \verb|thread_safe_library = NO|
+  
 \end{description}
 
 \subsection{PostgreSQL}
@@ -288,7 +335,7 @@ database, a python binding to this database, and loaded the BioSQL
 schema into the database. 
 
 
-Addtionally, this is written with the assumption that you know a little
+Additionally, this is written with the assumption that you know a little
 about databases in general. The most important thing that is really
 assumed is that you understand the client/server model of databases. The
 basic idea is that there is a database server which actually physically
@@ -314,7 +361,7 @@ server/client set up with the following information:
   example we will use: \textbf{localhost}
 
   \item[db] -- The name of the database where the BioSQL schema has been
-  loaded. For our example, this is: \verb|biosql_example|
+  loaded. For our example, this is: \verb|bioseqdb|
 
   \item[driver] -- The python database adaptor that you are using. The
   available drivers and their installation are described above.
@@ -348,7 +395,7 @@ Now the second and final step -- connect with the database:
 
 \begin{verbatim}
 >>> server = BioSeqDatabase.open_database(driver = "MySQLdb", user = "chapmanb",
-...             passwd = "biopython", host = "localhost", db = "biosql_example")
+...             passwd = "biopython", host = "localhost", db = "bioseqdb")
 \end{verbatim}
 
 There you go -- you've got a connection. Hmmm, wonder why I did so much
