@@ -155,12 +155,14 @@ CREATE INDEX ontrel_ontid ON term_relationship(ontology_id);
 -- See the GO database or Chado schema for other (and possibly better
 -- documented) implementations of the transitive closure table approach.
 CREATE TABLE term_path (
-       	subject_term_id	INT(10) UNSIGNED NOT NULL,
+        term_path_id         INT(10) UNSIGNED NOT NULL auto_increment,
+       	subject_term_id	     INT(10) UNSIGNED NOT NULL,
        	predicate_term_id    INT(10) UNSIGNED NOT NULL,
        	object_term_id       INT(10) UNSIGNED NOT NULL,
-	ontology_id     INT(10) UNSIGNED NOT NULL,
-	distance	INT(10) UNSIGNED,
-	PRIMARY KEY (subject_term_id,predicate_term_id,object_term_id,ontology_id)
+	ontology_id          INT(10) UNSIGNED NOT NULL,
+	distance	     INT(10) UNSIGNED,
+	PRIMARY KEY (term_path_id),
+	UNIQUE (subject_term_id,predicate_term_id,object_term_id,ontology_id,distance)
 ) TYPE=INNODB;
 
 CREATE INDEX ontpath_predicateid ON term_path(predicate_term_id);
@@ -232,8 +234,9 @@ CREATE INDEX bioentryrel_child ON bioentry_relationship(child_bioentry_id);
 CREATE TABLE bioentry_path (
    	parent_bioentry_id 	INT(10) UNSIGNED NOT NULL,
    	child_bioentry_id 	INT(10) UNSIGNED NOT NULL,
-   	term_id 	INT(10) UNSIGNED NOT NULL,
-	PRIMARY KEY (parent_bioentry_id,child_bioentry_id,term_id)
+   	term_id 		INT(10) UNSIGNED NOT NULL,
+	distance	     	INT(10) UNSIGNED,
+	UNIQUE (parent_bioentry_id,child_bioentry_id,term_id,distance)
 ) TYPE=INNODB;
 
 CREATE INDEX bioentrypath_ont   ON bioentry_path(term_id);
@@ -377,7 +380,7 @@ CREATE TABLE seqfeature (
    	seqfeature_id 		INT(10) UNSIGNED NOT NULL auto_increment,
    	bioentry_id   		INT(10) UNSIGNED NOT NULL,
    	type_term_id		INT(10) UNSIGNED NOT NULL,
-   	source_term_id  	INT(10) UNSIGNED,
+   	source_term_id  	INT(10) UNSIGNED NOT NULL,
 	display_name		VARCHAR(64),
    	rank 			SMALLINT UNSIGNED NOT NULL DEFAULT 0,
 	PRIMARY KEY (seqfeature_id),
@@ -416,7 +419,8 @@ CREATE TABLE seqfeature_path (
    	parent_seqfeature_id	INT(10) UNSIGNED NOT NULL,
    	child_seqfeature_id 	INT(10) UNSIGNED NOT NULL,
    	term_id 		INT(10) UNSIGNED NOT NULL,
-	PRIMARY KEY (parent_seqfeature_id,child_seqfeature_id,term_id)
+	distance	     	INT(10) UNSIGNED,
+	UNIQUE (parent_seqfeature_id,child_seqfeature_id,term_id,distance)
 ) TYPE=INNODB;
 
 CREATE INDEX seqfeaturepath_ont   ON seqfeature_path(term_id);
@@ -500,18 +504,6 @@ CREATE TABLE location_qualifier_value (
 ) TYPE=INNODB;
 
 CREATE INDEX locationqual_ont ON location_qualifier_value(term_id);
-
---
--- this is a tiny table to allow a caching corba server to
--- persistently store aspects of the root server - so when/if
--- the server gets reaped it can reconnect
---
-
-CREATE TABLE cache_corba_support (
-       biodatabase_id    int(10) unsigned NOT NULL PRIMARY KEY,  
-       http_ior_string   VARCHAR(255),
-       direct_ior_string VARCHAR(255)
-);
 
 --
 -- Create the foreign key constraints

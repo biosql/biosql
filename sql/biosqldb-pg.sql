@@ -146,13 +146,16 @@ CREATE INDEX ontrel_ontid ON term_relationship ( ontology_id );
 -- 
 -- See the GO database or Chado schema for other (and possibly better 
 -- documented) implementations of the transitive closure table approach. 
+CREATE SEQUENCE term_path_pk_seq;
 CREATE TABLE term_path ( 
+         term_path_id INTEGER DEFAULT nextval ( 'term_path_pk_seq' ) NOT NULL ,
 	 subject_term_id INTEGER NOT NULL , 
 	 predicate_term_id INTEGER NOT NULL , 
 	 object_term_id INTEGER NOT NULL , 
 	 ontology_id INTEGER NOT NULL , 
 	 distance INTEGER , 
-	 PRIMARY KEY ( subject_term_id , predicate_term_id , object_term_id , ontology_id ) ) ; 
+	 PRIMARY KEY (term_path_id),
+	 UNIQUE ( subject_term_id , predicate_term_id , object_term_id , ontology_id , distance ) ) ; 
 
 CREATE INDEX ontpath_predicateid ON term_path ( predicate_term_id ); 
 CREATE INDEX ontpath_objectid ON term_path ( object_term_id ); 
@@ -224,7 +227,8 @@ CREATE TABLE bioentry_path (
 	 parent_bioentry_id INTEGER NOT NULL , 
 	 child_bioentry_id INTEGER NOT NULL , 
 	 term_id INTEGER NOT NULL , 
-	 PRIMARY KEY ( parent_bioentry_id , child_bioentry_id , term_id ) ) ; 
+	 distance INTEGER,
+	 UNIQUE ( parent_bioentry_id , child_bioentry_id , term_id , distance ) ) ; 
 
 CREATE INDEX bioentrypath_ont ON bioentry_path ( term_id ); 
 CREATE INDEX bioentrypath_child ON bioentry_path ( child_bioentry_id ); 
@@ -356,7 +360,7 @@ CREATE TABLE seqfeature (
 	 seqfeature_id INTEGER DEFAULT nextval ( 'seqfeature_pk_seq' ) NOT NULL , 
 	 bioentry_id INTEGER NOT NULL , 
 	 type_term_id INTEGER NOT NULL , 
-	 source_term_id INTEGER , 
+	 source_term_id INTEGER NOT NULL , 
 	 display_name VARCHAR ( 64 ) , 
 	 rank INTEGER NOT NULL DEFAULT 0 , 
 	 PRIMARY KEY ( seqfeature_id ) , 
@@ -393,7 +397,8 @@ CREATE TABLE seqfeature_path (
 	 parent_seqfeature_id INTEGER NOT NULL , 
 	 child_seqfeature_id INTEGER NOT NULL , 
 	 term_id INTEGER NOT NULL , 
-	 PRIMARY KEY ( parent_seqfeature_id , child_seqfeature_id , term_id ) ) ; 
+	 distance INTEGER,
+	 UNIQUE ( parent_seqfeature_id , child_seqfeature_id , term_id , distance ) ) ; 
 
 CREATE INDEX seqfeaturepath_ont ON seqfeature_path ( term_id ); 
 CREATE INDEX seqfeaturepath_child ON seqfeature_path ( child_seqfeature_id ); 
@@ -472,16 +477,6 @@ CREATE TABLE location_qualifier_value (
 	 PRIMARY KEY ( location_id , term_id ) ) ; 
 
 CREATE INDEX locationqual_ont ON location_qualifier_value ( term_id ); 
-
--- 
--- this is a tiny table to allow a caching corba server to 
--- persistently store aspects of the root server - so when/if 
--- the server gets reaped it can reconnect 
--- 
-CREATE TABLE cache_corba_support ( 
-	 biodatabase_id INTEGER NOT NULL PRIMARY KEY , 
-	 http_ior_string VARCHAR ( 255 ) , 
-	 direct_ior_string VARCHAR ( 255 ) ) ; 
 
 -- 
 -- Create the foreign key constraints 
@@ -971,6 +966,8 @@ CREATE RULE rule_term_path_i
 	     WHERE subject_term_id   = new.subject_term_id
 	     AND   predicate_term_id = new.predicate_term_id
 	     AND   object_term_id    = new.object_term_id
+	     AND   ontology_id	     = new.ontology_id
+	     AND   distance	     = new.distance
 	     )
 	     IS NOT NULL
        DO INSTEAD NOTHING
