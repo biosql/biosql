@@ -1,7 +1,9 @@
+-- -*-Sql-*- mode (to keep my emacs happy)
+--
 -- Package body for standard functions used throughout other packages.
 --
 --
--- $GNF: projects/gi/symgene/src/DB/PkgAPI/BSStd.pkb,v 1.3 2003/05/02 02:24:44 hlapp Exp $
+-- $GNF: projects/gi/symgene/src/DB/PkgAPI/BSStd.pkb,v 1.4 2003/06/25 00:12:33 hlapp Exp $
 --
 
 --
@@ -35,6 +37,32 @@ BEGIN
 		END IF;
 	END IF;
 	RETURN ret_val;
+END;
+
+PROCEDURE modify_constraints(
+	  		tabname	  IN All_Constraints.Table_Name%TYPE,
+			action	  IN VARCHAR2,
+			pat 	  IN VARCHAR2 DEFAULT NULL,
+	       		cons_type IN All_Constraints.Constraint_Type%TYPE DEFAULT 'R')
+IS
+	CURSOR constr_c (tabname IN All_Constraints.Table_Name%TYPE,
+	       		 cons_type IN All_Constraints.Constraint_Type%TYPE,
+	       		 pat IN VARCHAR2 DEFAULT NULL)
+	IS
+		SELECT Constraint_Name FROM All_Constraints
+		WHERE Table_Name = tabname AND Constraint_Type = cons_type
+		AND (
+				Constraint_Name LIKE pat
+			OR	pat IS NULL
+		)
+	;
+	ddl_stmt VARCHAR2(256) := 
+		'ALTER TABLE ' || tabname || ' MODIFY CONSTRAINT ';
+BEGIN
+	FOR crow IN constr_c (tabname, cons_type, pat) LOOP
+		EXECUTE IMMEDIATE 
+			ddl_stmt || crow.Constraint_Name || ' ' || action;
+	END LOOP;
 END;
 
 END BSStd;

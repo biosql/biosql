@@ -1,7 +1,7 @@
 --
 -- SQL script to create the views for SYMGENE/BioSQL
 --
--- $GNF: projects/gi/symgene/src/DB/BS-create-views.sql,v 1.21 2003/06/10 20:06:30 hlapp Exp $
+-- $GNF: projects/gi/symgene/src/DB/BS-create-views.sql,v 1.22 2003/06/14 02:53:05 hlapp Exp $
 --
 
 --
@@ -56,9 +56,37 @@ SELECT
 	DB.Oid			DB_Oid
 	, DB.Name		DB_Name
 	, DB.Authority		DB_Authority
+	, DB.Description	DB_Description
 	, DB.Acronym		DB_Acronym
 	, DB.URI		DB_URI
 FROM SG_Biodatabase DB
+;
+
+PROMPT
+PROMPT Creating view SG_Biodatabase_Qual_Assocs
+
+CREATE OR REPLACE VIEW SG_Biodatabase_Qual_Assocs
+AS
+SELECT
+	DB.Name			DB_Name
+	, DB.Authority		DB_Authority
+	, DB.Acronym		DB_Acronym
+	, DB.Description	DB_Description
+	, DB.URI		DB_URI
+	, Trm.Name		Trm_Name
+	, Trm.Identifier	Trm_Identifier
+	, Ont.Name		Ont_Name
+	, DBTrmA.Value		Qual_Value
+	, DBTrmA.Rank		Qual_Rank
+	, DBTrmA.Trm_Oid	Trm_Oid
+	, Trm.Ont_Oid		Ont_Oid
+	, DBTrmA.DB_Oid		DB_Oid
+FROM SG_Biodatabase_Qualifier_Assoc DBTrmA,
+     SG_Biodatabase DB, SG_Term Trm, SG_Ontology Ont
+WHERE
+     DBTrmA.DB_Oid  = DB.Oid
+AND  DBTrmA.Trm_Oid = Trm.Oid
+AND  Trm.Ont_Oid    = Ont.Oid
 ;
 
 --

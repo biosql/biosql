@@ -13,7 +13,7 @@
 -- WARRANTIES WHATSOEVER. Please read the license under which you may use
 -- this script and those that come with it.
 --
--- $GNF: projects/gi/symgene/src/sql/migrate/singapore/migrate-ontology.sql,v 1.2 2003/05/14 07:10:59 hlapp Exp $
+-- $GNF: projects/gi/symgene/src/sql/migrate/singapore/migrate-ontology.sql,v 1.3 2003/06/25 00:14:33 hlapp Exp $
 --
 
 --
@@ -249,17 +249,17 @@ WHERE a.Type_Ont_Oid = t.Oid
 PROMPT     - enforce constraints, build indexes
 
 ALTER TABLE SG_Term_Assoc
-       ADD  ( CONSTRAINT FKSubjTrm_TrmA
+       ADD  ( CONSTRAINT FKTrm_TrmASubj
               FOREIGN KEY (Subj_Trm_Oid)
                              REFERENCES SG_Term (Oid) 
                              ON DELETE CASCADE ) ;
 ALTER TABLE SG_Term_Assoc
-       ADD  ( CONSTRAINT FKObjTrm_TrmA
+       ADD  ( CONSTRAINT FKTrm_TrmAObj
               FOREIGN KEY (Obj_Trm_Oid)
                              REFERENCES SG_Term (Oid) 
                              ON DELETE CASCADE ) ;
 ALTER TABLE SG_Term_Assoc
-       ADD  ( CONSTRAINT FKPredTrm_TrmA
+       ADD  ( CONSTRAINT FKTrm_TrmAPred
               FOREIGN KEY (Pred_Trm_Oid)
                              REFERENCES SG_Term (Oid)  ) ;
 ALTER TABLE SG_Term_Assoc
@@ -334,17 +334,17 @@ END;
 PROMPT     - enforce constraints, build indexes
 
 ALTER TABLE SG_Term_Path
-       ADD  ( CONSTRAINT FKSubjTrm_TrmP
+       ADD  ( CONSTRAINT FKTrm_TrmPSubj
               FOREIGN KEY (Subj_Trm_Oid)
                              REFERENCES SG_Term (Oid) 
                              ON DELETE CASCADE ) ;
 ALTER TABLE SG_Term_Path
-       ADD  ( CONSTRAINT FKObjTrm_TrmP
+       ADD  ( CONSTRAINT FKTrm_TrmPObj
               FOREIGN KEY (Obj_Trm_Oid)
                              REFERENCES SG_Term (Oid) 
                              ON DELETE CASCADE ) ;
 ALTER TABLE SG_Term_Path
-       ADD  ( CONSTRAINT FKPredTrm_TrmP
+       ADD  ( CONSTRAINT FKTrm_TrmPPred
               FOREIGN KEY (Pred_Trm_Oid)
                              REFERENCES SG_Term (Oid)  ) ;
 ALTER TABLE SG_Term_Path

@@ -2,7 +2,7 @@
 -- SQL script to instantiate the SYMGENE/BioSQL database schema.
 --
 --
--- $GNF: projects/gi/symgene/src/DB/BS-DDL.sql,v 1.31 2003/06/12 01:03:39 hlapp Exp $
+-- $GNF: projects/gi/symgene/src/DB/BS-DDL.sql,v 1.33 2003/06/25 00:14:33 hlapp Exp $
 --
 
 --
@@ -109,6 +109,22 @@ CREATE TABLE SG_Biodatabase (
        TABLESPACE &biosql_index
        --
 );
+
+
+DROP TABLE SG_Biodatabase_Qualifier_Assoc CASCADE CONSTRAINTS;
+
+CREATE TABLE SG_Biodatabase_Qualifier_Assoc (
+	DB_Oid			INTEGER NOT NULL,
+	Trm_Oid			INTEGER NOT NULL,
+	Rank			NUMBER(3),
+	Value			VARCHAR2(512),
+	CONSTRAINT XPKBiodatabase_Qualifier_Assoc
+		PRIMARY KEY (Trm_Oid, DB_Oid)
+	USING INDEX
+	TABLESPACE &biosql_index
+	--
+)
+;
 
 
 DROP TABLE SG_Taxon CASCADE CONSTRAINTS;
@@ -282,6 +298,13 @@ CREATE TABLE SG_Term_Synonym (
 )
 ;
 
+CREATE INDEX XIF1Term_Synonym ON SG_Term_Synonym
+(
+	Trm_Oid
+)
+    	 TABLESPACE &biosql_index
+;
+
 
 DROP TABLE SG_Term_Assoc CASCADE CONSTRAINTS;
 
@@ -453,12 +476,12 @@ CREATE INDEX XIF1Bioentry_Assoc ON SG_Bioentry_Assoc
     	 TABLESPACE &biosql_index
 ;
 
--- CREATE INDEX XIF2Bioentry_Assoc ON SG_Bioentry_Assoc
--- (
---        Trm_Oid
--- )
---     	 TABLESPACE &biosql_index
--- ;
+CREATE INDEX XIF2Bioentry_Assoc ON SG_Bioentry_Assoc
+(
+       Trm_Oid
+)
+    	 TABLESPACE &biosql_index
+;
 
 
 DROP TABLE SG_Bioentry_Path CASCADE CONSTRAINTS ;
@@ -814,6 +837,13 @@ CREATE INDEX XIFSeqfeature_Assoc ON SG_Seqfeature_Assoc
     	 TABLESPACE &biosql_index
 ;
 
+CREATE INDEX XIF2Seqfeature_Assoc ON SG_Seqfeature_Assoc
+(
+       Trm_Oid
+)
+    	 TABLESPACE &biosql_index
+;
+
 
 DROP TABLE SG_Seqfeature_Path CASCADE CONSTRAINTS ;
 
@@ -842,12 +872,12 @@ CREATE INDEX XIF1Seqfeature_Path ON SG_Seqfeature_Path
     	 TABLESPACE &biosql_index
 ;
 
--- CREATE INDEX XIF2Seqfeature_Path ON SG_Seqfeature_Path
--- (
---        Trm_Oid
--- )
---     	 TABLESPACE &biosql_index
--- ;
+CREATE INDEX XIF2Seqfeature_Path ON SG_Seqfeature_Path
+(
+       Trm_Oid
+)
+    	 TABLESPACE &biosql_index
+;
 
 
 DROP TABLE SG_Seqfeature_Qualifier_Assoc CASCADE CONSTRAINTS;
@@ -1045,21 +1075,21 @@ ALTER TABLE SG_Term_DBXRef_Assoc
 --
 
 ALTER TABLE SG_Term_Assoc
-       ADD  ( CONSTRAINT FKSubjTrm_TrmA
+       ADD  ( CONSTRAINT FKTrm_TrmASubj
               FOREIGN KEY (Subj_Trm_Oid)
                              REFERENCES SG_Term (Oid) 
                              ON DELETE CASCADE ) ;
 
 
 ALTER TABLE SG_Term_Assoc
-       ADD  ( CONSTRAINT FKObjTrm_TrmA
+       ADD  ( CONSTRAINT FKTrm_TrmAObj
               FOREIGN KEY (Obj_Trm_Oid)
                              REFERENCES SG_Term (Oid) 
                              ON DELETE CASCADE ) ;
 
 
 ALTER TABLE SG_Term_Assoc
-       ADD  ( CONSTRAINT FKPredTrm_TrmA
+       ADD  ( CONSTRAINT FKTrm_TrmAPred
               FOREIGN KEY (Pred_Trm_Oid)
                              REFERENCES SG_Term (Oid)  ) ;
 
@@ -1075,21 +1105,21 @@ ALTER TABLE SG_Term_Assoc
 --
 
 ALTER TABLE SG_Term_Path
-       ADD  ( CONSTRAINT FKSubjTrm_TrmP
+       ADD  ( CONSTRAINT FKTrm_TrmPSubj
               FOREIGN KEY (Subj_Trm_Oid)
                              REFERENCES SG_Term (Oid) 
                              ON DELETE CASCADE ) ;
 
 
 ALTER TABLE SG_Term_Path
-       ADD  ( CONSTRAINT FKObjTrm_TrmP
+       ADD  ( CONSTRAINT FKTrm_TrmPObj
               FOREIGN KEY (Obj_Trm_Oid)
                              REFERENCES SG_Term (Oid) 
                              ON DELETE CASCADE ) ;
 
 
 ALTER TABLE SG_Term_Path
-       ADD  ( CONSTRAINT FKPredTrm_TrmP
+       ADD  ( CONSTRAINT FKTrm_TrmPPred
               FOREIGN KEY (Pred_Trm_Oid)
                              REFERENCES SG_Term (Oid)  ) ;
 
@@ -1099,6 +1129,24 @@ ALTER TABLE SG_Term_Path
               FOREIGN KEY (Ont_Oid)
                              REFERENCES SG_Ontology (Oid)
 			     ON DELETE CASCADE ) ;
+
+
+--
+-- Biodatabase-Qualifier association table
+--
+
+ALTER TABLE SG_Biodatabase_Qualifier_Assoc
+	ADD ( CONSTRAINT FKDB_DBTrmA
+	      FOREIGN KEY (DB_Oid)
+			     REFERENCES SG_Biodatabase (Oid)
+			     ON DELETE CASCADE );
+
+
+ALTER TABLE SG_Biodatabase_Qualifier_Assoc
+	ADD ( CONSTRAINT FKTrm_DBTrmA
+	      FOREIGN KEY (Trm_Oid)
+			     REFERENCES SG_Term (Oid)
+			     ON DELETE CASCADE );
 
 
 --
