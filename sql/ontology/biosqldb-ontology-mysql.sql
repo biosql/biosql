@@ -14,8 +14,9 @@
 # ontologies of relationship types (eg subtle differences
 # in the partOf relationship)
 #
-# this table probably won't be filled for a while, the core
+# this table probably won''t be filled for a while, the core
 # will just treat ontologies as flat lists of terms
+
 CREATE TABLE ontology_relationship (
        ontology_relationship_id int(10) unsigned NOT NULL PRIMARY KEY auto_increment,
        subject_id               int(10) unsigned NOT NULL,
@@ -23,14 +24,19 @@ CREATE TABLE ontology_relationship (
        object_id                int(10) unsigned NOT NULL,
        FOREIGN KEY (subject_id) REFERENCES ontology_term(ontology_term_id),
        FOREIGN KEY (predicate_id) REFERENCES ontology_term(ontology_term_id),
-       FOREIGN KEY (object_id) REFERENCES ontology_term(ontology_term_id)
+       FOREIGN KEY (object_id) REFERENCES ontology_term(ontology_term_id),
+       UNIQUE (subject_id,predicate_id,object_id)
 );
+
+CREATE INDEX ontrel_predicateid ON ontology_relationship(predicate_id);
+CREATE INDEX ontrel_objectid ON ontology_relationship(object_id);
 
 CREATE TABLE ontology_dbxref (
-       ontology_term_id int(10) unsigned NOT NULL PRIMARY KEY auto_increment,
-       FOREIGN KEY (ontology_term_id) REFERENCES ontology_term(ontology_term_id),
+       ontology_term_id int(10) unsigned NOT NULL,
        dbxref_id                int(10) unsigned NOT NULL,
-       FOREIGN KEY (dbxref_id) REFERENCES dbxref(dbxref_id)
+       FOREIGN KEY (ontology_term_id) REFERENCES ontology_term(ontology_term_id),
+       FOREIGN KEY (dbxref_id) REFERENCES dbxref(dbxref_id),
+       PRIMARY KEY (ontology_term_id,dbxref_id)
 );
 
-
+CREATE INDEX ontdbxref_dbxrefid ON ontology_dbxref(dbxref_id);

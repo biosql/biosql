@@ -65,7 +65,7 @@ CREATE TABLE ontology_term (
 
 CREATE TABLE bioentry (
   bioentry_id  int(10) unsigned NOT NULL PRIMARY KEY auto_increment,
-  biodatabase_id  int(10) NOT NULL,
+  biodatabase_id  int(10) unsigned NOT NULL,
   display_id   varchar(40) NOT NULL,
   accession    varchar(40) NOT NULL,
   identifier   varchar(40),
@@ -85,8 +85,8 @@ CREATE INDEX bioentryacc  ON bioentry(accession);
 # one bioentry only has one taxa! (weirdo chimerias are not handled. tough)
 
 CREATE TABLE bioentry_taxa (
-  bioentry_id int(10)  NOT NULL,
-  taxa_id     int(10)  NOT NULL,
+  bioentry_id int(10) unsigned  NOT NULL,
+  taxa_id     int(10) unsigned  NOT NULL,
   FOREIGN KEY (taxa_id) REFERENCES taxa(taxa_id),
   FOREIGN KEY (bioentry_id) REFERENCES bioentry(bioentry_id),
   PRIMARY KEY (bioentry_id)
@@ -102,7 +102,7 @@ CREATE INDEX bioentrytax  ON bioentry_taxa(taxa_id);
 
 CREATE TABLE biosequence (
   biosequence_id  int(10) unsigned NOT NULL PRIMARY KEY auto_increment,
-  bioentry_id     int(10) NOT NULL,
+  bioentry_id     int(10) unsigned NOT NULL,
   seq_version     int(6), 
   seq_length      int(10), 
   biosequence_str mediumtext,
@@ -134,7 +134,7 @@ CREATE INDEX dbxrefacc  ON dbxref(accession);
 #
 CREATE TABLE dbxref_qualifier_value (
        dbxref_qualifier_value_id  int(10) unsigned NOT NULL PRIMARY KEY auto_increment,
-       dbxref_id               int(10) NOT NULL,
+       dbxref_id               int(10) unsigned NOT NULL,
        FOREIGN KEY (dbxref_id) REFERENCES dbxref(dbxref_id),
        ontology_term_id  int(10) unsigned NOT NULL,
        FOREIGN KEY(ontology_term_id) REFERENCES ontology_term(ontology_term_id),
@@ -152,12 +152,13 @@ CREATE INDEX dqv2  ON dbxref_qualifier_value(ontology_term_id);
 # note: changed to use new dbxref table
 CREATE TABLE bioentry_direct_links (
        bio_dblink_id           int(10) unsigned NOT NULL PRIMARY KEY auto_increment,
-       source_bioentry_id      int(10) NOT NULL,
-       dbxref_id               int(10) NOT NULL,
+       source_bioentry_id      int(10) unsigned NOT NULL,
+       dbxref_id               int(10) unsigned NOT NULL,
        FOREIGN KEY (source_bioentry_id) REFERENCES bioentry(bioentry_id),
-       FOREIGN KEY (dbxref_id) REFERENCES dbxref(dbxref_id)
+       FOREIGN KEY (dbxref_id) REFERENCES dbxref(dbxref_id),
+       UNIQUE (source_bioentry_id,dbxref_id)
 );
-CREATE INDEX bdl1  ON bioentry_direct_links(source_bioentry_id);
+# CREATE INDEX bdl1  ON bioentry_direct_links(source_bioentry_id);
 CREATE INDEX bdl2  ON bioentry_direct_links(dbxref_id);
 
 #We can have multiple references per bioentry, but one reference
@@ -196,7 +197,7 @@ CREATE INDEX reference_rank_idx5 ON bioentry_reference(bioentry_id, reference_ra
 
 CREATE TABLE comment (
   comment_id  int(10) unsigned NOT NULL PRIMARY KEY auto_increment,
-  bioentry_id    int(10) NOT NULL,
+  bioentry_id    int(10) unsigned NOT NULL,
   comment_text   mediumtext NOT NULL,
   comment_rank   int(5) NOT NULL,
   UNIQUE(bioentry_id, comment_rank),
@@ -235,13 +236,14 @@ CREATE TABLE seqfeature_source (
 
 CREATE TABLE seqfeature (
    seqfeature_id int(10) unsigned NOT NULL PRIMARY KEY auto_increment,
-   bioentry_id   int(10) NOT NULL,
-   seqfeature_key_id     int(10),
-   seqfeature_source_id  int(10),
+   bioentry_id   int(10) unsigned NOT NULL,
+   seqfeature_key_id     int(10) unsigned,
+   seqfeature_source_id  int(10) unsigned,
    seqfeature_rank int(5),
   FOREIGN KEY (seqfeature_key_id) REFERENCES ontology_term(ontology_term_id),
   FOREIGN KEY (seqfeature_source_id) REFERENCES seqfeature_source(seqfeature_source_id),
-  FOREIGN KEY (bioentry_id) REFERENCES bioentry(bioentry_id)
+  FOREIGN KEY (bioentry_id) REFERENCES bioentry(bioentry_id),
+  UNIQUE (bioentry_id,seqfeature_key_id,seqfeature_rank)
 );
 CREATE INDEX sf1 ON seqfeature(seqfeature_key_id);
 CREATE INDEX sf2 ON seqfeature(seqfeature_source_id);
@@ -252,9 +254,9 @@ CREATE INDEX sf3 ON seqfeature(bioentry_id);
 # in this case the ontology_term_id can be used to type the relationship
 CREATE TABLE seqfeature_relationship (
    seqfeature_relationship_id int(10) unsigned NOT NULL PRIMARY KEY auto_increment,
-   parent_seqfeature_id int(10) NOT NULL,
-   child_seqfeature_id int(10) NOT NULL,
-   relationship_type_id int(10) NOT NULL,
+   parent_seqfeature_id int(10) unsigned NOT NULL,
+   child_seqfeature_id int(10) unsigned NOT NULL,
+   relationship_type_id int(10) unsigned NOT NULL,
    relationship_rank int(5),
    UNIQUE(parent_seqfeature_id, child_seqfeature_id, relationship_type_id),
    FOREIGN KEY (relationship_type_id) REFERENCES ontology_term(ontology_term_id),
@@ -262,12 +264,12 @@ CREATE TABLE seqfeature_relationship (
    FOREIGN KEY (child_seqfeature_id) REFERENCES seqfeature(seqfeature_id)
 );
 CREATE INDEX sfr1 ON seqfeature_relationship(relationship_type_id);
-CREATE INDEX sfr2 ON seqfeature_relationship(parent_seqfeature_id);
+# CREATE INDEX sfr2 ON seqfeature_relationship(parent_seqfeature_id);
 CREATE INDEX sfr3 ON seqfeature_relationship(child_seqfeature_id);
 
 CREATE TABLE seqfeature_qualifier_value (
-   seqfeature_id int(10) NOT NULL,
-   ontology_term_id int(10) NOT NULL,
+   seqfeature_id int(10) unsigned NOT NULL,
+   ontology_term_id int(10) unsigned NOT NULL,
    qualifier_rank int(5) NOT NULL,
    qualifier_value  mediumtext NOT NULL,
    FOREIGN KEY (ontology_term_id) REFERENCES ontology_term(ontology_term_id),
@@ -289,7 +291,7 @@ CREATE INDEX sqv3 ON seqfeature_qualifier_value(seqfeature_id);
 # standard range queries will not be included
 CREATE TABLE seqfeature_location (
    seqfeature_location_id int(10) unsigned NOT NULL PRIMARY KEY auto_increment,
-   seqfeature_id          int(10) NOT NULL,
+   seqfeature_id          int(10) unsigned NOT NULL,
    seq_start              int(10),
    seq_end                int(10),
    seq_strand             int(1)  NOT NULL,
@@ -297,7 +299,7 @@ CREATE TABLE seqfeature_location (
    UNIQUE (seqfeature_id, location_rank),
   FOREIGN KEY (seqfeature_id) REFERENCES seqfeature(seqfeature_id)
 );
-CREATE INDEX sfl1 ON seqfeature_location(seqfeature_id);
+# CREATE INDEX sfl1 ON seqfeature_location(seqfeature_id);
 CREATE INDEX sfl2 ON seqfeature_location(seq_start);
 CREATE INDEX sfl3 ON seqfeature_location(seq_end);
 
@@ -325,7 +327,7 @@ CREATE TABLE remote_seqfeature_name (
 # most likely ignore these
 CREATE TABLE location_qualifier_value (
    seqfeature_location_id int(10) unsigned NOT NULL,
-   ontology_term_id int(10) NOT NULL,
+   ontology_term_id int(10) unsigned NOT NULL,
    qualifier_value  char(255) NOT NULL,
    qualifier_int_value int(10),
   FOREIGN KEY (seqfeature_location_id) REFERENCES seqfeature_location(seqfeature_location_id),
@@ -347,7 +349,7 @@ INSERT INTO ontology_term (term_name) VALUES ('location_type');
 # coordinate policies?
 
 #
-# this is a tiny table to allow a cach'ing corba server to
+# this is a tiny table to allow a caching corba server to
 # persistently store aspects of the root server - so when/if
 # the server gets reaped it can reconnect
 #
