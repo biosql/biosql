@@ -202,6 +202,8 @@ my %tablemaps = (
 		 "Oracle" => {
 		     "taxon" => "bs_taxon",
 		     "taxon_name" => "bs_taxon_name",
+		     # we can't truncate on a view ...
+		     "taxon_name_table" => "taxon_name",
 		 },
 		 );
 my %tablemap;
@@ -447,7 +449,8 @@ print STDERR "\t... deleting old taxon names\n" if $verbose;
 begin_work($driver,$dbh);
 
 # delete all names for taxon nodes with a NCBI taxonID
-delete_ncbi_names($driver, $dbh, $taxontbl, $taxonnametbl);
+delete_ncbi_names($driver, $dbh, $taxontbl, $taxonnametbl,
+                  $driver eq "Oracle" ? $tablemap{taxon_name_table} : undef);
 
 print STDERR "\t... inserting new taxon names\n" if $verbose;
 
@@ -645,7 +648,8 @@ sub delete_ncbi_names{
     # Check which delete path we need to (can) take. Note that with Pg
     # our hands are tied.
     my $purgesql;
-    if(($driver eq "Pg") && (!$allow_truncate)) {
+    if((!$allow_truncate) &&
+       (($driver eq "Pg") || ($driver eq "Oracle"))) {
 	$purgesql = $delsql;
     } else {
 	my $row = $dbh->selectall_arrayref('SELECT COUNT(*) FROM '.
