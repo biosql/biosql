@@ -220,8 +220,9 @@ INSERT INTO seqfeature_qualifier ( qualifier_name ) VALUES ( 'max_start' );
 INSERT INTO seqfeature_qualifier ( qualifier_name ) VALUES ( 'max_end' ); 
 INSERT INTO seqfeature_qualifier ( qualifier_name ) VALUES ( 'unknown_start' ); 
 INSERT INTO seqfeature_qualifier ( qualifier_name ) VALUES ( 'unknown_end' ); 
-INSERT INTO seqfeature_qualifier ( qualifier_name ) VALUES ( 'unbounded_start' ); 
-INSERT INTO seqfeature_qualifier ( qualifier_name ) VALUES ( 'unbounded_end' ); 
+INSERT INTO seqfeature_qualifier ( qualifier_name ) VALUES ( 'end_pos_type' ); 
+INSERT INTO seqfeature_qualifier ( qualifier_name ) VALUES ( 'start_pos_type' ); 
+INSERT INTO seqfeature_qualifier ( qualifier_name ) VALUES ( 'location_type' ); 
 --- coordinate policies? 
 --- 
 --- this is a tiny table to allow a cach'ing corba server to 
