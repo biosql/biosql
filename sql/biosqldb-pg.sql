@@ -47,9 +47,9 @@ CREATE TABLE taxon (
 	 left_value INTEGER , 
 	 right_value INTEGER , 
 	 PRIMARY KEY ( taxon_id ) , 
-	 UNIQUE ( ncbi_taxon_id ) , 
-	 UNIQUE ( left_value ) , 
-	 UNIQUE ( right_value ) ) ; 
+	 CONSTRAINT XAKtaxon_ncbi_taxon_id UNIQUE ( ncbi_taxon_id ) , 
+	 CONSTRAINT XAKtaxon_left_value UNIQUE ( left_value ) , 
+	 CONSTRAINT XAKtaxon_right_value UNIQUE ( right_value ) ) ; 
 
 CREATE INDEX taxparent ON taxon ( parent_taxon_id ); 
 
@@ -58,9 +58,9 @@ CREATE TABLE taxon_name (
 	 taxon_id INTEGER NOT NULL , 
 	 name VARCHAR ( 255 ) NOT NULL , 
 	 name_class VARCHAR ( 32 ) NOT NULL , 
-	 UNIQUE ( taxon_id , name , name_class ) ) ; 
+	 UNIQUE ( name , name_class, taxon_id ) ) ; 
 
--- CREATE INDEX taxnametaxonid ON taxon_name ( taxon_id ); 
+CREATE INDEX taxnametaxonid ON taxon_name ( taxon_id ); 
 CREATE INDEX taxnamename ON taxon_name ( name ); 
 
 -- this is the namespace (controlled vocabulary) ontology terms live in 
@@ -530,8 +530,7 @@ ALTER TABLE term_path ADD CONSTRAINT FKterm_ontpath
 -- taxon, taxon_name 
 ALTER TABLE taxon ADD CONSTRAINT FKtaxon_taxon
       FOREIGN KEY ( parent_taxon_id ) REFERENCES taxon ( taxon_id )
-      ON DELETE CASCADE
-	DEFERRABLE;
+      DEFERRABLE;
 ALTER TABLE taxon_name ADD CONSTRAINT FKtaxon_taxonname
       FOREIGN KEY ( taxon_id ) REFERENCES taxon ( taxon_id )
       ON DELETE CASCADE ;
@@ -994,4 +993,42 @@ CREATE RULE rule_term_synonym_i
 	     )
 	     IS NOT NULL
        DO INSTEAD NOTHING
+;
+
+--
+-- Functions that may be used as an API by applications, e.g. load scripts etc.
+-- 
+
+-- this is used by load_ncbi_taxonomy.pl to speed up loading into the taxon
+-- table by 1 to 2 orders of magnitude
+CREATE OR REPLACE FUNCTION unconstrain_taxon ()
+RETURNS INTEGER
+AS
+'
+ALTER TABLE taxon DROP CONSTRAINT fktaxon_taxon;
+DROP RULE rule_taxon_i ON taxon;
+SELECT 1;
+'
+LANGUAGE SQL
+VOLATILE STRICT SECURITY DEFINER
+;
+
+-- this function re-establishes what unconstrain_taxon() removed temporarily
+CREATE OR REPLACE FUNCTION constrain_taxon ()
+RETURNS INTEGER
+AS
+'
+ALTER TABLE taxon ADD CONSTRAINT FKtaxon_taxon
+      FOREIGN KEY ( parent_taxon_id ) REFERENCES taxon ( taxon_id )
+      DEFERRABLE;
+CREATE RULE rule_taxon_i
+       AS ON INSERT TO taxon
+       WHERE (SELECT oid FROM taxon WHERE ncbi_taxon_id = new.ncbi_taxon_id)
+       	     IS NOT NULL
+       DO INSTEAD NOTHING
+;
+SELECT 1;
+'
+LANGUAGE SQL
+VOLATILE STRICT SECURITY DEFINER
 ;
