@@ -1,0 +1,19 @@
+======================================================================
+This directory tree contains the Oracle version of the BioSQL schema.
+======================================================================
+
+The Oracle version presently is decoupled from the other RDBMSs so far
+supported. This is for several reasons.
+
+   - The Oracle version is richer. It comes with triggers, a complete
+     API as views and PL/SQL packages, materialized views, and context
+     indexes.
+
+   - The creator of the Oracle version uses a completely different
+     naming convention than the original creators of BioSQL
+     use. Given the ability to create views and synonyms, it is not
+     necessary to sacrifice naming conventions to achieve
+     compatibility.
+
+For installation instructions read the INSTALL document. See LICENSE
+for the license terms under which you may use biosql-ora.

@@ -1,0 +1,340 @@
+#!/usr/local/bin/perl
+#
+# sql processor for biosql-db
+# uses parse::recdescent to make a parse tree
+#
+# list is then recursively descended pushing it through a database specific
+# processor
+#
+# TODO - alert user to errors in source sql - currently silent
+#
+# main data structure is a tree-node, which has data/type and
+# children which are themselves tree-nodes
+
+use Parse::RecDescent;
+use Data::Dumper;
+use Getopt::Long;
+use strict;
+#$::RD_HINT = 1;
+my $opth = {};
+GetOptions($opth,
+           "help|h",
+           "target|t=s");
+if ($opth->{help} || !@ARGV) {
+    usage();
+    exit 0;
+}
+my $target = $opth->{target} || "mysql";
+
+# ------------------------------------------
+# SQL GRAMMAR
+# ------------------------------------------
+
+$::RD_AUTOACTION = q { [@item] };
+# is there a better way of making it case insensitive?
+my $parser = new Parse::RecDescent
+  (q{
+     schema : stmt(s)
+     stmt   : createtable
+     stmt   : createindex
+     stmt   : insertstmt
+     stmt   : comment
+     stmt   : altertable
+     createtable : createkwd tablekwd tableid '(' coldefs ')' tablehandler(?) ';'
+     createindex : createkwd indexkwd indexid onkwd tableid '(' colids ');'
+     insertstmt  : insertkwd intokwd tableid '(' colids ')' valueskwd '(' values ');'
+     insertstmt  : insertkwd intokwd tableid '(' values ');'
+     altertable  : alterkwd tablekwd tableid alterclause ';'
+     alterclause : addconstraint
+   addconstraint : addconstraintkwd constraintname(?) constraintclause
+   constraintclause : fkconstraint
+   fkconstraint  : keydef ondelete(?)
+   ondelete      : ondeletekwd ondeleteaction
+   tablehandler  : typekwd '=' handlername
+   ondeleteaction: 'CASCADE' | 'cascade' | 'SET NULL' | 'set null'
+     values: /\'.*\'/
+     createkwd: 'CREATE' | 'create'
+   alterkwd: 'ALTER' | 'alter'
+     tablekwd: 'TABLE'| 'table'
+     indexkwd: 'INDEX'| 'index'
+     onkwd: 'ON'| 'on'
+     intokwd: 'INTO'| 'into'
+     insertkwd: 'INSERT' | 'insert'
+     valueskwd: 'VALUES' | 'values'
+   ondeletekwd: 'ON DELETE' | 'on delete'
+   addconstraintkwd: 'ADD CONSTRAINT' | 'add constraint'
+   typekwd    : 'TYPE' | 'type'
+   constraintname  : tableid
+   handlername     : tableid
+     comment: /--[^\n]*/ | /#[^\n]*/
+     coldefs: coldef(s)
+     coldef : cd /\,/ | cd
+     cd     : colid coltype | keydef | constraint
+     colid  : /\w+/
+     indexid: /\w+/
+     colids : cj(s?) colid
+     cj     : colid /\,/
+     tableid: /\w+/
+   coltype: maintype size(?) qualifs
+   coltype: maintype size(?)
+   qualifs: qualif(s)
+   maintype: inttype | chartype | varchartype | texttype
+   inttype: 'int' | 'integer' | 'smallint' | 'tinyint' | 'INT' | 'INTEGER' | 'SMALLINT' | 'TINYINT'
+   chartype: 'char' | 'CHAR'
+   varchartype: 'varchar' | 'VARCHAR'
+   texttype: 'text' | 'longtext' | 'mediumtext' | 'TEXT' | 'LONGTEXT' | 'MEDIUMTEXT'
+   size: '(' /\d+/ ')'
+   qualif: 'unsigned' | 'not' 'null' | 'auto_increment' | pk
+   qualif: 'UNSIGNED' | 'NOT' 'NULL' | 'AUTO_INCREMENT' | pk
+   k: 'key' | 'KEY'
+   pk: 'primary' 'key'
+   pk: 'PRIMARY' 'KEY'
+   fk: 'foreign' 'key'
+   fk: 'FOREIGN' 'KEY'
+   keydef: pk '(' colids ')'
+   keydef: k '(' colids ')'
+   keydef: fk '(' colid ')' references tableid '(' colid ')'
+   references: 'references' | 'REFERENCES'
+   constraint: uconstraint
+   uconstraint: u '(' colids ')'
+   u: 'unique' | 'UNIQUE'
+   });
+
+# ------------------------------------------
+# read in the input file
+# parse it
+# process and flatten the tree
+# ------------------------------------------
+open(F, shift @ARGV);
+my $str = join("",<F>);
+close(F);
+my $rf = $parser->schema($str);
+my $tree = node->new(@$rf);
+my $ref = {};
+my $flat = &flatten($tree, $ref);
+print $flat;
+
+# ------------------------------------------
+# flatten($node)
+# recursively flattens a tree,
+# applying $transform processor to
+# every node
+# ------------------------------------------
+sub flatten {
+    my $node = shift;
+    my $ref = shift;
+    UNIVERSAL::isa($node, "node") or die("uh oh ", Dumper $node);
+    if ($node->is_terminal) {
+        return $node->data;
+    }
+    else {
+        my @elts = ();
+        my $transform = \&$target;
+        &$transform($node, $ref, "start");
+        @elts = map {flatten($_, $ref)} @{$node->children};
+        my $f = \&{$target."_e"};
+        my $pre = &$f($node, $ref, "end");
+        my $str = join(" ", grep {$_} @elts);
+        $str =~ s/\n /\n/g;
+        return $pre.$str;
+    }
+}
+
+# ------------------------------------------
+
+sub usage {
+    print <<EOM;
+transform_sql.pl [-target|t TARGET] <sql-file>
+
+parses (mysql flavour) SQL and transforms the resulting tree through a processor.
+
+available processors:
+
+mysql (for completion)
+pg    (postgres)
+
+WARNING: the parser is currently silent on errors in the source sql;
+check your output is complete
+
+EOM
+
+}
+
+# ------------------------------------------
+# node processors.
+#
+# these are applied to every node, they
+# can look down the tree and make
+# modifications anywhere beneath them.
+#
+# these should really be made into pluggable
+# modules
+# ------------------------------------------
+sub null {
+}
+sub xml { # needs work!
+    my $node = shift;
+    my $type = $node->type;
+    return if grep {$type eq $_} qw(createkwd tablekwd);
+    my @c = @{$node->children};
+    my %filter = map {$_=>1} qw(createkwd tablekwd);
+    @c =
+      grep {
+          !$filter{$_};
+      } @c;
+    @c = (node->new("<$type>"),@c,  node->new( "</$type>" )) if @c;
+    push(@c, new node "\n") if grep {/^$type$/} qw(stmt);
+    push(@c, new node "\n") if grep {/^$type$/} qw(createtable);
+    unshift(@c, new node "\n") if grep {/^$type$/} qw(coldef);
+    $node->children(@c);
+}
+sub xml_e {
+}
+sub prettify {
+    my $node = shift;
+    my $type = $node->type;
+    my @c = @{$node->children};
+    push(@c, node->new("\n")) if $type eq 'stmt';
+    push(@c, new node "\n") if grep {/^$type$/} qw(createtable);
+    unshift(@c, new node"\n\t") if grep {/^$type$/} qw(coldef);
+    $node->children(@c);
+}
+sub mysql {
+    my $node = shift;
+    prettify($node);
+    1;
+}
+sub n3 {
+    my $node = shift;
+    if ($node->type eq "comment") {
+        $node->remove;
+    }
+}
+sub pg_e {
+    my $node = shift;
+    my $ref = shift;
+    my $type = $node->type;
+    my @c = @{$node->children};
+    my $pre = "";
+    if(@c) {
+	my $data = $c[0]->data;
+	if ($type eq "createtable") {
+	    my $table = $c[2]->children->[0]->data;
+	    if ($ref->{seqnh}) {
+		my $seqn = $ref->{seqnh}->{$table};
+		$pre = "CREATE SEQUENCE $seqn;\n" if $seqn;
+	    }
+	}
+    }
+    $pre;
+}
+sub pg {
+    my $node = shift;
+    my $ref = shift;
+    prettify($node);
+    my $type = $node->type;
+    my @c = @{$node->children};
+    my $data = $c[0]->data;
+    if ($type eq "comment") {
+        $data =~ s/^\#/\-\-\-/;
+        $c[0]->data($data);
+    }
+    if ($type eq "stmt") {
+        if ($node->children->[0]->type eq "createtable") {
+            $ref->{table} = $node->children->[0]->children->[0]->data;
+        }
+    }
+    if ($type eq "createtable") {
+        $ref->{table} = $c[2]->children->[0]->data;
+    }
+    if ($type eq "coltype") {
+        my $q = $c[2]; # get the qualifier
+        if ($q && $q->children->[0] && $q->children->[0]->children) {
+            my @qs = @{$q->children->[0]->children};
+            if (grep {/^auto_increment$/i} map {$_->children->[0]->data}@qs) {
+                my $table = $ref->{table} || die("assertion error");
+                # postgres needs a sequence datatype
+                my $seqn = $table."_pk_seq";
+                $ref->{seqnh} = {} unless $ref->{seqnh};
+                $ref->{seqnh}->{$table} = $seqn;
+                @c = (node->new( [['inttype', 'INTEGER'],  # type
+                                  ['qualifs',
+                                   #'primary key',
+                                   'DEFAULT',
+                                   'nextval',
+                                   '(',
+                                   "'$seqn'",
+                                   ')',
+				   'NOT NULL']]));
+            }
+        }
+        if ($c[0]->children->[0]->type eq "inttype") {
+	    my $attrtype = $c[0]->children->[0]->children->[0];
+	    if(($attrtype->type eq "INT") || ($attrtype->type eq "int")) {
+		$attrtype->type("INTEGER");
+	    } elsif(($attrtype->type eq "TINYINT") ||
+		    ($attrtype->type eq "tinyint")) {
+		$attrtype->type("SMALLINT");
+	    }
+            # ints don't have size in postgres
+            splice(@c, 1, 1, (new node "")); # splice out size decl
+        }
+    }
+    if ($type eq "texttype") {
+        # turn all funky text types into 'text'
+        @c = (new node 'TEXT');
+    }
+    if ($type eq "qualif") {
+        $data =~ s/unsigned//i;
+        $c[0]->data($data);
+    }
+    if ($type eq 'tablehandler') {
+	$node->remove;
+	@c = ();
+    }
+    #print STDERR "TYPE = \"$type\"\n";
+    $node->children(@c);
+    1;
+}
+# ------------------------------------------
+# DATA STRUCTURE - tree nodes
+# ------------------------------------------
+package node;
+sub new {
+    my $class = shift;
+    return undef unless @_;
+    if (ref($_[0])) {
+        # recdescent deals with (s)
+        # by putting extra level of nesting
+        unshift(@_, "collection");
+    }
+    my $self = [shift];
+    push(@$self, grep {$_} map {$class->new(ref $_ ? @$_ : $_)} @_);
+    bless $self, $class;
+    $self;
+}
+sub type {
+    my $self = shift;
+    $self->[0] = shift if @_;
+    return $self->[0];
+}
+sub children {
+    my $self = shift;
+    splice(@$self, 1, scalar(@$self)-1, @_) if @_;
+    my @arr = @$self;
+    my @rarr = @arr[1..$#arr];
+    return [@rarr];
+}
+sub is_terminal {
+    my $self = shift;
+    @{$self->children} ? 0:1;
+}
+sub data {
+    my $self = shift;
+    $self->is_terminal ? $self->type(@_) : '';
+}
+sub remove { # nullifies node
+    my $self = shift;
+    @$self = [""];
+}
+1;

@@ -1,0 +1,28 @@
+This is the BioSQL distribution. BioSQL is a generic unifying schema
+for storing sequences from different sources, for instance Genbank or
+Swissprot.
+
+BioSQL is meant to be a common data storage layer supported by all the
+different Bio* projects, such that entries stored through an
+application written in, e.g., bioperl could be re-retrieved by one
+written in, e.g., BioJava.
+
+--------------------------------------------------------------------------
+INSTALLATION NOTES
+
+1. Generally, the MySQL schema sources function as the basis from
+which schemas for other RDBMSs are auto-generated using, as an example,
+
+	$ scripts/transform_sql -target pg biosqldb-mysql.sql > biosqldb-pg.sql
+
+Replace the biosqldb-mysql.sql with the DDL source you are interested in.
+
+2. For the MySQL version to instantiate and run properly, you need to
+have a very fairly recent version of MySQL installed. Minimum
+requirement is MySQL 3.23.50, because only from that version on
+nullable columns which participate in a UK are handled largely
+bug-free (at this point according to the MySQL documentation).
+
+3. The Oracle version so far is separate from this in
+   sql/biosql-ora. Check for a README and INSTALL document in that
+   directory.
