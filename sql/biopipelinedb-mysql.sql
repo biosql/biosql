@@ -5,10 +5,11 @@ CREATE TABLE job (
   job_id             int(10) unsigned DEFAULT '0' NOT NULL auto_increment,
   analysis_id        int(10) unsigned DEFAULT '0',
   queue_id           int(10) unsigned DEFAULT '0',
-  stdout_file        varchar(100) DEFAULT '' NOT NULL,
-  stderr_file        varchar(100) DEFAULT '' NOT NULL,
-  object_file        varchar(100) DEFAULT '' NOT NULL,
-  status             varchar(40) DEFAULT 'CREATED' NOT NULL,
+  stdout_file        varchar(100) DEFAULT '',
+  stderr_file        varchar(100) DEFAULT '',
+  object_file        varchar(100) DEFAULT '',
+  status             varchar(20) DEFAULT 'NEW' NOT NULL,
+  stage              varchar(20) DEFAULT '',
   time               datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
   retry_count        int default 0,
 
@@ -37,10 +38,10 @@ CREATE TABLE rule_conditions (
 #removed class, added index to analysis
 
 CREATE TABLE input_dba(
-   input_dba_id         int(10) unsigned DEFAULT '0' NOT NULL auto_increment,
+   input_dba_id             int(10) unsigned DEFAULT '0' NOT NULL auto_increment,
    analysis_id          int(10) DEFAULT '0' NOT NULL,
    dbadaptor_id         int(10) DEFAULT '0' NOT NULL,
-   biodbadaptor_method  varchar(40) DEFAULT '' NOT NULL,
+   biodbadaptor         varchar(100) DEFAULT '' NOT NULL,
    biodbname            varchar(40) DEFAULT '' NOT NULL,
    data_adaptor         varchar(40) DEFAULT '' NOT NULL,
    data_adaptor_method  varchar(40) DEFAULT '' NOT NULL,
@@ -54,7 +55,7 @@ CREATE TABLE output_dba (
    output_dba_id        int(10) unsigned DEFAULT '0' NOT NULL auto_increment,
    analysis_id          int(10) unsigned DEFAULT '0' NOT NULL,
    dbadaptor_id         int(10) unsigned DEFAULT '0' NOT NULL,
-   biodbadaptor_method  varchar(40) DEFAULT '' NOT NULL,
+   biodbadaptor         varchar(100) DEFAULT '' NOT NULL,
    biodbname            varchar(40) DEFAULT '' NOT NULL,
    data_adaptor         varchar(40) DEFAULT '' NOT NULL,
    data_adaptor_method  varchar(40) DEFAULT '' NOT NULL,
@@ -104,6 +105,21 @@ CREATE TABLE analysis (
 
   PRIMARY KEY (analysis_id)
 );
+
 #Added IO_id, changed module to runnable and removed module_version
 
+#table to keep track of job histories
 
+CREATE TABLE completed_jobs (
+  completed_job_id      int(10) unsigned DEFAULT '0' NOT NULL auto_increment,
+  analysis_id           int(10) unsigned DEFAULT '0',
+  queue_id              int(10) unsigned DEFAULT '0',
+  stdout_file           varchar(100) DEFAULT '' NOT NULL,
+  stderr_file           varchar(100) DEFAULT '' NOT NULL,
+  object_file           varchar(100) DEFAULT '' NOT NULL,
+  time                  datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+  retry_count           int default 0,
+
+  PRIMARY KEY (completed_job_id),
+  KEY analysis (analysis_id)
+);
