@@ -296,7 +296,7 @@ my $dbh = DBI->connect($dsn,
 		       $pass,
 		       { RaiseError => 0,
 			 AutoCommit => 1,
-			 PrintError => 1,
+			 PrintError => 0,
 		       }
 		      ) or die $DBI::errstr;
 
@@ -550,7 +550,7 @@ sub handle_diffs {
 	    # only old's left to remove
             if ($nodelete || (!$delete->(@{$old->[$o]}))) {
                 print STDERR "note: node (".
-                    join(";",map { defined($_) ? $_ : ""; } @{$oldentry}).
+                    join(";",map { defined($_) ? $_ : ""; } @{$old->[$o]}).
                     ") is retired" if $verbose || (!$nodelete);
                 if (!$nodelete) {
                     # SQL statement failed
