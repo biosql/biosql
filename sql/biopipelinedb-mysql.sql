@@ -25,7 +25,7 @@ CREATE TABLE job (
 CREATE TABLE iohandler (
    iohandler_id         int(10) unsigned DEFAULT '0' NOT NULL auto_increment,
    adaptor_id           int(10) DEFAULT '0' NOT NULL,
-   type                 enum ('INPUT','OUTPUT') NOT NULL,
+   type                 enum ('INPUT','INPUT_CREATION','OUTPUT') NOT NULL,
    adaptor_type         enum('DB','STREAM') DEFAULT 'DB' NOT NULL,
 
    PRIMARY KEY (iohandler_id),
@@ -137,7 +137,7 @@ CREATE TABLE rule (
   rule_id          int(10) unsigned DEFAULT'0' NOT NULL auto_increment,
   current          int(10) unsigned NOT NULL,
   next             int(10) unsigned NOT NULL,
-  action           enum('WAITFORALL','WAITFORALL_AND_UPDATE','UPDATE','NOTHING'),
+  action           enum('WAITFORALL','WAITFORALL_AND_UPDATE','UPDATE','NOTHING','COPY_INPUTS'),
   
   PRIMARY KEY (rule_id)
 );
@@ -162,10 +162,13 @@ CREATE TABLE analysis (
   PRIMARY KEY (analysis_id)
 );
 
+#This tables can be used in three semantically different ways 
+#depending on the type of iohandler linked to the analysis
+#type INPUT_CREATE: used for fetching the ids and populating the inputs for the analysis
+#type INPUT: used to specify the iohandler to be used for the analysis (if not fixed or from output)
+#type OUTPUT: used to specify the output iohandler to store the output
 
-#changed the name to analysis_output_handler, inputs are handled in a different way as they
-# are not associated with analysis alone but with specific job 
-CREATE TABLE analysis_output_handler(
+CREATE TABLE analysis_io_handler(
   analysis_id               int(10) NOT NULL,
   iohandler_id              int(10) NOT NULL,
 
@@ -207,4 +210,10 @@ CREATE TABLE node_group (
   PRIMARY KEY (node_group_id),
   KEY (name)
 );
+CREATE TABLE io_handler_child(
+ input_create_iohandler_id               int(10) NOT NULL,
+ input_iohandler_id              int(10) NOT NULL,
 
+ PRIMARY KEY (input_create_iohandler_id,input_iohandler_id)
+
+);
