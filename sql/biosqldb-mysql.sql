@@ -85,7 +85,6 @@ CREATE TABLE bioentry (
   	identifier   	VARCHAR(40),
   	description  	VARCHAR(255),
   	entry_version 	TINYINT, 
-  	division	VARCHAR(3),
 	PRIMARY KEY (bioentry_id),
   	UNIQUE (biodatabase_id,accession,entry_version),
   	UNIQUE (identifier,biodatabase_id)
@@ -104,8 +103,9 @@ CREATE TABLE biosequence (
   	bioentry_id     INT(10) UNSIGNED NOT NULL,
   	seq_version     SMALLINT, 
   	seq_length      INT(10), 
-  	biosequence_str LONGTEXT,
   	alphabet        VARCHAR(10),
+	division	VARCHAR(3),
+  	biosequence_str LONGTEXT,
 	PRIMARY KEY (bioentry_id)
 ) TYPE=INNODB;
 
@@ -115,8 +115,9 @@ CREATE TABLE dbxref (
         dbxref_id	INT(10) UNSIGNED NOT NULL auto_increment,
         dbname          VARCHAR(40) NOT NULL,
         accession       VARCHAR(40) NOT NULL,
+	version		TINYINT NOT NULL,
 	PRIMARY KEY (dbxref_id),
-        UNIQUE(dbname, accession)
+        UNIQUE(dbname, accession, version)
 ) TYPE=INNODB;
 
 CREATE INDEX dbxrefdbn  ON dbxref(dbname);
@@ -149,7 +150,6 @@ CREATE INDEX dqv2  ON dbxref_qualifier_value(ontology_term_id);
 -- this table each time. Better to do the join through accession
 -- and db each time. Should be almost as cheap
 
--- note: changed to use new dbxref table
 CREATE TABLE bioentry_dblink (
        	bioentry_id        INT(10) UNSIGNED NOT NULL,
        	dbxref_id          INT(10) UNSIGNED NOT NULL,
