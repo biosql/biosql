@@ -19,7 +19,7 @@ CREATE FUNCTION intern_ontology_term (text) RETURNS int AS '
     select into t_id ontology_term_id from ontology_term where term_name = t_name;
     IF NOT FOUND THEN
       INSERT INTO ontology_term (term_name) VALUES (t_name);
-      RETURN currval(''ontology_term_pkey_seq'');
+      RETURN currval(''ontology_term_pk_seq'');
     END IF;
     RETURN t_id;
   END;
@@ -35,7 +35,7 @@ CREATE FUNCTION intern_seqfeature_source (text) RETURNS int AS '
     select into kid seqfeature_source_id from seqfeature_source where source_name = kname;
     IF NOT FOUND THEN
       INSERT INTO seqfeature_source (source_name) VALUES (kname);
-      RETURN currval(''seqfeature_source_pkey_seq'');
+      RETURN currval(''seqfeature_source_pk_seq'');
     END IF;
     RETURN kid;
   END;
@@ -54,7 +54,7 @@ CREATE FUNCTION create_seqfeature (integer, text, text) RETURNS int AS '
            (bioentry_id, seqfeature_key_id, seqfeature_source_id)
     VALUES (cs_bioentry_id, intern_ontology_term(cs_key), intern_seqfeature_source(cs_source));
     
-    RETURN currval(''seqfeature_pkey_seq'');
+    RETURN currval(''seqfeature_pk_seq'');
   END;
 ' LANGUAGE 'plpgsql';
 
@@ -74,7 +74,7 @@ CREATE FUNCTION create_seqfeature_onespan (integer, text, text, integer, integer
            (bioentry_id, seqfeature_key_id, seqfeature_source_id)
     VALUES (cs_bioentry_id, intern_ontology_term(cs_key), intern_seqfeature_source(cs_source));
     
-    sf_id := currval(''seqfeature_pkey_seq'');
+    sf_id := currval(''seqfeature_pk_seq'');
 
     INSERT INTO seqfeature_location
            (seqfeature_id, seq_start, seq_end, seq_strand, location_rank)
