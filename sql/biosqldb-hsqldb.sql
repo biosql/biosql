@@ -95,7 +95,7 @@ CREATE INDEX term_ont ON term(ontology_id);
 -- We should use the field name "name" instead of "synonym" 
 -- (because it is a reserved word in some RDBMS)
 CREATE TABLE term_synonym (
-       synonym		  VARCHAR(255) NOT NULL,
+       name		  VARCHAR(255) NOT NULL,
        term_id		  INT NOT NULL,
        PRIMARY KEY (term_id,name)
 );
