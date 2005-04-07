@@ -1,4 +1,4 @@
-<!-- $Id$ -->
+<!-- $Header$ -->
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
    "http://www.w3.org/TR/html4/strict.dtd">
 
@@ -111,12 +111,12 @@
   <body>
 
     <!-- Primary Index -->
-	<p><br><br>Dumped on 2004-06-04</p>
+	<p><br><br>Dumped on 2005-04-07</p>
 <h1><a name="index">Index of database - bioseqdb</a></h1>
 <ul>
     
     <li><a name="public.schema">public</a></li><ul>
-    	<li><a href="#public.table.biodatabase">biodatabase</a></li><li><a href="#public.table.bioentry">bioentry</a></li><li><a href="#public.table.bioentry-dbxref">bioentry_dbxref</a></li><li><a href="#public.table.bioentry-path">bioentry_path</a></li><li><a href="#public.table.bioentry-qualifier-value">bioentry_qualifier_value</a></li><li><a href="#public.table.bioentry-reference">bioentry_reference</a></li><li><a href="#public.table.bioentry-relationship">bioentry_relationship</a></li><li><a href="#public.table.biosequence">biosequence</a></li><li><a href="#public.table.comment">comment</a></li><li><a href="#public.table.dbxref">dbxref</a></li><li><a href="#public.table.dbxref-qualifier-value">dbxref_qualifier_value</a></li><li><a href="#public.table.location">location</a></li><li><a href="#public.table.location-qualifier-value">location_qualifier_value</a></li><li><a href="#public.table.ontology">ontology</a></li><li><a href="#public.table.reference">reference</a></li><li><a href="#public.table.seqfeature">seqfeature</a></li><li><a href="#public.table.seqfeature-dbxref">seqfeature_dbxref</a></li><li><a href="#public.table.seqfeature-path">seqfeature_path</a></li><li><a href="#public.table.seqfeature-qualifier-value">seqfeature_qualifier_value</a></li><li><a href="#public.table.seqfeature-relationship">seqfeature_relationship</a></li><li><a href="#public.table.taxon">taxon</a></li><li><a href="#public.table.taxon-name">taxon_name</a></li><li><a href="#public.table.term">term</a></li><li><a href="#public.table.term-dbxref">term_dbxref</a></li><li><a href="#public.table.term-path">term_path</a></li><li><a href="#public.table.term-relationship">term_relationship</a></li><li><a href="#public.table.term-synonym">term_synonym</a></li>
+    	<li><a href="#public.table.biodatabase">biodatabase</a></li><li><a href="#public.table.bioentry">bioentry</a></li><li><a href="#public.table.bioentry-dbxref">bioentry_dbxref</a></li><li><a href="#public.table.bioentry-path">bioentry_path</a></li><li><a href="#public.table.bioentry-qualifier-value">bioentry_qualifier_value</a></li><li><a href="#public.table.bioentry-reference">bioentry_reference</a></li><li><a href="#public.table.bioentry-relationship">bioentry_relationship</a></li><li><a href="#public.table.biosequence">biosequence</a></li><li><a href="#public.table.comment">comment</a></li><li><a href="#public.table.dbxref">dbxref</a></li><li><a href="#public.table.dbxref-qualifier-value">dbxref_qualifier_value</a></li><li><a href="#public.table.location">location</a></li><li><a href="#public.table.location-qualifier-value">location_qualifier_value</a></li><li><a href="#public.table.ontology">ontology</a></li><li><a href="#public.table.reference">reference</a></li><li><a href="#public.table.seqfeature">seqfeature</a></li><li><a href="#public.table.seqfeature-dbxref">seqfeature_dbxref</a></li><li><a href="#public.table.seqfeature-path">seqfeature_path</a></li><li><a href="#public.table.seqfeature-qualifier-value">seqfeature_qualifier_value</a></li><li><a href="#public.table.seqfeature-relationship">seqfeature_relationship</a></li><li><a href="#public.table.taxon">taxon</a></li><li><a href="#public.table.taxon-name">taxon_name</a></li><li><a href="#public.table.term">term</a></li><li><a href="#public.table.term-dbxref">term_dbxref</a></li><li><a href="#public.table.term-path">term_path</a></li><li><a href="#public.table.term-relationship">term_relationship</a></li><li><a href="#public.table.term-relationship-term">term_relationship_term</a></li><li><a href="#public.table.term-synonym">term_synonym</a></li>
   	<li><a href="#public.function.constrain-taxon">constrain_taxon(  )</a></li><li><a href="#public.function.unconstrain-taxon">unconstrain_taxon(  )</a></li>
     </ul>
     
@@ -274,30 +274,6 @@
                   
                 
                 </td>
-            	<td>&quot;version&quot;</td>
-            	<td></td>
-                <td><i>
-				
-					
-
-					
-                       UNIQUE#1
-                    
-				
-
-				
-				
-				</i>
-				
-				</td>
-			 </tr>
-            
-            <tr class="tr1">
-				<td>
-                
-                  
-                
-                </td>
             	<td>bioentry_id</td>
             	<td>integer</td>
                 <td><i>
@@ -315,8 +291,10 @@
 				</td>
 			 </tr>
             
-            <tr class="tr0">
+            <tr class="tr1">
 				<td>
+                
+                  
                 
                   
                 
@@ -338,6 +316,12 @@
 					
 
 					
+                       UNIQUE#2
+                    
+				
+					
+
+					
 				
 
 				NOT NULL
@@ -347,7 +331,7 @@
 				</td>
 			 </tr>
             
-            <tr class="tr1">
+            <tr class="tr0">
 				<td>
                 
                   
@@ -371,7 +355,7 @@
 				</td>
 			 </tr>
             
-            <tr class="tr0">
+            <tr class="tr1">
 				<td>
                 
                 </td>
@@ -387,7 +371,7 @@
 				</td>
 			 </tr>
             
-            <tr class="tr1">
+            <tr class="tr0">
 				<td>
                 
                   
@@ -411,7 +395,7 @@
 				</td>
 			 </tr>
             
-            <tr class="tr0">
+            <tr class="tr1">
 				<td>
                 
                   
@@ -424,7 +408,7 @@
 					
 
 					
-                       UNIQUE
+                       UNIQUE#2
                     
 				
 
@@ -435,7 +419,7 @@
 				</td>
 			 </tr>
             
-            <tr class="tr1">
+            <tr class="tr0">
 				<td>
                 
                 </td>
@@ -451,7 +435,7 @@
 				</td>
 			 </tr>
             
-            <tr class="tr0">
+            <tr class="tr1">
 				<td>
                 
                 </td>
@@ -467,13 +451,21 @@
 				</td>
 			 </tr>
             
-            <tr class="tr1">
+            <tr class="tr0">
 				<td>
+                
+                  
                 
                 </td>
             	<td>version</td>
             	<td>integer</td>
                 <td><i>
+				
+					
+
+					
+                       UNIQUE#1
+                    
 				
 
 				NOT NULL
@@ -1580,30 +1572,6 @@
                   
                 
                 </td>
-            	<td>&quot;version&quot;</td>
-            	<td></td>
-                <td><i>
-				
-					
-
-					
-                       UNIQUE#1
-                    
-				
-
-				
-				
-				</i>
-				
-				</td>
-			 </tr>
-            
-            <tr class="tr1">
-				<td>
-                
-                  
-                
-                </td>
             	<td>dbxref_id</td>
             	<td>integer</td>
                 <td><i>
@@ -1621,7 +1589,7 @@
 				</td>
 			 </tr>
             
-            <tr class="tr0">
+            <tr class="tr1">
 				<td>
                 
                   
@@ -1645,7 +1613,7 @@
 				</td>
 			 </tr>
             
-            <tr class="tr1">
+            <tr class="tr0">
 				<td>
                 
                   
@@ -1669,13 +1637,21 @@
 				</td>
 			 </tr>
             
-            <tr class="tr0">
+            <tr class="tr1">
 				<td>
+                
+                  
                 
                 </td>
             	<td>version</td>
             	<td>integer</td>
                 <td><i>
+				
+					
+
+					
+                       UNIQUE#1
+                    
 				
 
 				NOT NULL
@@ -2035,7 +2011,7 @@
                 <td><i>
 				
 
-				
+				NOT NULL
 				
 				</i>
 				
@@ -2458,7 +2434,7 @@
                 <td><i>
 				
 
-				NOT NULL
+				
 				
 				</i>
 				
@@ -3764,10 +3740,18 @@
             <tr class="tr0">
 				<td>
                 
+                  
+                
                 </td>
             	<td>is_obsolete</td>
             	<td>character(1)</td>
                 <td><i>
+				
+					
+
+					
+                       UNIQUE#1
+                    
 				
 
 				
@@ -3872,6 +3856,10 @@
 		
 			<ul>	
 				<li><a href="#public.table.term-relationship">term_relationship</a></li>
+			</ul>
+		
+			<ul>	
+				<li><a href="#public.table.term-relationship-term">term_relationship_term</a></li>
 			</ul>
 		
 			<ul>	
@@ -4379,6 +4367,115 @@
 
 					
                        UNIQUE#1
+                    
+				
+
+				NOT NULL
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+        </table>
+
+		
+		
+		
+
+        <!-- Constraint List -->
+		
+
+        <!-- Foreign Key Discovery -->
+		
+			<p>Tables referencing this one via Foreign Key Constraints:</p>
+		
+			<ul>	
+				<li><a href="#public.table.term-relationship-term">term_relationship_term</a></li>
+			</ul>
+		
+		
+
+	<!-- View Definition -->
+	
+
+	<!-- List off permissions -->
+	
+
+	<p>
+		<a href="#index">Index</a> -
+		<a href="#public.schema">Schema public</a>
+    </p>
+	
+        <hr>
+		<h2>Table:
+			<a name="public.table.term-relationship-term">term_relationship_term</a>
+		</h2>
+        
+
+
+        <table width="100%" cellspacing="0" cellpadding="3">
+                <caption>term_relationship_term Structure</caption>
+                <tr>
+                <th>F-Key</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+                </tr>
+            
+            <tr class="tr0">
+				<td>
+                
+                  
+                  <a href="#public.table.term-relationship">term_relationship.term_relationship_id</a>
+                  
+                
+                  
+                
+                </td>
+            	<td>term_relationship_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+				
+					PRIMARY KEY
+					
+
+					
+				
+
+				
+				
+				</i>
+				
+				</td>
+			 </tr>
+            
+            <tr class="tr1">
+				<td>
+                
+                  
+                  <a href="#public.table.term">term.term_id</a>
+                  
+                
+                  
+                
+                </td>
+            	<td>term_id</td>
+            	<td>integer</td>
+                <td><i>
+				
+					
+
+					
+				
+					
+
+					
+                       UNIQUE
                     
 				
 
