@@ -592,7 +592,7 @@ CREATE TABLE SG_Biosequence (
        Length               INTEGER NULL,
        Alphabet             VARCHAR2(12) NULL
                                    CONSTRAINT Alphabet4
-                                          CHECK (Alphabet IN ('dna', 'protein', 'rna')),
+                                          CHECK (Alphabet IN ('dna','DNA','protein','PROTEIN','rna','RNA')),
        Seq                  CLOB NULL,
        CRC                  VARCHAR2(32) NULL,
        CONSTRAINT XPKBiosequence 

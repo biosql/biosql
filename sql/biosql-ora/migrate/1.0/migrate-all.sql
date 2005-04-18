@@ -85,3 +85,22 @@ ALTER TABLE SG_Bioentry_Qual_Assoc MODIFY (Value VARCHAR2(4000));
 PROMPT Fixing width constraint of Seqfeature_Qual_Assoc.Value
 
 ALTER TABLE SG_Seqfeature_Qual_Assoc MODIFY (Value VARCHAR2(4000));
+
+-- fix the order of columns in the unique key constraint on term
+PROMPT Fixing the order of keys in the UK on term
+
+ALTER TABLE SG_Term_Assoc DROP CONSTRAINT XAK1Term_Assoc;
+
+ALTER TABLE SG_Term_Assoc ADD CONSTRAINT XAK1Term_Assoc
+       UNIQUE (Subj_Trm_Oid, Obj_Trm_Oid, Pred_Trm_Oid, Ont_Oid)
+       USING INDEX TABLESPACE &biosql_index;
+
+-- the constraint on biosequence.alphabet needs to allow for upper
+-- case values as well to accommodate Biojava
+PROMPT Allowing upper-case values for biosequence.alphabet for Biojava
+
+ALTER TABLE SG_Biosequence DROP CONSTRAINT Alphabet4;
+
+ALTER TABLE SG_Biosequence ADD CONSTRAINT Alphabet4
+       CHECK (Alphabet IN ('dna','DNA','protein','PROTEIN','rna','RNA'));
+
