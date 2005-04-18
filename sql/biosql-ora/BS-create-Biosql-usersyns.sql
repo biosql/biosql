@@ -30,6 +30,7 @@ set timing off
 set heading off
 set termout off
 set feedback off
+set lines 200
 
 spool usersyns.sql
 
