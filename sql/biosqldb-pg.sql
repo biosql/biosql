@@ -105,7 +105,9 @@ CREATE TABLE term (
 
 CREATE INDEX term_ont ON term ( ontology_id ); 
 
--- ontology terms have synonyms, here is how to store them
+-- ontology terms have synonyms, here is how to store them.
+-- Synonym is a reserved word in many RDBMSs, so the column synonym
+-- may eventually be renamed to name.
 CREATE TABLE term_synonym (
 	 synonym VARCHAR(255) NOT NULL,
 	 term_id INTEGER NOT NULL,
