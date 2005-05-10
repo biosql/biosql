@@ -3,7 +3,7 @@
 --
 -- H.Lapp, GNF, 2002.
 --
--- $GNF: projects/gi/symgene/src/DB/BS-defs.sql,v 1.5 2003/05/02 02:24:44 hlapp Exp $
+-- $Id$
 --
 
 --
@@ -19,6 +19,11 @@
 -- WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
 -- MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 --
+
+-- set the line size wide enough so that generated scripts won't have
+-- erroneous line breaks in them (comment this out if your personal
+-- default setting is wider already)
+set lines 200
 
 -- where do the datafiles for the tablespaces go
 define datalocation='/u02/app/oracle/oradata/gidev'
@@ -38,7 +43,7 @@ define schema_creator=CB_MEMBER
 
 -- what shall be name and (initial) pwd of the schema owner
 define biosql_owner=sgowner
-define biosql_pwd=sgbio
+define biosql_pwd=XXXX
 
 -- the user role (usually read-only, on views) to be created for the schema
 define biosql_user=sg_user
