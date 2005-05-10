@@ -3,7 +3,7 @@
 -- scratch.
 --
 --
--- $GNF: projects/gi/symgene/src/DB/BS-create-all.sql,v 1.8 2003/07/08 23:15:27 hlapp Exp $
+-- $GNF$
 --
 
 --
@@ -49,12 +49,26 @@
 @BS-create-synonyms
 @BS-grants
 
--- 9) create additional users
+-- 9) Biosql API: you need to choose yours, and don't forget to re-run
+-- the grants at the end (this is fast and running it twice shouldn't
+-- hurt - this way we can have somewhat coherent sections here)
+--
+-- Bioperl:
+@BS-create-Biosql-API  
+-- all others (Biojava, etc)
+--@BS-create-Biosql-API2
+-- create the script for users to run so that they don't need to
+-- qualify objects with the schema
+@BS-create-Biosql-usersyns
+-- don't forget this:
+@BS-grants
+
+-- 10) create additional users
 --connect &sysdba/&dbapwd as sysdba
 --@BS-create-users
 --connect &biosql_owner/&biosql_pwd
 
--- 10) pre-populate database as necessary
+-- 11) pre-populate database as necessary
 -- Note: there is a high chance that the seed data is not suitable for you
 -- or is not exactly what you want. Check out the script and make sure you
 -- really want the seed data, possibly after editing it, before you uncomment

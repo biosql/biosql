@@ -29,32 +29,57 @@ set lines 200
 define datalocation='/u02/app/oracle/oradata/gidev'
 
 -- how do you want to name the table tablespace
-define biosql_data=SYMGENE_DATA
+define biosql_data=BIOSQL_DATA
 
 -- how do you want to name the index tablespace
-define biosql_index=SYMGENE_INDEX
+define biosql_index=BIOSQL_INDEX
 
 -- how to you want to name the LOB tablespace
-define biosql_lob=SYMGENE_LOB
-
--- what is the name of the role enabling all permissions necessary
--- for schema creation
-define schema_creator=CB_MEMBER
+define biosql_lob=BIOSQL_LOB
 
 -- what shall be name and (initial) pwd of the schema owner
 define biosql_owner=sgowner
 define biosql_pwd=XXXX
 
+-- the base role you have for users connecting to the database 
+--
+-- users newly created will get this role granted to them;
+-- alternatively, at least the following permissions need to be
+-- granted to all users who want to open a connection and access
+-- biosql:
+-- GRANT CREATE SESSION, CREATE SYNONYM TO <username here>;
+define base_user=CB_USER
+
+-- what is the name of the role enabling all permissions necessary
+-- for schema creation
+--
+-- the owner of the biosql schema will need to have this role, or
+-- alternatively be granted all of the following permissions
+-- directly:
+-- GRANT CREATE PROCEDURE,
+--       CREATE ROLE,
+--       CREATE SEQUENCE,
+--       CREATE SESSION,
+--       CREATE SYNONYM,
+--       CREATE TRIGGER,
+--       CREATE TYPE,
+--       CREATE VIEW,
+--       CREATE TABLE,
+--       CREATE PUBLIC SYNONYM,
+--       DROP PUBLIC SYNONYM
+-- TO &biosql_owner
+-- ;
+define schema_creator=CB_MEMBER
+
 -- the user role (usually read-only, on views) to be created for the schema
 define biosql_user=sg_user
 
--- the upload-permitted role (INSERT permissions for load API views) to be
--- created for the schema
+-- the read/write role, e.g., for uploads (INSERT, UPDATE, DELETE
+-- permissions for API views, SELECT on sequences) to be created for
+-- the schema
 define biosql_loader=sg_loader
 
--- the admin-permitted role (INSERT, UPDATE, DELETE on most things) to be
--- created for the schema
+-- the admin-permitted role (additional DELETE on SGLD% API views) to
+-- be created for the schema - note: most Biosql-oriented users will
+-- never use this and so shouldn't worry much about it
 define biosql_admin=sg_admin
-
--- the base role you have for users connecting to the database
-define base_user=cb_user
