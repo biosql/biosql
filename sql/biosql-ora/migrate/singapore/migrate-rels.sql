@@ -46,6 +46,13 @@ ALTER TABLE SG_Bioentry_Assoc RENAME COLUMN Src_Ent_Oid TO Subj_Ent_Oid;
 ALTER TABLE SG_Bioentry_Assoc RENAME COLUMN Tgt_Ent_Oid TO Obj_Ent_Oid;
 ALTER TABLE SG_Bioentry_Assoc RENAME COLUMN Ont_Oid TO Trm_Oid;
 
+PROMPT - constraint names
+
+ALTER TABLE SG_Bioentry_Assoc 
+      RENAME CONSTRAINT FKSrcEnt_EntA to FKSubjEnt_EntA;
+ALTER TABLE SG_Bioentry_Assoc 
+      RENAME CONSTRAINT FKTgtEnt_EntA to FKObjEnt_EntA;
+
 PROMPT - add rank column
 
 ALTER TABLE SG_Bioentry_Assoc ADD (
