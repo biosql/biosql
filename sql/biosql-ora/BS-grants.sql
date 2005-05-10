@@ -75,7 +75,7 @@ AND   object_type IN ('VIEW','SYNONYM')
 -- also, we need select on sequences
 SELECT 'GRANT SELECT ON ' || object_name || ' TO &biosql_loader;'
 FROM user_objects
-WHERE object_name LIKE 'BS_%_PK_SEQ' 
+WHERE object_name LIKE '%_PK_SEQ' 
 AND object_type IN ('SYNONYM','SEQUENCE')
 ;
 
