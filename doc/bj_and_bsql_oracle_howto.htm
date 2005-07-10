@@ -1,0 +1,93 @@
+<html>
+<head><title>BioJava and BioSQL/Oracle HOWTO</title></head>
+<body>
+
+<h1>BioJava and BioSQL/Oracle HOWTO</h1>
+
+<h2>What you'll need</h2>
+
+<h3>Bio*</h3>
+
+<p>You'll need the latest version of BioJava to take advantage of the full functionality of BioSQL. This can be downloaded from <a href="http://www.biojava.org">biojava.org</a>. You'll also need the latest Oracle BioSQL schema. Originally an alternative schema was available, however <i>BioJava is recommended for use only with the official schema</i>.
+<ul>
+<li><b>Original</b>: by Hilmar Lapp, the original BioSQL schema takes full advantage of Oracle's security mechanisms and produces a high quality schema. To download the schema, go to <a href="http://cvs.open-bio.org">cvs.open-bio.org</a> and select the <tt>biosql</tt> project. Navigate to and download the entire <tt>biosql-schema/sql/biosql-ora</tt> folder. </li>
+<li><b>Alternative <i>(deprecated)</i></b>: by Len Trigg, this version sits entirely inside a single user account, requiring no sysdba access to install. You'll have to ask for a copy of the script from the <a href="http://obda.open-bio.org/mailman/listinfo/biosql-l">biosql-l</a> mailing lists.</li>
+</ul>
+Both options are fully functional and compatible with both BioJava and BioPerl. <i>This document only discusses the Original schema</i>.</p>
+
+<h3>Oracle</h3>
+
+<p>Obviously, you'll need an Oracle database, using the most up-to-date JDBC drivers you can find. BioJava has been tested with BioSQL using Oracle 9i and 10g. For the <b>Original</b> schema, you'll also need sysdba access, or get your DBA to help you if you do not have this yourself. Things that require sysdba access/DBA assistance include creating tablespaces (or being assigned one to use), creating or assigning roles, and creating or assigning additional user accounts other than your own, if you intend to install BioSQL outside of your own account. If your DBA does any of this for you, then you will need to comment out the appropriate steps in <pre>BS-create-all.sql</pre> before running the installer.
+<ul>
+<li>Tablespaces are created in <tt>BS-create-tablespaces.sql</tt>.</li>
+<li>Roles are created in <tt>BS-create-roles.sql</tt>.</li>
+<li>Users are created in <tt>BS-create-users.sql</tt>.</li>
+<li>Global roles and users are defined in <tt>BS-defs-local.sql</tt> (see below on how to set this up).</li>
+</ul>
+</p>
+
+<h2>Bugfixing</h2>
+
+<p>During the production of this document, in cooperation with Hilmar Lapp, all potential problems that were identified with the default BioSQL setup scripts were resolved. However there may still be issues unique to your environment so keep a careful eye open during installation.</p>
+
+<p>One interesting bug that is not related to BioSQL but may cause you grief is to do with the built-in ODM Blast functionality in Oracle 10g. ODM Blast will throw "table or view does not exist" errors if you pass it a cursor over a table that is in fact a synonym (eg. <tt>biosequence</tt> and <tt>bioentry</tt> in any of the users you have granted <tt>biosql_user</tt> or <tt>biosql_loader</tt> to). You can only run ODM Blast over actual physical tables or views, and not synonyms of them.</p>
+
+<h2>Installation</h2>
+
+<p>Make sure you have set the <tt>$ORACLE_SID</tt> environment variable to the correct database before running the scripts. There may be occasional requirements to reconnect to the database, and if it is not set, you may end up running the scripts against the wrong database. Alternatively, you can append "@SID" to your passwords each time you are prompted for them during setup, where "SID" is the SID of your database.</p>
+
+<p>The installation requires the creation of three tablespaces <i>(May be created or assigned for you by your DBA)</i> - one for data, one for indexes, one for LOB objects. Decide where you will be keeping the database files for these, and what you will call the tablespaces. Don't create them yet though, just write down the names. As always it is good practice to keep the data and index tablespaces on separate disks to prevent IO bottlenecks, but you can probably safely put the data and LOB tablespaces on the same disk.</p>
+
+<p>You will also need to decide on names for the two basic roles that BioSQL uses <i>(May be created or assigned for you by your DBA)</i> - the <tt>base_user</tt> role which contains just enough privileges to connect to the database, and the <tt>schema_creator</tt> role, which contains the privileges required to create database objects in a schema. Again, don't create them just yet.</p>
+
+<p>Now, copy <tt>BS-defs.sql</tt> to <tt>BS-defs-local.sql</tt> and edit it. You should check every entry in it carefully, particularly the names and locations of the tablespace files to be created, and the names of the two roles you just decided on above. You will also choose names for the various default BioSQL roles and users. <tt>biosql_owner</tt> is the actual owner of the schema that should already exist and have had the <tt>schema_creator</tt> role granted to it, you'll need to define its password here too. <tt>biosql_user</tt> is a role to be granted to people who need read-only access to the BioSQL database, <tt>biosql_loader</tt> is a role designed for general read/write access, whilst <tt>biosql_admin</tt> has full read-write permission on the schema.</p>
+
+<p>Once you have edited the <tt>BS-defs-local.sql</tt> script appropriately, you need to create the two base roles of <tt>base_user</tt> and <tt>schema_creator</tt> manually. Create them by running something similar to the following script whilst logged in as sysdba, from inside the <tt>biosql-ora</tt> directory:<pre>   @BS-defs-local
+   create role &base_user;
+   grant 
+   CREATE SESSION,
+   CREATE SYNONYM
+   to &base_user;
+   create role &schema_creator;
+   grant 
+   CREATE PROCEDURE,
+   CREATE ROLE,
+   CREATE SEQUENCE,
+   CREATE SESSION,
+   CREATE SYNONYM,
+   CREATE TRIGGER,
+   CREATE TYPE,
+   CREATE VIEW,
+   CREATE TABLE,
+   CREATE PUBLIC SYNONYM,
+   DROP PUBLIC SYNONYM
+   to &schema_creator
+   with admin option;</pre>
+</p>
+
+<p>If you want some basic users set up, edit the <tt>BS-create-users.sql</tt> script to look at the sample users it will create for you automatically. If you don't want them, or want different names etc., comment them out or edit them.</p>
+
+<p>The final stage before actual installation is to edit the <tt>BS-create-all.sql</tt> script to ensure that only the steps you require are carried out. If you already have predefined tablespaces and don't want it to create new ones, comment out the line that reads <tt>@BS-create-tablespaces</tt>. You should do the same for <tt>@BS-create-users</tt> and <tt>@BS-create-roles</tt> as necessary. Likewise if you don't want any default data loaded into the database, comment out the line near the end that reads <tt>@BS-prepopulate-db</tt>.</p>
+
+<p>Make sure you have commented/uncommented the appropriate parts of section 9 of <tt>BS-create-all.sql</tt>. The <tt>BS-create-Biosql-API2</tt> script it refers to is an alternative to <tt>BS-create-Biosql-API</tt>, which works much better with BioJava. This is because BioJava has no flexibility about column names in tables. The API2 version of the script ensures that the column names are exactly the same as what BioJava expects by using views. But, no matter which you run, everything will still work fine with BioPerl).</p>
+
+<p>Now, log into your Oracle database and create the BioSQL database by typing:<pre>   @BS-create-all</pre>. It will prompt you for the <tt>sysdba</tt> user and password if necessary (unless you commented out these parts), maybe a couple of times. You might want to spool the output to see what happens, but you'll find that half of it doesn't appear in the spool file, because BioSQL is using spool itself to generate dynamic scripts on the fly. If you've done everything right, the only messages you should get are a few <tt>Table or view does not exist</tt> style messages, referring to the attempts by the script to drop old objects before recreating new ones.</p>
+
+<p>During installation you may be prompted for the sysdba username and password a couple of times. This is required only to create roles, tablespaces, and users.</p>
+
+<p>If something goes wrong, you can safely rerun the script without dropping anything first as it will drop the database objects from the previous attempt first. It will however leave behind the tablespaces, users, and roles. You can always just drop the users and tablespaces that have been created if it really messes up, and start again from scratch.</p>
+
+<p>Now, your database has been installed! The only remaining step is to log in to each user who will be using BioSQL, and run the <tt>usersyns.sql</tt> script that the installation generated for you in the <tt>biosql-ora</tt> directory. This script creates the synonyms for the BioSQL objects and allows the users to see them. This script should not have any errors at all. If it does, edit it and check it closely for things like misplaced linebreaks etc.</p>
+
+<p>Note that if your users can't connect or can't get the appropriate permissions to do what you want them to do, try re-running the <tt>BS-create-roles</tt> script as sysdba, then the <tt>BS-grants</tt> script as the <tt>biosql_owner</tt> user. Disconnect and reconnect as the user having trouble and it should be fixed.</p>
+
+<h2>Testing</h2>
+
+<p>Any BioJava script should work fine.</p>
+
+<p><b>THE END!</b></p>
+
+<p><small>Richard Holland, hollandr at gis dot a-star dot edu dot sg, December 2004, updated May 2005</small></p>
+
+</body>
+</html>
