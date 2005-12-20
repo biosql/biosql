@@ -1,9 +1,9 @@
-======================================================================
+====================================
 $Id$
-======================================================================
+====================================
 
 BioSQL - INSTALL
------------------
+--------------
 
 This document gives an overview of the installation process for
 BioSQL on 3 different platforms: MySQL, Postgres, and Oracle. 
@@ -46,7 +46,7 @@ all these efforts).
 
 
 Server Setup
-------------
+----------
 
 To run BioSQL yourself you need to have a database server. Depending
 on your circumstances there will be different setups to use. Here are
@@ -256,7 +256,7 @@ The postgres server is now up and running.
 
 
 ORACLE Installation 
--------------------
+----------------
 
 Oracle installations are certainly more complicated than MySQL
 installs. Depending on the situation one could choose from the free 
@@ -278,7 +278,7 @@ these are set correctly.
 
 
 Starting BioSQL and loading the first database
-----------------------------------------------
+------------------------------------
 
 You have to first choose the language or project you want to use in 
 to load your data. You currently have three options: Perl and BioPerl, 
@@ -289,7 +289,7 @@ modules for database access and then the BioSQL binding code.
 
 
 Schema Loading
---------------
+-------------
 
 The BioSQL schema is distributed separately from the language
 bindings. Pick up the schema from the tar ball available at
@@ -333,7 +333,7 @@ correctly, we now need to load it with data.
 
 
 Perl Loading
-------------
+----------
 
 To load with Perl, you need to have the DBI module installed as well
 as the driver for your SQL database of choice. The Oracle, MySQL, 
@@ -406,7 +406,7 @@ Then proceed to "make test" and "make install".
 
 
 Downloading bioperl-db and loading your first sequences
--------------------------------------------------------
+----------------------------------------------
 
 With DBI and the driver of choice set up you now should download
 the bioperl and bioperl-db package.
@@ -441,8 +441,10 @@ With bioperl and bioperl-db installed you are ready to load some data.
 It is advisable to pre-load the NCBI taxonomy database (use
 scripts/load_taxonomy.pl in the biosql-schema package, the details are
 in its documentation). Otherwise you'll see errors from misparsed
-organisms. To load sequence data you can use the load_seqdatabase.pl 
-script in bioperl-db/scripts/biosql/, for example:
+organisms. 
+
+To load sequence data you can use the load_seqdatabase.pl script in 
+bioperl-db/scripts/biosql/, for example:
 
   >perl load_seqdatabase.pl -dbuser psqldb -dbname bioseqdb -namespace swissprot -format swiss sprot40.dat
 
