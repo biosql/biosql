@@ -739,7 +739,7 @@ ALTER TABLE location_qualifier_value ADD CONSTRAINT FKterm_locqual
 CREATE RULE rule_bioentry_i1
        AS ON INSERT TO bioentry
        WHERE (
-             SELECT oid FROM bioentry 
+             SELECT bioentry_id FROM bioentry
              WHERE identifier     = new.identifier
              AND   biodatabase_id = new.biodatabase_id
              ) 
@@ -749,7 +749,7 @@ CREATE RULE rule_bioentry_i1
 CREATE RULE rule_bioentry_i2
        AS ON INSERT TO bioentry
        WHERE (
-       	     SELECT oid FROM bioentry 
+       	     SELECT bioentry_id FROM bioentry
 	     WHERE accession      = new.accession
 	     AND   biodatabase_id = new.biodatabase_id
 	     AND   version	  = new.version
@@ -760,7 +760,10 @@ CREATE RULE rule_bioentry_i2
 
 CREATE RULE rule_biodatabase_i
        AS ON INSERT TO biodatabase
-       WHERE (SELECT oid FROM biodatabase WHERE name = new.name)
+       WHERE (
+             SELECT biodatabase_id FROM biodatabase 
+             WHERE name = new.name
+             )
        	     IS NOT NULL
        DO INSTEAD NOTHING
 ;
@@ -768,7 +771,7 @@ CREATE RULE rule_biodatabase_i
 CREATE RULE rule_bioentry_dbxref_i
        AS ON INSERT TO bioentry_dbxref
        WHERE (
-       	     SELECT oid FROM bioentry_dbxref 
+       	     SELECT dbxref_id FROM bioentry_dbxref
 	     WHERE bioentry_id = new.bioentry_id
 	     AND   dbxref_id   = new.dbxref_id
 	     ) 
@@ -779,7 +782,7 @@ CREATE RULE rule_bioentry_dbxref_i
 CREATE RULE rule_bioentry_path_i
        AS ON INSERT TO bioentry_path
        WHERE (
-       	     SELECT oid FROM bioentry_relationship 
+       	     SELECT bioentry_relationship_id FROM bioentry_relationship
 	     WHERE object_bioentry_id = new.object_bioentry_id
 	     AND   subject_bioentry_id= new.subject_bioentry_id
 	     AND   term_id	      = new.term_id
@@ -791,7 +794,7 @@ CREATE RULE rule_bioentry_path_i
 CREATE RULE rule_bioentry_qualifier_value_i
        AS ON INSERT TO bioentry_qualifier_value
        WHERE (
-       	     SELECT oid FROM bioentry_qualifier_value
+       	     SELECT bioentry_id FROM bioentry_qualifier_value
 	     WHERE bioentry_id = new.bioentry_id
 	     AND   term_id     = new.term_id
 	     AND   rank	       = new.rank
@@ -803,7 +806,7 @@ CREATE RULE rule_bioentry_qualifier_value_i
 CREATE RULE rule_bioentry_reference_i
        AS ON INSERT TO bioentry_reference
        WHERE (
-       	     SELECT oid FROM bioentry_reference 
+       	     SELECT bioentry_id FROM bioentry_reference 
 	     WHERE bioentry_id  = new.bioentry_id
 	     AND   reference_id = new.reference_id
 	     AND   rank		= new.rank
@@ -815,7 +818,7 @@ CREATE RULE rule_bioentry_reference_i
 CREATE RULE rule_bioentry_relationship_i
        AS ON INSERT TO bioentry_relationship
        WHERE (
-       	     SELECT oid FROM bioentry_relationship 
+       	     SELECT bioentry_relationship_id FROM bioentry_relationship
 	     WHERE object_bioentry_id = new.object_bioentry_id
 	     AND   subject_bioentry_id= new.subject_bioentry_id
 	     AND   term_id	      = new.term_id
@@ -826,7 +829,10 @@ CREATE RULE rule_bioentry_relationship_i
 
 CREATE RULE rule_biosequence_i
        AS ON INSERT TO biosequence
-       WHERE (SELECT oid FROM biosequence WHERE bioentry_id = new.bioentry_id)
+       WHERE (
+             SELECT bioentry_id FROM biosequence 
+             WHERE bioentry_id = new.bioentry_id
+             )
        	     IS NOT NULL
        DO INSTEAD NOTHING
 ;
@@ -834,7 +840,7 @@ CREATE RULE rule_biosequence_i
 CREATE RULE rule_comment_i
        AS ON INSERT TO comment
        WHERE (
-       	     SELECT oid FROM comment
+       	     SELECT comment_id FROM comment
 	     WHERE bioentry_id = new.bioentry_id
 	     AND   rank	       = new.rank
 	     )
@@ -845,7 +851,7 @@ CREATE RULE rule_comment_i
 CREATE RULE rule_dbxref_i
        AS ON INSERT TO dbxref
        WHERE (
-       	     SELECT oid FROM dbxref
+       	     SELECT dbxref_id FROM dbxref
 	     WHERE accession = new.accession
 	     AND   dbname    = new.dbname
 	     AND   version   = new.version
@@ -857,7 +863,7 @@ CREATE RULE rule_dbxref_i
 CREATE RULE rule_dbxref_qualifier_value_i
        AS ON INSERT TO dbxref_qualifier_value
        WHERE (
-       	     SELECT oid FROM dbxref_qualifier_value
+       	     SELECT dbxref_id FROM dbxref_qualifier_value
 	     WHERE dbxref_id = new.dbxref_id
 	     AND   term_id   = new.term_id
 	     AND   rank	     = new.rank
@@ -869,7 +875,7 @@ CREATE RULE rule_dbxref_qualifier_value_i
 CREATE RULE rule_location_i
        AS ON INSERT TO location
        WHERE (
-       	     SELECT oid FROM location
+       	     SELECT location_id FROM location
 	     WHERE seqfeature_id = new.seqfeature_id
 	     AND   rank		 = new.rank
 	     )
@@ -880,7 +886,7 @@ CREATE RULE rule_location_i
 CREATE RULE rule_location_qualifier_value_i
        AS ON INSERT TO location_qualifier_value
        WHERE (
-       	     SELECT oid FROM location_qualifier_value
+       	     SELECT location_id FROM location_qualifier_value
 	     WHERE location_id = new.location_id
 	     AND   term_id     = new.term_id
 	     ) 
@@ -890,20 +896,29 @@ CREATE RULE rule_location_qualifier_value_i
 
 CREATE RULE rule_ontology_i
        AS ON INSERT TO ontology
-       WHERE (SELECT oid FROM ontology WHERE name = new.name) 
+       WHERE (
+             SELECT ontology_id FROM ontology 
+             WHERE name = new.name
+             ) 
        	     IS NOT NULL
        DO INSTEAD NOTHING
 ;
 
 CREATE RULE rule_reference_i1
        AS ON INSERT TO reference
-       WHERE (SELECT oid FROM reference WHERE crc = new.crc) 
+       WHERE (
+             SELECT reference_id FROM reference 
+             WHERE crc = new.crc
+             ) 
        	     IS NOT NULL
        DO INSTEAD NOTHING
 ;
 CREATE RULE rule_reference_i2
        AS ON INSERT TO reference
-       WHERE (SELECT oid FROM reference WHERE dbxref_id = new.dbxref_id)
+       WHERE (
+             SELECT reference_id FROM reference
+             WHERE dbxref_id = new.dbxref_id
+             )
        	     IS NOT NULL
        DO INSTEAD NOTHING
 ;
@@ -911,7 +926,7 @@ CREATE RULE rule_reference_i2
 CREATE RULE rule_seqfeature_i
        AS ON INSERT TO seqfeature
        WHERE (
-       	     SELECT oid FROM seqfeature 
+       	     SELECT seqfeature_id FROM seqfeature 
 	     WHERE bioentry_id    = new.bioentry_id
 	     AND   type_term_id   = new.type_term_id
 	     AND   source_term_id = new.source_term_id
@@ -924,7 +939,7 @@ CREATE RULE rule_seqfeature_i
 CREATE RULE rule_seqfeature_dbxref_i
        AS ON INSERT TO seqfeature_dbxref
        WHERE (	    
-       	     SELECT oid FROM seqfeature_dbxref
+       	     SELECT seqfeature_id FROM seqfeature_dbxref
 	     WHERE seqfeature_id = new.seqfeature_id
 	     AND   dbxref_id	 = new.dbxref_id
 	     )
@@ -935,7 +950,7 @@ CREATE RULE rule_seqfeature_dbxref_i
 CREATE RULE rule_seqfeature_path_i
        AS ON INSERT TO seqfeature_path
        WHERE (
-       	     SELECT oid FROM seqfeature_path
+       	     SELECT subject_seqfeature_id FROM seqfeature_path
 	     WHERE object_seqfeature_id = new.object_seqfeature_id
 	     AND   subject_seqfeature_id= new.subject_seqfeature_id
 	     AND   term_id		= new.term_id
@@ -947,7 +962,7 @@ CREATE RULE rule_seqfeature_path_i
 CREATE RULE rule_seqfeature_qualifier_value_i
        AS ON INSERT TO seqfeature_qualifier_value
        WHERE (
-       	     SELECT oid FROM seqfeature_qualifier_value
+       	     SELECT seqfeature_id FROM seqfeature_qualifier_value
 	     WHERE seqfeature_id = new.seqfeature_id
 	     AND   term_id	 = new.term_id
 	     AND   rank		 = new.rank
@@ -959,7 +974,7 @@ CREATE RULE rule_seqfeature_qualifier_value_i
 CREATE RULE rule_seqfeature_relationship_i
        AS ON INSERT TO seqfeature_relationship
        WHERE (
-       	     SELECT oid FROM seqfeature_relationship
+       	     SELECT subject_seqfeature_id FROM seqfeature_relationship
 	     WHERE object_seqfeature_id = new.object_seqfeature_id
 	     AND   subject_seqfeature_id= new.subject_seqfeature_id
 	     AND   term_id		= new.term_id
@@ -970,7 +985,10 @@ CREATE RULE rule_seqfeature_relationship_i
 
 CREATE RULE rule_taxon_i
        AS ON INSERT TO taxon
-       WHERE (SELECT oid FROM taxon WHERE ncbi_taxon_id = new.ncbi_taxon_id)
+       WHERE (
+             SELECT taxon_id FROM taxon 
+             WHERE ncbi_taxon_id = new.ncbi_taxon_id
+             )
        	     IS NOT NULL
        DO INSTEAD NOTHING
 ;
@@ -978,7 +996,7 @@ CREATE RULE rule_taxon_i
 CREATE RULE rule_taxon_name_i
        AS ON INSERT TO taxon_name
        WHERE (
-       	     SELECT oid FROM taxon_name
+       	     SELECT taxon_id FROM taxon_name
 	     WHERE taxon_id   = new.taxon_id
 	     AND   name	      = new.name
 	     AND   name_class = new.name_class
@@ -989,14 +1007,17 @@ CREATE RULE rule_taxon_name_i
 
 CREATE RULE rule_term_i1
        AS ON INSERT TO term
-       WHERE (SELECT oid FROM term WHERE identifier = new.identifier)
+       WHERE (
+             SELECT term_id FROM term
+             WHERE identifier = new.identifier
+             )
        	     IS NOT NULL
        DO INSTEAD NOTHING
 ;
 CREATE RULE rule_term_i2
        AS ON INSERT TO term
        WHERE (
-       	     SELECT oid FROM term 
+       	     SELECT term_id FROM term
 	     WHERE name        = new.name
 	     AND   ontology_id = new.ontology_id
              AND   is_obsolete = new.is_obsolete
@@ -1008,7 +1029,7 @@ CREATE RULE rule_term_i2
 CREATE RULE rule_term_dbxref_i
        AS ON INSERT TO term_dbxref
        WHERE (
-       	     SELECT oid FROM term_dbxref
+       	     SELECT dbxref_id FROM term_dbxref
 	     WHERE dbxref_id = new.dbxref_id
 	     AND   term_id   = new.term_id
 	     )
@@ -1019,7 +1040,7 @@ CREATE RULE rule_term_dbxref_i
 CREATE RULE rule_term_path_i
        AS ON INSERT TO term_path
        WHERE (
-       	     SELECT oid FROM term_path
+       	     SELECT subject_term_id FROM term_path
 	     WHERE subject_term_id   = new.subject_term_id
 	     AND   predicate_term_id = new.predicate_term_id
 	     AND   object_term_id    = new.object_term_id
@@ -1033,7 +1054,7 @@ CREATE RULE rule_term_path_i
 CREATE RULE rule_term_relationship_i
        AS ON INSERT TO term_relationship
        WHERE (
-       	     SELECT oid FROM term_relationship
+       	     SELECT term_relationship_id FROM term_relationship
 	     WHERE subject_term_id   = new.subject_term_id
 	     AND   predicate_term_id = new.predicate_term_id
 	     AND   object_term_id    = new.object_term_id
@@ -1046,7 +1067,7 @@ CREATE RULE rule_term_relationship_i
 CREATE RULE rule_term_relationship_term_i1
        AS ON INSERT TO term_relationship_term
        WHERE (
-       	     SELECT oid FROM term_relationship_term
+       	     SELECT term_relationship_id FROM term_relationship_term
 	     WHERE term_relationship_id   = new.term_relationship_id
 	     )
 	     IS NOT NULL
@@ -1056,7 +1077,7 @@ CREATE RULE rule_term_relationship_term_i1
 CREATE RULE rule_term_relationship_term_i2
        AS ON INSERT TO term_relationship_term
        WHERE (
-       	     SELECT oid FROM term_relationship_term
+       	     SELECT term_id FROM term_relationship_term
 	     WHERE term_id   = new.term_id
 	     )
 	     IS NOT NULL
@@ -1066,7 +1087,7 @@ CREATE RULE rule_term_relationship_term_i2
 CREATE RULE rule_term_synonym_i
        AS ON INSERT TO term_synonym
        WHERE (
-       	     SELECT oid FROM term_synonym
+       	     SELECT term_id FROM term_synonym
 	     WHERE synonym = new.synonym
 	     AND   term_id = new.term_id
 	     )
@@ -1098,7 +1119,10 @@ AS
 '
 CREATE RULE rule_taxon_i
        AS ON INSERT TO taxon
-       WHERE (SELECT oid FROM taxon WHERE ncbi_taxon_id = new.ncbi_taxon_id)
+       WHERE (
+             SELECT taxon_id FROM taxon 
+             WHERE ncbi_taxon_id = new.ncbi_taxon_id
+             )
        	     IS NOT NULL
        DO INSTEAD NOTHING
 ;
