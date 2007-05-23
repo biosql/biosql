@@ -12,7 +12,7 @@ load_ncbi_taxonomy.pl
   Usage: load_ncbi_taxonomy.pl
         --dbname     # name of database to use
         --dsn        # the DSN of the database to connect to
-        --driver     # "mysql" or "pg", defaults to "mysql"
+        --driver     # "mysql", "Pg", "Oracle" (default "mysql")
         --host       # optional: host to connect with
         --port       # optional: port to connect with
         --dbuser     # optional: user name to connect with
