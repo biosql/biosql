@@ -19,6 +19,7 @@ load_ncbi_taxonomy.pl
         --dbpass     # optional: password to connect with
         --download   # optional: whether to download new NCBI taxonomy data
         --directory  # optional: where to store/look for the data
+        --schema     # optional: Pg only, load using given schema
 
 =head1 DESCRIPTION
 
@@ -94,7 +95,7 @@ optional: where to store/look for the data, default is ./taxdata
 Flag meaning do not delete retired nodes.
 
 You may want to specify this if you have sequence records referencing
-the retired nodes if they happen to be leafs.  Otherwise you'll get a
+the retired nodes if they happen to be leafs.  Otherwise you will get a
 foreign key constraint failure saying something like 'child record
 found' if there is a bioentry for that species. The retired nodes will
 still be printed, so that you can then decide for yourself afterwards
