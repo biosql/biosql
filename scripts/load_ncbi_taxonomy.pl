@@ -91,7 +91,7 @@ optional: where to store/look for the data, default is ./taxdata
 
 =item --nodelete
 
-Flag meaning don't delete retired nodes.
+Flag meaning do not delete retired nodes.
 
 You may want to specify this if you have sequence records referencing
 the retired nodes if they happen to be leafs.  Otherwise you'll get a
@@ -107,6 +107,10 @@ Sets the verbosity level, default is 1.
 0 = silent,
 1 = print current step,
 2 = print current step and progress statistics.
+
+=item --schema
+
+Schema, if there is a schema as well as a database (Postgres only).
 
 =item --help
 
@@ -190,6 +194,7 @@ my $pgchunk = 40000;   # the number of rows after which to vacuum in the
 our $chunksize = 0;    # disable by default
 our $verbose = 1;      # guess what
 our $nodelete = 0;     # whether not to delete retired taxon nodes
+my $schema;            # Postgres only, if both schema & database exist
 
 # not changeable through command-line:
 my %tablemaps = (
@@ -232,7 +237,8 @@ my $ok = GetOptions("help"       => \$help,
 		    "download"   => \$download,
 		    "nodelete"   => \$nodelete,
 		    "verbose=i"  => \$verbose,
-		    );
+			 "schema=s"   => \$schema
+						 );
 
 #
 # erroneous arguments or help page requested?
@@ -268,6 +274,11 @@ if($dsn) {
     $dsn .= $dbparam{$driver}.$db;
     $dsn .= ";host=$host" if $host;
     $dsn .= ";port=$port" if $port;
+}
+
+# use --schema only with Postgres
+if (defined $schema && $driver ne "Pg") {
+	die "--schema option is only used when the driver is \"Pg\"\n";
 }
 
 # chunksize:
@@ -395,6 +406,15 @@ print STDERR "\t... insert / update / delete taxon nodes\n" if $verbose;
 
 # start transaction, possibly lock tables, etc.
 begin_work($driver, $dbh);
+
+#
+# if this is Postgres and a schema and is specified
+# then we need to set search_path so the schema is searched
+#
+if ($driver eq "Pg" && $schema) {
+    print STDERR "\t... set Postgres search_path to $schema\n" if $verbose;
+    $dbh->do("set search_path to $schema");
+}
 
 # taxon has a self-referential foreign key, which we need to defer, remove,
 # or whatever
@@ -791,16 +811,16 @@ sub unconstrain_taxon{
 }
 
 sub begin_work{
-    my ($driver, $dbh, $drop_fk) = @_;
+	my ($driver, $dbh, $drop_fk) = @_;
 
-    $dbh->begin_work() if $dbh->{AutoCommit};
-    if ($driver eq "mysql") {
-        # lock all the tables we'll need, if MySQL:
-	# do we really need this?
-	#my @locktables = qw(taxon taxon_name);
-	#$dbh->do('LOCK TABLES ' .
-	#	 join(", ", map { $_ .= ' WRITE' } @locktables));
-    }
+	$dbh->begin_work() if $dbh->{AutoCommit};
+	if ($driver eq "mysql") {
+		# lock all the tables we'll need, if MySQL:
+		# do we really need this?
+		#my @locktables = qw(taxon taxon_name);
+		#$dbh->do('LOCK TABLES ' .
+		#	 join(", ", map { $_ .= ' WRITE' } @locktables));
+	}
 }
 
 sub end_work{
