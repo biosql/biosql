@@ -17,12 +17,17 @@
 -- may be changed to best suit your requirements. Search for the tag
 -- CONFIG and read the documentation you find there.
 --
-
--- database have bioentries. That is about it. 
--- we do not store different versions of a database as different dbids 
+--
+-- The Biosql database has bioentries. That is about it. 
+-- We do not store different versions of a database as different dbids 
 -- (there is no concept of versions of database). There is a concept of 
 -- versions of entries. Versions of databases deserve their own table and 
 -- join to bioentry table for tracking with versions of entries  
+--
+-- If you want to use Biosql with a specific schema uncomment this:
+-- CREATE SCHEMA biosql;
+-- SET search_path to biosql;
+
 CREATE SEQUENCE biodatabase_pk_seq;
 CREATE TABLE biodatabase ( 
 	 biodatabase_id INTEGER DEFAULT nextval ( 'biodatabase_pk_seq' ) NOT NULL , 
