@@ -63,7 +63,10 @@ print this manual and exit
 
 =head1 Authors
 
-Hilmar Lapp <hlapp at gmx.net>,
+Hilmar Lapp <hlapp at gmx.net>
+
+=head1 Contributors
+
 William Piel <william.piel at yale.edu>
 
 =cut
