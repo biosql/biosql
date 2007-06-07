@@ -17,6 +17,17 @@
 -- may be changed to best suit your requirements. Search for the tag
 -- CONFIG and read the documentation you find there.
 --
+
+-- CONFIG: PostgreSQL supports 'schemas' since v7.4. A schema here is
+-- essentially a namespace for a collection of tables (and other
+-- database objects such as views, indexes, etc) within a 'database.'
+-- Bioperl-db loading scripts (load_seqdatabase.pl, load_ontology.pl,
+-- etc) do support specifying a schema, as does load_ncbi_taxonomy.pl.
+-- If you want to use Biosql with a specific schema uncomment this:
+
+-- CREATE SCHEMA biosql; 
+-- SET search_path to biosql;
+
 --
 -- The Biosql database has bioentries. That is about it. 
 -- We do not store different versions of a database as different dbids 
