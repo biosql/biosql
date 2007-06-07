@@ -81,6 +81,13 @@ optional: user name to connect with
 
 optional: password to connect with
 
+=item --schema
+
+The schema under which the BioSQL tables reside in the database. For
+Oracle and MySQL this is synonymous with the user, and won't have an
+effect. PostgreSQL since v7.4 supports schemas as the namespace for
+collections of tables within a database.
+
 =item --download
 
 optional: whether to download new NCBI taxonomy data, default is no
@@ -108,10 +115,6 @@ Sets the verbosity level, default is 1.
 0 = silent,
 1 = print current step,
 2 = print current step and progress statistics.
-
-=item --schema
-
-Schema, if there is a schema as well as a database (Postgres only).
 
 =item --help
 
@@ -186,6 +189,7 @@ my $port;              # port to which to connect
 my $user;              # the user to connect as
 my $pass;              # the password for the user
 our $driver = "mysql"; # the DBI driver module
+my $schema;            # for PostgreSQL, the schema to use, if any
 my $dir = "taxdata";   # the download and data directory
 my $download = 0;      # whether to download from NCBI first
 our $allow_truncate = 0; # whether or not to allow the names delete and reload
@@ -195,7 +199,6 @@ my $pgchunk = 40000;   # the number of rows after which to vacuum in the
 our $chunksize = 0;    # disable by default
 our $verbose = 1;      # guess what
 our $nodelete = 0;     # whether not to delete retired taxon nodes
-my $schema;            # Postgres only, if both schema & database exist
 
 # not changeable through command-line:
 my %tablemaps = (
@@ -232,14 +235,14 @@ my $ok = GetOptions("help"       => \$help,
 		    "password=s" => \$pass,
 		    "dbpass=s"   => \$pass,
 		    "driver=s"   => \$driver,
+                    "schema=s"   => \$schema,
 		    "allow_truncate" => \$allow_truncate,
 		    "chunksize=i"=> \$chunksize,
 		    "directory=s"=> \$dir,
 		    "download"   => \$download,
 		    "nodelete"   => \$nodelete,
 		    "verbose=i"  => \$verbose,
-			 "schema=s"   => \$schema
-						 );
+                   );
 
 #
 # erroneous arguments or help page requested?
@@ -277,11 +280,6 @@ if($dsn) {
     $dsn .= ";port=$port" if $port;
 }
 
-# use --schema only with Postgres
-if (defined $schema && $driver ne "Pg") {
-	die "--schema option is only used when the driver is \"Pg\"\n";
-}
-
 # chunksize:
 if(! defined($chunksize)) {
     $chunksize = ($driver eq "Pg") ? $pgchunk : 0;
@@ -311,6 +309,12 @@ my $dbh = DBI->connect($dsn,
 			 PrintError => 0,
 		       }
 		      ) or die $DBI::errstr;
+
+# if this is PostgreSQL and a schema was named, make sure it's in the
+# search path
+if (($driver eq "Pg") && $schema) {
+    $dbh->do("SET search_path TO $schema, public") or die $DBI::errstr;
+} 
 
 my $taxontbl = $tablemap{taxon};
 my $taxonnametbl = $tablemap{taxon_name};
@@ -407,15 +411,6 @@ print STDERR "\t... insert / update / delete taxon nodes\n" if $verbose;
 
 # start transaction, possibly lock tables, etc.
 begin_work($driver, $dbh);
-
-#
-# if this is Postgres and a schema and is specified
-# then we need to set search_path so the schema is searched
-#
-if ($driver eq "Pg" && $schema) {
-    print STDERR "\t... set Postgres search_path to $schema\n" if $verbose;
-    $dbh->do("set search_path to $schema");
-}
 
 # taxon has a self-referential foreign key, which we need to defer, remove,
 # or whatever
