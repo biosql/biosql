@@ -144,6 +144,9 @@ sub compute_tc {
     my $del_sql =
         "DELETE FROM node_path WHERE child_node_id IN ("
         ."SELECT node_id FROM node WHERE tree_id = ?)";
+    my $zero_sql = 
+        "INSERT INTO node_path (child_node_id, parent_node_id, distance)"
+        ." SELECT n.node_id, n.node_id, 0 FROM node n WHERE n.tree_id = ?";
     my $init_sql = 
         "INSERT INTO node_path (child_node_id, parent_node_id, path, distance)"
         ." SELECT e.child_node_id, e.parent_node_id, n.left_idx, 1"
@@ -159,6 +162,8 @@ sub compute_tc {
         ." AND p.distance = ?";
     my $sth = prepare_sth($dbh,$del_sql);
     execute_sth($sth, $tree);
+    $sth = prepare_sth($dbh,$zero_sql);
+    execute_sth($sth,$tree);
     $sth = prepare_sth($dbh,$init_sql);
     execute_sth($sth,$tree);
     $sth = prepare_sth($dbh,$path_sql);
