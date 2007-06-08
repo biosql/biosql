@@ -22,7 +22,8 @@ CREATE TABLE tree (
        name VARCHAR(32) NOT NULL,
        identifier VARCHAR(32),
        is_rooted boolean DEFAULT TRUE,
-       node_id INTEGER NOT NULL -- startpoint of tree
+       node_id INTEGER NOT NULL, -- startpoint of tree
+       biodatabase_id INTEGER NOT NULL,
        , PRIMARY KEY (tree_id)
        , UNIQUE (name)
 );
@@ -36,6 +37,8 @@ COMMENT ON COLUMN tree.identifier IS 'The identifier of the tree, if there is on
 COMMENT ON COLUMN tree.is_rooted IS 'Whether or not the tree is rooted. By default, a tree is assumed to be rooted.';
 
 COMMENT ON COLUMN tree.node_id IS 'The starting node of the tree. If the tree is rooted, this will be the root node.';
+
+COMMENT ON COLUMN tree.biodatabase_id IS 'The namespace of the tree itself. Though trees are in a sense named containers themselves (namely for nodes), they also constitute (possibly identifiable!) data objects in their own right. Some data sources may only provide a single tree, so that assigning a namespace for the tree may seem excessive, but others, such as TreeBASE, contain many trees, just as sequence databanks contain many sequences. The choice of how to name a tree is up to the user; one may assign a default namespace (such as "biosql"), or create one named the same as the tree.';
 
 -- nodes in a tree
 CREATE SEQUENCE node_pk_seq;
@@ -121,6 +124,9 @@ CREATE TABLE node_attribute_value (
 ALTER TABLE tree ADD CONSTRAINT FKnode
        FOREIGN KEY (node_id) REFERENCES node (node_id)
            DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE tree ADD CONSTRAINT FKbiodatabase
+       FOREIGN KEY (biodatabase_id) REFERENCES biodatabase (biodatabase_id);
 
 ALTER TABLE node ADD CONSTRAINT FKnode_tree
        FOREIGN KEY (tree_id) REFERENCES tree (tree_id);
