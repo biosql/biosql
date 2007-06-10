@@ -23,9 +23,9 @@ CREATE TABLE tree (
        identifier VARCHAR(32),
        is_rooted boolean DEFAULT TRUE,
        node_id INTEGER NOT NULL, -- startpoint of tree
-       biodatabase_id INTEGER NOT NULL,
+       biodatabase_id INTEGER NOT NULL
        , PRIMARY KEY (tree_id)
-       , UNIQUE (name)
+       , CONSTRAINT tree_c1 UNIQUE (name, biodatabase_id)
 );
 
 COMMENT ON TABLE tree IS 'A tree basically is a namespace for nodes, and thereby implicitly for their relationships (edges). In this model, tree is also bit of misnomer because we try to support reticulating trees, i.e., networks, too, so arguably it should be called graph. Typically, this will be used for storing phylogenetic trees, sequence trees (a.k.a. gene trees) as much as species trees.';
