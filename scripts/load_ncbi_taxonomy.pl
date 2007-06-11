@@ -62,7 +62,8 @@ synonym for --dbname for Oracle folks
 =item --dsn
 
 the DSN of the database to connect to, overrides --dbname, --driver,
---host, and --port
+--host, and --port. The default is the value of the DBI_DSN
+environment variable.
 
 =item --driver
 
@@ -79,11 +80,13 @@ optional: port to connect with
 
 =item --dbuser
 
-optional: user name to connect with
+optional: user name to connect with. The default is the value of the
+DBI_USER environment variable.
 
 =item --dbpass
 
-optional: password to connect with
+optional: password to connect with. The default is the value of the
+DBI_PASSWORD environment variable.
 
 =item --schema
 
@@ -187,11 +190,11 @@ use Getopt::Long;
 ####################################################################
 my $help = 0;          # whether to display the help page
 my $db;                # the name of the database or schema
-my $dsn;               # the full DSN -- will be built if not provided
+my $dsn = $ENV{DBI_DSN}; # the full DSN -- will be built if not provided
 my $host;              # host name of the server
 my $port;              # port to which to connect
-my $user;              # the user to connect as
-my $pass;              # the password for the user
+my $user = $ENV{DBI_USER};     # the user to connect as
+my $pass = $ENV{DBI_PASSWORD}; # the password for the user
 our $driver = "mysql"; # the DBI driver module
 my $schema;            # for PostgreSQL, the schema to use, if any
 my $dir = "taxdata";   # the download and data directory
