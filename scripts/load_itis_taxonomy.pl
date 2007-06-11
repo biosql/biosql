@@ -118,6 +118,10 @@ this is not supported currently
 the directory in which the individual files reside that make up the
 ITIS taxonomy database
 
+=item --namespace
+
+the namespace for the ITIS trees, defaults to "ITIS"
+
 =item --verbose=n
 
 Sets the verbosity level, default is 1.
