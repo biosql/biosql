@@ -2,6 +2,10 @@
 #
 # $Id$
 #
+# This program may be used, distributed or modified under the same
+# terms as Perl itself. Please consult the Perl Artistic License
+# (http://www.perl.com/pub/a/language/misc/Artistic.html) for the
+# terms under which you may use, modify, or distribute this script.
 
 =head1 NAME
 
