@@ -56,6 +56,8 @@ CREATE TABLE node (
        , UNIQUE (right_idx,tree_id)
 );
 
+CREATE INDEX node_i2 ON node (tree_id);
+
 COMMENT ON TABLE node IS 'A node in a tree. Typically, this will be a node in a phylogenetic tree, resembling either a nucleotide or protein sequence, or a taxon, or more generally an ''operational taxonomic unit'' (OTU).';
 
 COMMENT ON COLUMN node.label IS 'The label of a node. This may the latin binomial of the taxon, the accession number of a sequences, or any other construct that uniquely identifies the node within one tree.';
@@ -80,6 +82,8 @@ CREATE TABLE edge (
        , UNIQUE (child_node_id,parent_node_id)
 );
 
+CREATE INDEX edge_i1 ON edge (parent_node_id);
+
 COMMENT ON TABLE edge IS 'An edge between two nodes in a tree (or graph).';
 
 COMMENT ON COLUMN edge.child_node_id IS 'The endpoint node of the two nodes connected by a directed edge. In a phylogenetic tree, this is the descendant.';
@@ -93,7 +97,9 @@ CREATE TABLE node_path (
        path TEXT,
        distance INTEGER
        , PRIMARY KEY (child_node_id,parent_node_id,distance)
-);       
+);
+
+CREATE INDEX node_path_i1 ON node_path (parent_node_id);
 
 COMMENT ON TABLE node_path IS 'An path between two nodes in a tree (or graph). Two nodes A and B are connected by a (directed) path if B can be reached from A by following nodes that are connected by (directed) edges.';
 
