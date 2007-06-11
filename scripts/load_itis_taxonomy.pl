@@ -27,6 +27,7 @@ load_itis_taxonomy.pl
         --dbpass     # optional: password to connect with
         --download   # optional: whether to download new ITIS taxonomy data
         --schema     # optional: Pg only, load using given schema
+        --encoding   # optional: Pg only, client encoding to set
 
 =head1 DESCRIPTION
 
@@ -63,7 +64,8 @@ name of database to use
 =item --dsn
 
 the DSN of the database to connect to, overrides --dbname, --driver,
---host, and --port
+--host, and --port. The default is the value of the DBI_DSN
+environment variable.
 
 =item --driver
 
@@ -81,11 +83,13 @@ optional: port to connect with
 
 =item --dbuser
 
-optional: user name to connect with
+optional: user name to connect with. The default is the value of the
+DBI_USER environment variable.
 
 =item --dbpass
 
-optional: password to connect with
+optional: password to connect with. The default is the value of the
+DBI_PASSWORD environment variable.
 
 =item --schema
 
@@ -94,10 +98,20 @@ Oracle and MySQL this is synonymous with the user, and won't have an
 effect. PostgreSQL since v7.4 supports schemas as the namespace for
 collections of tables within a database.
 
+=item --encoding
+
+The client_encoding to use. At present, this only applies to
+PostgreSQL. You may need to set this if you receive errors (or wrong
+results) upon loading nodes that have special (non-ASCII) characters
+in their labels, such as umlauts. The error message will look similar
+to "invalid byte sequence for encoding ...". 
+
+If you have umlauts in labels that come out mangled after loading into
+the database, you might want to try setting this to iso_8859_1.
+
 =item --download
 
-optional: whether to download new ITIS taxonomy, default is no
-download
+this is not supported currently
 
 =item --directory
 
@@ -139,15 +153,16 @@ use constant ITIS_KINGDOMS_TABLE => "kingdoms";
 ####################################################################
 my $help = 0;          # whether to display the help page
 my $db;                # the name of the database or schema
-my $dsn;               # the full DSN -- will be built if not provided
+my $dsn = $ENV{DBI_DSN};  # the full DSN -- will be built if not provided
 my $host;              # host name of the server
 my $port;              # port to which to connect
-my $user;              # the user to connect as
-my $pass;              # the password for the user
+my $user = $ENV{DBI_USER};     # the user to connect as
+my $pass = $ENV{DBI_PASSWORD}; # the password for the user
 my $driver;            # the DBI driver module
+my $encoding;          # a specific client encoding to enable, if any
 my $schema;            # for PostgreSQL, the schema to use, if any
 my $namespace = "ITIS";# the namespace for the tree
-my $dir = "taxdata";   # the download and data directory
+my $dir;               # the download and data directory
 my $download = 0;      # whether to download from itis.gov first
 my $verbose = 1;       # guess what
 
@@ -168,6 +183,7 @@ my $ok = GetOptions("help"       => \$help,
 		    "dbpass=s"   => \$pass,
 		    "driver=s"   => \$driver,
                     "schema=s"   => \$schema,
+                    "encoding=s" => \$encoding,
                     "namespace=s"=> \$namespace,
 		    "directory=s"=> \$dir,
 		    #"download"   => \$download,
@@ -231,6 +247,11 @@ my $dbh = DBI->connect($dsn,
 # search path
 if (($driver eq "Pg") && $schema) {
     $dbh->do("SET search_path TO $schema, public") or die $DBI::errstr;
+} 
+
+# if this is PostgreSQL and a client encoding was requested, set it
+if (($driver eq "Pg") && $encoding) {
+    $dbh->do("SET client_encoding TO $encoding") or die $DBI::errstr;
 } 
 
 my %sth = (
