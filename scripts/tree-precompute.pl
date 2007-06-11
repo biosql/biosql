@@ -60,6 +60,13 @@ variable DBI_PASSWORD.
 optional: the name of the tree to precompute the optimization
 structures for if only a single tree is to be optimized.
 
+=item --namespace
+
+optional: the namespace of the trees for which to precompute the
+optimization structures; if used without specifying --tree,
+precomputes will be run for all trees in that namespace, and otherwise
+only if the named tree is in the given namespace.
+
 =item -h, --help
 
 print this manual and exit
@@ -81,16 +88,21 @@ William Piel <william.piel at yale.edu>
 use strict;
 use DBI;
 use Getopt::Long;
+use constant LOG_CHUNK => 10000;
 
 my $usrname = $ENV{DBI_USER};
 my $pass = $ENV{DBI_PASSWORD};
 my $dsn = $ENV{DBI_DSN};
 my $tree;
+my $namespace;
+my $verbose;
 
 my $ok = GetOptions("d|dsn=s", \$dsn,
                     "u|dbuser=s", \$usrname,
                     "p|dbpass=s", \$pass,
                     "tree=s", \$tree,
+                    "namespace=s", \$namespace,
+                    "v|verbose", \$verbose,
                     "h|help", sub { system("perldoc $0"); exit(0); });
 
 my $dbh = connect_to_db($dsn, $usrname, $pass);
@@ -99,19 +111,44 @@ my $sel_children = prepare_sth(
     $dbh, "SELECT child_node_id FROM edge WHERE parent_node_id = ?");  
 my $upd_nestedSet  = prepare_sth(
     $dbh, "UPDATE node SET left_idx = ?, right_idx = ? WHERE node_id = ?");
+my $reset_nestedSet = prepare_sth(
+    $dbh, "UPDATE node SET left_idx = null, right_idx = null WHERE tree_id =?");
 
-my $statement = "SELECT name, node_id FROM tree";
-$statement .= " WHERE name = ?" if defined($tree);
+my $sel_trees = 
+    "SELECT t.name, t.node_id, t.tree_id FROM tree t, biodatabase db "
+    ."WHERE db.biodatabase_id = t.biodatabase_id";
+my @bind_params = ();
+if (defined($tree)) {
+    $sel_trees .= " AND t.name = ?";
+    push(@bind_params, $tree);
+}
+if (defined($namespace)) {
+    $sel_trees .= " AND db.name = ?";
+    push(@bind_params, $namespace);
+}
 
-my $sth = prepare_sth($dbh,$statement);
-execute_sth($sth, defined($tree) ? $tree : ());
+my $sth = prepare_sth($dbh, $sel_trees);
+execute_sth($sth, @bind_params);
 
 while(my $row = $sth->fetchrow_arrayref) {
-    print "Computing nested set values for tree ".$row->[0]."...\n";
-    walktree($row->[1], 0);
-    print "Computing transitive closure for tree ".$row->[0]."...\n";
-    compute_tc($dbh,$row->[1]);
-    print "Done.\n";
+    my ($tree_name, $root_id, $tree_id) = @$row;
+    print STDERR "Computing nested set values for tree $tree_name...\n";
+    print STDERR "\tresetting existing values\n" if $verbose;
+    # we need to reset the values to null first to prevent any
+    # possible unique key violations when updating on a tree that has
+    # them already
+    execute_sth($reset_nestedSet, $tree_id);
+    print STDERR "\tcomputing new values:\n" if $verbose;
+    # recursively traverse the tree, depth-first, filling in the value
+    # along the way
+    handle_progress(0) if $verbose; # initialize
+    walktree($root_id);
+    handle_progress(LOG_CHUNK, 1) if $verbose; # final tally
+    print STDERR "Computing transitive closure for tree $tree_name...\n";
+    # transitive closure for the given tree; this will delete existing
+    # paths first
+    compute_tc($dbh, $tree_id);
+    print STDERR "Done.\n";
     $dbh->commit;
 }
 $sth->finish;
@@ -119,23 +156,23 @@ $dbh->disconnect;
 
 #==============================================================
 sub walktree {
-	my ($id, $left, $path) = @_;
-        my $right = $left+1; # default for leaf
+    my $id = shift;
+    my $left = shift || 1;
+    my $right = $left+1; # default for leaf
 
-	execute_sth($sel_children,$id);
-	
-	my @children = ();
-	while (my $row = $sel_children->fetchrow_arrayref) {
-            push(@children,$row->[0]);
-        }
-	my $branches = 1;
-        foreach my $child (@children) {
-            $right = walktree($child, $right);
-            $right++;
-            $branches++;
-	}
-	$upd_nestedSet->execute($left, $right, $id);
-        return $right;
+    execute_sth($sel_children,$id);
+    
+    my @children = ();
+    while (my $row = $sel_children->fetchrow_arrayref) {
+        push(@children,$row->[0]);
+    }
+    foreach my $child (@children) {
+        $right = walktree($child, $right);
+        $right++;
+    }
+    execute_sth($upd_nestedSet, $left, $right, $id);
+    handle_progress(LOG_CHUNK) if $verbose;
+    return $right;
 }
 
 sub compute_tc {
@@ -160,53 +197,35 @@ sub compute_tc {
         ." WHERE p.child_node_id = e.parent_node_id"
         ." AND n.node_id = e.child_node_id AND n.tree_id = ?"
         ." AND p.distance = ?";
+    print STDERR "\tdeleting existing transitive closure\n" if $verbose;
     my $sth = prepare_sth($dbh,$del_sql);
     execute_sth($sth, $tree);
+    print STDERR "\tcreating zero length paths\n" if $verbose;
     $sth = prepare_sth($dbh,$zero_sql);
     execute_sth($sth,$tree);
+    print STDERR "\tcreating paths with length=1\n" if $verbose;
     $sth = prepare_sth($dbh,$init_sql);
     execute_sth($sth,$tree);
     $sth = prepare_sth($dbh,$path_sql);
     my $dist = 1;
     my $rv = 1;
     while ($rv > 0) {
+        print STDERR "\textending paths with length=$dist\n" if $verbose;
         $rv = execute_sth($sth, $tree, $dist);
         $dist++;
     }
 }
 
 sub connect_to_db {
-  my ($cstr) = @_;
-  return ConnectToMysql(@_) if $cstr =~ /:mysql:/i;
-  return ConnectToPg(@_) if $cstr =~ /:pg:/i;
-  die "can't understand driver in connection string: $cstr\n";
-}
-
-# Connect to MySQL using DBI
-#==============================================================
-sub ConnectToMySQL {
-
-	my ($cstr, $user, $pass) = @_;
+    my ($dsn, $user, $pass) = @_;
 	
-	my $dbh = DBI->connect($cstr, $user, $pass, {PrintError => 0, RaiseError => 1});
-	$dbh || &error("DBI connect failed : ",$dbh->errstr);
-
-	return($dbh);
-}
-
-# Connect to Pg using DBI
-#==============================================================
-sub ConnectToPg {
-
-	my ($cstr, $user, $pass) = @_;
-	
-	my $dbh = DBI->connect($cstr, $user, $pass, 
-                               {PrintError => 0, 
-                                RaiseError => 1,
-                                AutoCommit => 0});
-	$dbh || &error("DBI connect failed : ",$dbh->errstr);
-
-	return($dbh);
+    my $dbh = DBI->connect($dsn, $user, $pass, 
+                           {PrintError => 1, 
+                            RaiseError => 0,
+                            AutoCommit => 0});
+    die "DBI connect failed: ".$dbh->errstr unless $dbh;
+    
+    return($dbh);
 }
 
 sub prepare_sth {
@@ -219,6 +238,33 @@ sub prepare_sth {
 sub execute_sth {
     my $sth = shift;
     my $rv = $sth->execute(@_);
-    die "failed to execute statement: ".$sth->errstr."\n" unless $rv;
+    if (!$rv) {
+        my $sql = $sth->{Statement};
+        my @params = ();
+        my $vals = $sth->{ParamValues};
+        foreach my $key (sort (keys(%$vals))) {
+            push(@params,$vals->{$key});
+        }
+        die "failed to execute statement: ".$sth->errstr
+            ."SQL query: $sql\nParameters: ".join(";",@params)."\n";
+    }
     return $rv;
 }
+
+sub handle_progress{
+    my $chunk = shift;
+    my $final = shift;
+    our $_time = time() if $chunk == 0;
+    our $_n = 0 if $chunk == 0;
+    our $_last_n = 0 if $chunk == 0;
+    return if $chunk == 0;
+    $_n++ unless $final;
+    if ($final || (($_n-$chunk) >= $_last_n)) {
+	my $elapsed = time() - $_time;
+        my $fmt = "\t%d done (in %d secs, %4.1f rows/s)\n";
+        printf STDERR $fmt, $_n, $elapsed, ($_n-$_last_n)/($elapsed||1);
+        $_time = time() if $elapsed;
+        $_last_n = $_n;
+    }
+}
+
