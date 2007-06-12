@@ -91,7 +91,7 @@ DBI_PASSWORD environment variable.
 =item --schema
 
 The schema under which the BioSQL tables reside in the database. For
-Oracle and MySQL this is synonymous with the user, and won't have an
+Oracle and MySQL this is synonymous with the user, and will not have an
 effect. PostgreSQL since v7.4 supports schemas as the namespace for
 collections of tables within a database.
 
@@ -242,7 +242,7 @@ my $ok = GetOptions("help"       => \$help,
 		    "password=s" => \$pass,
 		    "dbpass=s"   => \$pass,
 		    "driver=s"   => \$driver,
-                    "schema=s"   => \$schema,
+          "schema=s"   => \$schema,
 		    "allow_truncate" => \$allow_truncate,
 		    "chunksize=i"=> \$chunksize,
 		    "directory=s"=> \$dir,
@@ -272,19 +272,19 @@ if($dir) {
 die "Must supply --dbname argument!\n" unless $db;
 
 # build DSN if not provided, and parse out driver otherwise
-if($dsn) {
-    my $dummy;
-    ($dummy, $driver) = split(/:/,$dsn);
+if ($dsn && !$driver) {
+	my $dummy;
+	($dummy, $driver) = split(/:/,$dsn);
 } else {
-    $dsn = "dbi:$driver:";
-    my %dbparam = ("mysql"  => "database=",
-		   "Pg"     => "dbname=",
-		   "Oracle" => ($host || $port) ? "sid=" : "");
-    die "unrecognized driver '$driver', consider using the --dsn option\n"
-	unless exists($dbparam{$driver});
-    $dsn .= $dbparam{$driver}.$db;
-    $dsn .= ";host=$host" if $host;
-    $dsn .= ";port=$port" if $port;
+	$dsn = "dbi:$driver:";
+	my %dbparam = ("mysql"  => "database=",
+						 "Pg"     => "dbname=",
+						 "Oracle" => ($host || $port) ? "sid=" : "");
+	die "unrecognized driver '$driver', consider using the --dsn option\n"
+	  unless exists($dbparam{$driver});
+	$dsn .= $dbparam{$driver}.$db;
+	$dsn .= ";host=$host" if $host;
+	$dsn .= ";port=$port" if $port;
 }
 
 # chunksize:
