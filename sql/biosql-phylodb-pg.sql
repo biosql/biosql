@@ -51,11 +51,17 @@ CREATE TABLE node (
        left_idx INTEGER,
        right_idx INTEGER
        , PRIMARY KEY (node_id)
-       , UNIQUE (label,tree_id)
+-- CONFIG: you might like to enforce uniqueness of a node's label within a tree,
+-- though keep in mind that data providers often violate this constraint
+--       , CONSTRAINT node_c1 UNIQUE (label,tree_id)
        , UNIQUE (left_idx,tree_id)
        , UNIQUE (right_idx,tree_id)
 );
 
+-- CONFIG: if you decided on the unique key constraint on label within
+-- a tree, you won't need the index on label, so comment it out for
+-- efficiency.
+CREATE INDEX node_i1 ON node (label);
 CREATE INDEX node_i2 ON node (tree_id);
 
 COMMENT ON TABLE node IS 'A node in a tree. Typically, this will be a node in a phylogenetic tree, resembling either a nucleotide or protein sequence, or a taxon, or more generally an ''operational taxonomic unit'' (OTU).';
