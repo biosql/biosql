@@ -56,8 +56,9 @@ AND NOT EXISTS (
 ORDER BY pA.distance DESC
 LIMIT 1;
 
--- 2) Find the subtree rooted at LCA(A,B) of nodes A and B (minimal 
--- spanning clade)
+-- 2) a) Find the subtree rooted at LCA(A,B) of nodes A and B (minimal
+-- spanning clade) (as all edges constituting the subtree; the labels
+-- are optional and obviously not part of the edges)
 SELECT e.edge_id, pt.node_id, pt.label, ch.node_id, ch.label 
 FROM node_path p, edge e, node pt, node ch 
 WHERE 
@@ -73,6 +74,16 @@ AND p.parent_node_id IN (
       ORDER BY pA.distance
       LIMIT 1
 )
+-- b) variant: find the subtree rooted at a node (as all edges
+-- constituting the subtree; the labels are optional and obviously not
+-- part of the edges)
+SELECT e.edge_id, pt.node_id, pt.label, ch.node_id, ch.label 
+FROM node_path p, edge e, node pt, node ch 
+WHERE 
+    e.child_node_id = p.child_node_id
+AND pt.node_id = e.parent_node_id
+AND ch.node_id = e.child_node_id
+AND p.parent_node_id = ?
 
 -- 3) Find the maximim spanning clade that includes nodes A and B but not C
 -- (stem query)
@@ -147,8 +158,81 @@ AND NOT EXISTS (
 )
 ;
  
--- 5) Tree projection: obtain the subtree induced by the chosen set of nodes
-
+-- 5) Tree projection: obtain the subtree induced by the chosen set of
+-- nodes A_1, ..., A_n
+-- Two steps:
+-- i) Find the last common ancestor node LCA = LCA(A_1,...,A_n)
+-- ii) Obtain the minimum spanning clade rooted at LCA, and prune off
+-- non-matching terminal nodes, and non-shared internal nodes.
+--
+-- The solution below is a single hit query, after obtaining the
+-- LCA. It looks a bit hideous, but it seems to work pretty well. For
+-- a subtree induced by 3 terminal nodes on the ITIS plant tree it
+-- returns within less than a second. We should try and convert this
+-- into a stored function accepting the array of query nodes as input,
+-- and returning a set of edges.
+--
+-- Suggestions for a simpler query are greatly welcome. There are also
+-- no guearantees yet that this works entirely correct for all input.
+--
+-- We return the subtree as a set of edges that defines the tree.
+SELECT paths.child_node_id, paths.parent_node_id
+FROM node_path paths, 
+     (
+     -- all possible parents of the edges we wish to return, i.e.,
+     -- internal nodes shared among the paths between the query nodes
+     -- and the LCA
+     SELECT p.parent_node_id AS node_id
+     FROM node_path p, node_path clade
+     WHERE clade.parent_node_id = :lca
+     AND clade.child_node_id = p.parent_node_id
+     AND p.child_node_id IN (:a_1, :a_2, ..., :a_n)
+     AND p.distance > 0
+     GROUP BY p.parent_node_id
+     HAVING COUNT(p.parent_node_id) > 1
+     ) parents, 
+     (
+     -- all possible children of the edges we wish to return, i.e.,
+     -- internal nodes shared among the paths between the query nodes
+     -- and the LCA, and the query nodes themselves
+     SELECT p.parent_node_id AS node_id
+     FROM node_path p, node_path clade
+     WHERE clade.parent_node_id = :lca
+     AND clade.child_node_id = p.parent_node_id
+     AND p.child_node_id IN (:a_1, :a_2, ..., :a_n)
+     AND p.distance > 0
+     GROUP BY p.parent_node_id
+     HAVING COUNT(p.parent_node_id) > 1
+     UNION
+     SELECT n.node_id 
+     FROM node n
+     WHERE n.node_id IN (:a_1, :a_2, ..., :a_n)
+     ) children
+WHERE 
+     paths.parent_node_id = parents.node_id
+AND  paths.child_node_id = children.node_id
+AND  paths.distance > 0
+-- for each child node, we only want to report the edge corresponding
+-- to the path with minimum length of all matching paths (provided the
+-- length is greated than zero), so prune those with longer distance
+AND NOT EXISTS (
+     SELECT 1
+     FROM node_path p1
+     WHERE 
+          p1.child_node_id = paths.child_node_id
+     AND  p1.parent_node_id IN (
+          SELECT p.parent_node_id AS node_id
+     	  FROM node_path p, node_path clade
+     	  WHERE clade.parent_node_id = :lca
+     	  AND clade.child_node_id = p.parent_node_id
+     	  AND p.child_node_id IN (:a_1, :a_2, ..., :a_n)
+     	  AND p.distance > 0
+     	  GROUP BY p.parent_node_id
+          HAVING COUNT(p.parent_node_id) > 1
+     )
+     AND p1.distance < paths.distance
+     AND p1.distance > 0
+)
 
 -- 6) Subsetting trees:
 -- a) all trees that have at least the given nodes, identified by label
