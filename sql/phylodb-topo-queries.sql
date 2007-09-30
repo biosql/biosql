@@ -1,7 +1,7 @@
 -- $Id$
 
 -- Common topological queries on a database of phylogenetic trees.
--- 1a) Find the LCA (least common ancestor) of nodes A and B
+-- 1a) Find the LCA (last common ancestor) of nodes A and B
 -- 1b) Find the oldest ancestor node of A such that B is not
 -- descended from the ancestor
 -- 2) Find the subtree rooted at LCA(A,B) of nodes A and B (minimal 
@@ -28,7 +28,7 @@
 --
 -- comments to biosql - biosql-l@open-bio.org
 
--- 1a) Find the LCA (least common ancestor) of nodes A and B
+-- 1a) Find the LCA (last common ancestor) of nodes A and B
 SELECT lca.node_id, lca.label, 
        pA.distance AS distance_a, pB.distance AS distance_b
 FROM node lca, node_path pA, node_path pB
@@ -110,6 +110,7 @@ AND NOT EXISTS (
 
 -- 4) Tree pattern match - all trees that have the same topology between a
 -- chosen set of taxa (or genes)
+--
 -- a) all trees for which the minimum spanning clade of nodes A and B
 -- includes node C (as identified by label)
 SELECT t.tree_id, t.name
@@ -117,7 +118,7 @@ FROM tree t, node_path p, node C
 WHERE
     p.child_node_id = C.node_id
 AND C.tree_id = t.tree_id
-AND p.parent_node_id IN (
+AND p.parent_node_id = (
       SELECT pA.parent_node_id
       FROM   node_path pA, node_path pB, node A, node B
       WHERE pA.parent_node_id = pB.parent_node_id
@@ -125,6 +126,8 @@ AND p.parent_node_id IN (
       AND   pB.child_node_id = B.node_id
       AND   A.label = ? -- 'Anticlea elegans'
       AND   B.label = ? -- 'Zigadenus glaberrimus'
+      AND   A.tree_id = t.tree_id
+      AND   B.tree_id = t.tree_id  -- redundant, result is null if not met
       ORDER BY pA.distance
       LIMIT 1
 )
@@ -134,11 +137,11 @@ AND C.label = ? -- 'Toxicoscordion nuttallii'
 -- b) all trees for which the minimum spanning clade of nodes A and B
 -- does not include node C (as identified by label)
 SELECT t.tree_id, t.name
-FROM tree t, node_path p, node n
+FROM tree t, node_path p, node lca
 WHERE
-    p.parent_node_id = n.node_id
-AND n.tree_id = t.tree_id
-AND p.parent_node_id IN (
+    p.parent_node_id = lca.node_id
+AND lca.tree_id = t.tree_id
+AND lca.node_id = (
       SELECT pA.parent_node_id
       FROM   node_path pA, node_path pB, node A, node B
       WHERE pA.parent_node_id = pB.parent_node_id
@@ -146,6 +149,8 @@ AND p.parent_node_id IN (
       AND   pB.child_node_id = B.node_id
       AND   A.label = ? -- 'Anticlea elegans'
       AND   B.label = ? -- 'Zigadenus glaberrimus'
+      AND   A.tree_id = t.tree_id
+      AND   B.tree_id = t.tree_id  -- redundant, result is null if not met
       ORDER BY pA.distance
       LIMIT 1
 )
