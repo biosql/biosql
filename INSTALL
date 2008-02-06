@@ -292,15 +292,9 @@ Schema Loading
 -------------
 
 The BioSQL schema is distributed separately from the language
-bindings. Pick up the schema from the tar ball available at
-http://cvs.open-bio.org/cgi-bin/viewcvs/viewcvs.cgi?cvsroot=biosql.
+bindings. Use the svn checkout from the anonymous server:
 
-Alternatively use the cvs checkout from the anonymous server:
-
-   >cvs -d :pserver:cvs@cvs.open-bio.org:/home/repository/biosql login
-   <Logging in to cvs@cvs.open-bio.org>
-   CVS password: <<PASSWORD is cvs, lowercase>>
-   >cvs -d :pserver:cvs@cvs.open-bio.org:/home/repository/biosql co biosql-schema
+ >svn co svn://code.open-bio.org/biosql/biosql-schema/trunk biosql-schema
 
 Create a database, which we'll call 'bioseqdb', in the data instance:
 
@@ -405,21 +399,16 @@ Then make the Makefile:
 Then proceed to "make test" and "make install".
 
 
-Downloading bioperl-db and loading your first sequences
-----------------------------------------------
+Downloading bioperl-db and installing
+-------------------------------
 
 With DBI and the driver of choice set up you now should download
 the bioperl and bioperl-db package.
 
-bioperl-1.2* is available from CPAN or www.bioperl.org, and
-bioperl-db is available from CPAN, or from cvs:
+bioperl-1.5.2 is available from CPAN or www.bioperl.org, and
+bioperl-db is available from CPAN, or from svn:
 
-   >cvs -d :pserver:cvs@cvs.open-bio.org:/home/repository/bioperl login
-   (Logging in to cvs@cvs.open-bio.org)
-   CVS password: <<PASSWORD is cvs, lowercase>>
-   >cvs -d :pserver:cvs@cvs.open-bio.org:/home/repository/bioperl co bioperl-db
-
-Use version 1.2.2 or later. 
+  >svn co svn://code.open-bio.org/bioperl/bioperl-db/trunk/bioperl-db bioperl-db
 
 Look at the INSTALL files in the bioperl and bioperl-db directories, 
 they will give specific instructions. Bioperl uses other CPAN modules 
@@ -437,11 +426,19 @@ set appropriately, e.g.:
 Many of the bioperl installation details are discussed in the INSTALL
 file found in the bioperl package, look there for more information.
 
+
+Loading taxonomy data
+-------------------
+
 With bioperl and bioperl-db installed you are ready to load some data.
 It is advisable to pre-load the NCBI taxonomy database (use
 scripts/load_taxonomy.pl in the biosql-schema package, the details are
 in its documentation). Otherwise you'll see errors from misparsed
 organisms. 
+
+
+Loading sequence data
+------------------
 
 To load sequence data you can use the load_seqdatabase.pl script in 
 bioperl-db/scripts/biosql/, for example:
@@ -470,4 +467,3 @@ files. The complete Swissprot file can be obtained at ftp.expasy.ch,
 along many sub-databases. All of Genbank is available at
 ftp://ftp.ncbi.nih.gov/genbank, in genbank format. Many microbial 
 genomes are available at ftp://ftp.tigr.org/pub/data/. Enjoy!
-
