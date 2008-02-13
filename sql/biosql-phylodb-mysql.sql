@@ -1,5 +1,10 @@
 -- $Id$
-
+--
+-- ==================================================================
+-- NOTE: This version of the module currently lags behind some recent
+-- changes that have been made for the Pg version of the module.
+-- ==================================================================
+--
 -- Schema extension on top of the BioSQL core schema for representing
 -- phylogenetic trees or networks (anastomizing and reticulating).
 --
