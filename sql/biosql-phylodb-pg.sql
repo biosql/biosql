@@ -20,6 +20,7 @@ CREATE SEQUENCE tree_pk_seq;
 CREATE TABLE tree (
        tree_id INTEGER DEFAULT nextval('tree_pk_seq') NOT NULL,
        name VARCHAR(32) NOT NULL,
+       -- shouldn't this be moved to tree_dbxref?
        identifier VARCHAR(32),
        is_rooted boolean DEFAULT TRUE,
        node_id INTEGER NOT NULL, -- startpoint of tree
@@ -40,14 +41,49 @@ COMMENT ON COLUMN tree.node_id IS 'The starting node of the tree. If the tree is
 
 COMMENT ON COLUMN tree.biodatabase_id IS 'The namespace of the tree itself. Though trees are in a sense named containers themselves (namely for nodes), they also constitute (possibly identifiable!) data objects in their own right. Some data sources may only provide a single tree, so that assigning a namespace for the tree may seem excessive, but others, such as TreeBASE, contain many trees, just as sequence databanks contain many sequences. The choice of how to name a tree is up to the user; one may assign a default namespace (such as "biosql"), or create one named the same as the tree.';
 
+-- qualifier/value pairs (metadata) for trees
+CREATE TABLE tree_qualifier_value (
+       tree_id INTEGER NOT NULL,
+       term_id INTEGER NOT NULL,
+       value TEXT,
+       rank INTEGER NOT NULL DEFAULT 0
+       , UNIQUE (tree_id, term_id, rank)
+);
+
+COMMENT ON TABLE tree_qualifier_value IS 'Tree metadata as attribute/value pairs. Attribute names are from a controlled vocabulary (or ontology).';
+
+COMMENT ON COLUMN tree_qualifier_value.tree_id IS 'The tree with which the metadata is being associated.';
+
+COMMENT ON COLUMN tree_qualifier_value.term_id IS 'The name of the metadate element as a term from a controlled vocabulary (or ontology).';
+
+COMMENT ON COLUMN tree_qualifier_value.value IS 'The value of the metadata element.';
+
+COMMENT ON COLUMN tree_qualifier_value.rank IS 'The index of the metadata value if there is more than one value for the same metadata element. If there is only one value, this may be left at the default of zero.';
+
+-- dbxrefs, such as identifiers, for trees
+CREATE TABLE tree_dbxref (
+       tree_id INTEGER NOT NULL,
+       dbxref_id INTEGER NOT NULL,
+       term_id INTEGER NOT NULL
+       , UNIQUE (tree_id, dbxref_id, term_id)
+);
+
+CREATE INDEX tree_dbxref_i1 ON tree_dbxref (dbxref_id);
+
+COMMENT ON TABLE tree_dbxref IS 'Secondary identifiers and other database cross-references for trees. There can only be one dbxref of a specific type for a tree.';
+
+COMMENT ON COLUMN tree_dbxref.tree_id IS 'The tree to which the database corss-reference is being assigned.';
+
+COMMENT ON COLUMN tree_dbxref.dbxref_id IS 'The database cross-reference being assigned to the tree.';
+
+COMMENT ON COLUMN tree_dbxref.term_id IS 'The type of the database cross-reference as a controlled vocabulary or ontology term. The type of a tree accession should be ''primary identifier''.';
+
 -- nodes in a tree
 CREATE SEQUENCE node_pk_seq;
 CREATE TABLE node (
        node_id INTEGER DEFAULT nextval('node_pk_seq') NOT NULL,
        label VARCHAR(255),
        tree_id INTEGER NOT NULL,
-       bioentry_id INTEGER,
-       taxon_id INTEGER,
        left_idx INTEGER,
        right_idx INTEGER
        , PRIMARY KEY (node_id)
@@ -70,26 +106,89 @@ COMMENT ON COLUMN node.label IS 'The label of a node. This may the latin binomia
 
 COMMENT ON COLUMN node.tree_id IS 'The tree of which this node is a part of.';
 
-COMMENT ON COLUMN node.bioentry_id IS 'Optionally, the bioentry the node corresponds too, for example the sequence.';
-
-COMMENT ON COLUMN node.taxon_id IS 'Optionally, the taxon the node corresponds to.';
-
 COMMENT ON COLUMN node.left_idx IS 'The left value of the nested set optimization structure for efficient hierarchical queries. Needs to be precomputed by a program, see J. Celko, SQL for Smarties.';
 
 COMMENT ON COLUMN node.right_idx IS 'The right value of the nested set optimization structure for efficient hierarchical queries. Needs to be precomputed by a program, see J. Celko, SQL for Smarties.';
 
+-- dbxrefs, such as identifiers, for nodes
+CREATE TABLE node_dbxref (
+       node_id INTEGER NOT NULL,
+       dbxref_id INTEGER NOT NULL,
+       term_id INTEGER NOT NULL
+       , UNIQUE (node_id, dbxref_id, term_id)
+);
+
+CREATE INDEX node_dbxref_i1 ON node_dbxref (dbxref_id);
+
+COMMENT ON TABLE node_dbxref IS 'Identifiers and other database cross-references for nodes. There can only be one dbxref of a specific type for a node.';
+
+COMMENT ON COLUMN node_dbxref.node_id IS 'The node to which the database corss-reference is being assigned.';
+
+COMMENT ON COLUMN node_dbxref.dbxref_id IS 'The database cross-reference being assigned to the node.';
+
+COMMENT ON COLUMN node_dbxref.term_id IS 'The type of the database cross-reference as a controlled vocabulary or ontology term. The type of a node identifier should be ''primary identifier''.';
+
+-- linking nodes to bioentries (sequences, or genes) - in concatenated
+-- alignments we may need to link to more than one sequence
+CREATE SEQUENCE node_bioentry_pk_seq ;
+CREATE TABLE node_bioentry (
+       node_bioentry_id INTEGER DEFAULT nextval('node_bioentry_pk_seq') NOT NULL,
+       node_id INTEGER NOT NULL,
+       bioentry_id INTEGER NOT NULL,
+       rank INTEGER NOT NULL DEFAULT 0
+       , PRIMARY KEY (node_bioentry_id)
+       , UNIQUE (node_id, bioentry_id, rank)
+);
+
+COMMENT ON TABLE node_bioentry IS 'Links tree nodes to sequences (or other bioentries). If the alignment is concatenated on molecular data, there will be more than one sequence, and rank can be used to order these appropriately.';
+
+COMMENT ON COLUMN node_bioentry.node_id IS 'The node to which the bioentry is being linked.';
+
+COMMENT ON COLUMN node_bioentry.bioentry_id IS 'The bioentry being linked to the node.';
+
+COMMENT ON COLUMN node_bioentry.rank IS 'The index of this bioentry within the list of bioentries being linked to the node, if the order is significant. Typically, this will be used to represent the position of the respective sequence within the concatenated alignment, or the partition index.';  
+
+-- linking nodes to taxa - in concatenated alignments we may need to
+-- link to more than one taxon
+CREATE SEQUENCE node_taxon_pk_seq ;
+CREATE TABLE node_taxon (
+       node_taxon_id INTEGER DEFAULT nextval('node_taxon_pk_seq') NOT NULL,
+       node_id INTEGER NOT NULL,
+       taxon_id INTEGER NOT NULL,
+       rank INTEGER NOT NULL DEFAULT 0
+       , PRIMARY KEY (node_taxon_id)
+       , UNIQUE (node_id, taxon_id, rank)
+);
+
+COMMENT ON TABLE node_taxon IS 'Links tree nodes to taxa. If the alignment is concatenated on molecular data, there may be more than one sequence, and these may not necessarily be from the same taxon (e.g., they might be from subspecies). Rank can be used to order these appropriately.';
+
+COMMENT ON COLUMN node_taxon.node_id IS 'The node to which the taxon is being linked.';
+
+COMMENT ON COLUMN node_taxon.taxon_id IS 'The taxon being linked to the node.';
+
+COMMENT ON COLUMN node_taxon.rank IS 'The index of this taxon within the list of taxa being linked to the node, if the order is significant. Typically, this will be used to represent the position of the respective sequence within the concatenated alignment, or the partition index.';
+
 -- root node(s) for the tree, if any
+CREATE SEQUENCE tree_root_pk_seq;
 CREATE TABLE tree_root (
        tree_root_id INTEGER DEFAULT nextval('tree_root_pk_seq') NOT NULL,
        tree_id INTEGER NOT NULL,
        node_id INTEGER NOT NULL,
        is_alternate boolean DEFAULT FALSE,
-       significance real,
+       significance real
        , PRIMARY KEY (tree_root_id)
        , UNIQUE (tree_id,node_id)
 );
 
 COMMENT ON TABLE tree_root IS 'Root node for a rooted tree. A phylogenetic analysis might suggest several alternative root nodes, with possible probabilities.';
+
+COMMENT ON COLUMN tree_root.tree_id IS 'The tree for which the referenced node is a root node.';
+
+COMMENT ON COLUMN tree_root.node_id IS 'The node that is a root for the referenced tree.';
+
+COMMENT ON COLUMN tree_root.is_alternate IS 'True if the root note is the preferential (most likely) root node of the tree, and false otherwise.';
+
+COMMENT ON COLUMN tree_root.significance IS 'The significance (such as likelihood, or posterior probability) with which the node is the root node. This only has meaning if the method used for reconstructing the tree calculates this value.'; 
 
 -- edges between nodes
 CREATE SEQUENCE edge_pk_seq;
@@ -131,71 +230,91 @@ COMMENT ON COLUMN node_path.path IS 'The path from startpoint to endpoint as the
 COMMENT ON COLUMN node_path.distance IS 'The distance (or length) of the path. The path between a node and itself has length zero, and length 1 between two nodes directly connected by an edge. If there is a path of length l between two nodes A and Z and an edge between Z and B, there is a path of length l+1 between nodes A and B.'; 
 
 -- attribute/value pairs for edges
-CREATE TABLE edge_attribute_value (
+CREATE TABLE edge_qualifier_value (
        value text,
+       rank INTEGER NOT NULL DEFAULT 0,
        edge_id INTEGER NOT NULL,
        term_id INTEGER NOT NULL
-       , UNIQUE (edge_id,term_id)
+       , UNIQUE (edge_id,term_id,rank)
 );
 
 -- attribute/value pairs for nodes
-CREATE TABLE node_attribute_value (
+CREATE TABLE node_qualifier_value (
        value text,
+       rank INTEGER NOT NULL DEFAULT 0,
        node_id INTEGER NOT NULL,
        term_id INTEGER NOT NULL
        , UNIQUE (node_id,term_id)
 );
 
+-- tree
 ALTER TABLE tree ADD CONSTRAINT FKnode
        FOREIGN KEY (node_id) REFERENCES node (node_id)
            DEFERRABLE INITIALLY DEFERRED;
-
 ALTER TABLE tree ADD CONSTRAINT FKbiodatabase
        FOREIGN KEY (biodatabase_id) REFERENCES biodatabase (biodatabase_id);
 
-ALTER TABLE tree_root ADD CONSTRAINT FKtreeroot_tree
+-- tree_qualifier_value
+ALTER TABLE tree_qualifier_value ADD CONSTRAINT FKtree_treequal
        FOREIGN KEY (tree_id) REFERENCES tree (tree_id)
            ON DELETE CASCADE;
+ALTER TABLE tree_qualifier_value ADD CONSTRAINT FKterm_treequal
+       FOREIGN KEY (term_id) REFERENCES term (term_id);
 
-ALTER TABLE tree_root ADD CONSTRAINT FKtreeroot_node
+-- tree_root
+ALTER TABLE tree_root ADD CONSTRAINT FKtree_treeroot
+       FOREIGN KEY (tree_id) REFERENCES tree (tree_id)
+           ON DELETE CASCADE;
+ALTER TABLE tree_root ADD CONSTRAINT FKnode_treeroot
        FOREIGN KEY (node_id) REFERENCES node (node_id)
            ON DELETE CASCADE;
 
+-- node
 ALTER TABLE node ADD CONSTRAINT FKnode_tree
        FOREIGN KEY (tree_id) REFERENCES tree (tree_id);
 
-ALTER TABLE node ADD CONSTRAINT FKnode_bioentry
-       FOREIGN KEY (bioentry_id) REFERENCES bioentry (bioentry_id);
+-- node_bioentry
+ALTER TABLE node_bioentry ADD CONSTRAINT FKnodebioentry_bioentry
+       FOREIGN KEY (bioentry_id) REFERENCES bioentry (bioentry_id)
+           ON DELETE CASCADE;
+ALTER TABLE node_bioentry ADD CONSTRAINT FKnodebioentry_node
+       FOREIGN KEY (node_id) REFERENCES node (node_id)
+           ON DELETE CASCADE;
 
-ALTER TABLE node ADD CONSTRAINT FKnode_taxon
-       FOREIGN KEY (taxon_id) REFERENCES taxon (taxon_id);
+-- node_taxon
+ALTER TABLE node_taxon ADD CONSTRAINT FKnodetaxon_taxon
+       FOREIGN KEY (taxon_id) REFERENCES taxon (taxon_id)
+           ON DELETE CASCADE;
+ALTER TABLE node_taxon ADD CONSTRAINT FKnodetaxon_node
+       FOREIGN KEY (node_id) REFERENCES node (node_id)
+           ON DELETE CASCADE;
 
+-- edge
 ALTER TABLE edge ADD CONSTRAINT FKedge_child
        FOREIGN KEY (child_node_id) REFERENCES node (node_id)
            ON DELETE CASCADE;
-
 ALTER TABLE edge ADD CONSTRAINT FKedge_parent
        FOREIGN KEY (parent_node_id) REFERENCES node (node_id)
            ON DELETE CASCADE;
 
+-- node_path
 ALTER TABLE node_path ADD CONSTRAINT FKnpath_child
        FOREIGN KEY (child_node_id) REFERENCES node (node_id)
            ON DELETE CASCADE;
-
 ALTER TABLE node_path ADD CONSTRAINT FKnpath_parent
        FOREIGN KEY (parent_node_id) REFERENCES node (node_id)
            ON DELETE CASCADE;
 
+-- edge_qualifier_value
 ALTER TABLE edge_attribute_value ADD CONSTRAINT FKeav_edge
        FOREIGN KEY (edge_id) REFERENCES edge (edge_id)
            ON DELETE CASCADE;
-
 ALTER TABLE edge_attribute_value ADD CONSTRAINT FKeav_term
        FOREIGN KEY (term_id) REFERENCES term (term_id);
 
+-- node_qualifier_value
 ALTER TABLE node_attribute_value ADD CONSTRAINT FKnav_node
        FOREIGN KEY (node_id) REFERENCES node (node_id)
            ON DELETE CASCADE;
-
 ALTER TABLE node_attribute_value ADD CONSTRAINT FKnav_term
        FOREIGN KEY (term_id) REFERENCES term (term_id);
