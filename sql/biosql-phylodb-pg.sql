@@ -306,15 +306,15 @@ ALTER TABLE node_path ADD CONSTRAINT FKnpath_parent
            ON DELETE CASCADE;
 
 -- edge_qualifier_value
-ALTER TABLE edge_attribute_value ADD CONSTRAINT FKeav_edge
+ALTER TABLE edge_qualifier_value ADD CONSTRAINT FKeav_edge
        FOREIGN KEY (edge_id) REFERENCES edge (edge_id)
            ON DELETE CASCADE;
-ALTER TABLE edge_attribute_value ADD CONSTRAINT FKeav_term
+ALTER TABLE edge_qualifier_value ADD CONSTRAINT FKeav_term
        FOREIGN KEY (term_id) REFERENCES term (term_id);
 
 -- node_qualifier_value
-ALTER TABLE node_attribute_value ADD CONSTRAINT FKnav_node
+ALTER TABLE node_qualifier_value ADD CONSTRAINT FKnav_node
        FOREIGN KEY (node_id) REFERENCES node (node_id)
            ON DELETE CASCADE;
-ALTER TABLE node_attribute_value ADD CONSTRAINT FKnav_term
+ALTER TABLE node_qualifier_value ADD CONSTRAINT FKnav_term
        FOREIGN KEY (term_id) REFERENCES term (term_id);
