@@ -16,31 +16,14 @@ CREATE FUNCTION intern_ontology_term (text) RETURNS int AS '
     t_name ALIAS FOR $1;
     t_id integer;
   BEGIN
-    select into t_id ontology_term_id from ontology_term where term_name = t_name;
+    select into t_id term_id from term where name = t_name;
     IF NOT FOUND THEN
-      INSERT INTO ontology_term (term_name) VALUES (t_name);
-      RETURN currval(''ontology_term_pk_seq'');
+      INSERT INTO term (name) VALUES (t_name);
+      RETURN currval(''term_pk_seq'');
     END IF;
     RETURN t_id;
   END;
 ' LANGUAGE 'plpgsql';
-
-DROP FUNCTION intern_seqfeature_source (text);
-
-CREATE FUNCTION intern_seqfeature_source (text) RETURNS int AS '
-  DECLARE
-    kname ALIAS FOR $1;
-    kid integer;
-  BEGIN
-    select into kid seqfeature_source_id from seqfeature_source where source_name = kname;
-    IF NOT FOUND THEN
-      INSERT INTO seqfeature_source (source_name) VALUES (kname);
-      RETURN currval(''seqfeature_source_pk_seq'');
-    END IF;
-    RETURN kid;
-  END;
-' LANGUAGE 'plpgsql';
-
 
 DROP FUNCTION create_seqfeature (integer, text, text);
 
@@ -51,8 +34,8 @@ CREATE FUNCTION create_seqfeature (integer, text, text) RETURNS int AS '
     cs_source      ALIAS FOR $3;
   BEGIN
     INSERT INTO seqfeature 
-           (bioentry_id, seqfeature_key_id, seqfeature_source_id)
-    VALUES (cs_bioentry_id, intern_ontology_term(cs_key), intern_seqfeature_source(cs_source));
+           (bioentry_id, type_term_id, source_term_id)
+    VALUES (cs_bioentry_id, intern_ontology_term(cs_key), intern_ontology_term(cs_source));
     
     RETURN currval(''seqfeature_pk_seq'');
   END;
@@ -71,13 +54,13 @@ CREATE FUNCTION create_seqfeature_onespan (integer, text, text, integer, integer
     sf_id          integer;
   BEGIN
     INSERT INTO seqfeature 
-           (bioentry_id, seqfeature_key_id, seqfeature_source_id)
-    VALUES (cs_bioentry_id, intern_ontology_term(cs_key), intern_seqfeature_source(cs_source));
+           (bioentry_id, type_term_id, source_term_id)
+    VALUES (cs_bioentry_id, intern_ontology_term(cs_key), intern_ontology_term(cs_source));
     
     sf_id := currval(''seqfeature_pk_seq'');
 
     INSERT INTO seqfeature_location
-           (seqfeature_id, seq_start, seq_end, seq_strand, location_rank)
+           (seqfeature_id, start_pos, end_pos, strand, rank)
     VALUES (sf_id, cs_start, cs_end, cs_strand, 1);
 
     RETURN sf_id;
