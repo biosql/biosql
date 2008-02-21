@@ -5,16 +5,15 @@
 -- Authors: Ewan Birney, Elia Stupka
 -- Contributors: Hilmar Lapp, Aaron Mackey
 --
--- Copyright Ewan Birney. You may use, modify, and distribute this code under
--- the same terms as Perl. See the Perl Artistic License.
---
--- comments to biosql - biosql-l@open-bio.org
---
--- Migration of the MySQL schema to InnoDB by Hilmar Lapp <hlapp at gmx.net>
 -- Post-Cape Town changes by Hilmar Lapp.
 -- Singapore changes by Hilmar Lapp and Aaron Mackey.
 -- Migration to HSQLDB by Len Trigg <len at reeltwo.com>
-
+--
+-- Copyright Ewan Birney. You may use, modify, and distribute this
+-- code under the same terms as Perl. See the Perl Artistic License.
+--
+-- comments to biosql - biosql-l@open-bio.org
+--
 
 -- See biosql schema documentation for general documentation regarding the 
 -- schema. This file contains documetation specific to the hsqldb schema.

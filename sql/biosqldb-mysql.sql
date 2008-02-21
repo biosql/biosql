@@ -5,17 +5,14 @@
 
 -- Authors: Ewan Birney, Elia Stupka, Hilmar Lapp, Aaron Mackey
 --
--- Copyright Ewan Birney. You may use, modify, and distribute this code under
--- the same terms as Perl. See the Perl Artistic License.
---
--- comments to biosql - biosql-l@open-bio.org
-
---
--- Migration of the MySQL schema to InnoDB by Hilmar Lapp <hlapp at gmx.net>
 -- Post-Cape Town changes by Hilmar Lapp.
 -- Singapore changes by Hilmar Lapp and Aaron Mackey.
--- post-Singapore changes by Hilmar Lapp.
+-- Migration of the MySQL schema to InnoDB by Hilmar Lapp
 --
+-- Copyright Ewan Birney. You may use, modify, and distribute this
+-- code under the same terms as Perl. See the Perl Artistic License.
+--
+-- comments to biosql - biosql-l@open-bio.org
 
 --
 -- Certain definitions in this schema, in particular certain unique
