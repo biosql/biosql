@@ -19,7 +19,7 @@ $sqldir = $sqldir || "./sql";
 -d $sqldir or die "need to be in bioperl-db dir";
 mysqlrun("drop database $sqlname");
 mysqlrun("create database $sqlname");
-unixrun("cat sql/basicseqdb-mysql.sql | mysql -h $host $sqlname");
+unixrun("cat sql/biosqldb-mysql.sql | mysql -h $host $sqlname");
 
 sub unixrun {
     my $cmd = shift;
