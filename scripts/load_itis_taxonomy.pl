@@ -2,13 +2,23 @@
 #
 # $Id$
 #
-# (c) Hilmar Lapp, hlapp at gmx.net, 2007
-# (c) National Evolutionary Synthesis Center (NESCent), 2007
+# Copyright 2007-2008 Hilmar Lapp, hlapp at gmx.net
+# Copyright 2007-2008 National Evolutionary Synthesis Center (NESCent)
 #
-# This program may be used, distributed or modified under the same
-# terms as Perl itself. Please consult the Perl Artistic License
-# (http://www.perl.com/pub/a/language/misc/Artistic.html) for the
-# terms under which you may use, modify, or distribute this script.
+#  This file is part of BioSQL.
+#
+#  BioSQL is free software: you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as
+#  published by the Free Software Foundation, either version 3 of the
+#  License, or (at your option) any later version.
+#
+#  BioSQL is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with BioSQL. If not, see <http://www.gnu.org/licenses/>.
 
 =head1 NAME
 

@@ -1,20 +1,32 @@
 -- $Id$
 --
--- biosqldb-hsqldb.sql
-
--- Authors: Ewan Birney, Elia Stupka
--- Contributors: Hilmar Lapp, Aaron Mackey
+-- Copyright 2002-2003 Ewan Birney, Elia Stupka, Chris Mungall
+-- Copyright 2003-2008 Hilmar Lapp 
+-- 
+--  This file is part of BioSQL.
 --
+--  BioSQL is free software: you can redistribute it and/or modify it
+--  under the terms of the GNU Lesser General Public License as
+--  published by the Free Software Foundation, either version 3 of the
+--  License, or (at your option) any later version.
+--
+--  BioSQL is distributed in the hope that it will be useful,
+--  but WITHOUT ANY WARRANTY; without even the implied warranty of
+--  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+--  GNU Lesser General Public License for more details.
+--
+--  You should have received a copy of the GNU Lesser General Public License
+--  along with BioSQL. If not, see <http://www.gnu.org/licenses/>.
+--
+-- ========================================================================
+--
+-- Authors: Ewan Birney, Elia Stupka, Hilmar Lapp, Aaron Mackey 
 -- Post-Cape Town changes by Hilmar Lapp.
 -- Singapore changes by Hilmar Lapp and Aaron Mackey.
 -- Migration to HSQLDB by Len Trigg <len at reeltwo.com>
 --
--- Copyright Ewan Birney. You may use, modify, and distribute this
--- code under the same terms as Perl. See the Perl Artistic License.
---
 -- comments to biosql - biosql-l@open-bio.org
 --
-
 -- See biosql schema documentation for general documentation regarding the 
 -- schema. This file contains documetation specific to the hsqldb schema.
 

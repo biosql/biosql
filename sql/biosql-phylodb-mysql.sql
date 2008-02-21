@@ -1,5 +1,24 @@
 -- $Id$
 --
+-- Copyright 2006-2008 Hilmar Lapp, William Piel.
+-- 
+--  This file is part of BioSQL.
+--
+--  BioSQL is free software: you can redistribute it and/or modify it
+--  under the terms of the GNU Lesser General Public License as
+--  published by the Free Software Foundation, either version 3 of the
+--  License, or (at your option) any later version.
+--
+--  BioSQL is distributed in the hope that it will be useful,
+--  but WITHOUT ANY WARRANTY; without even the implied warranty of
+--  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+--  GNU Lesser General Public License for more details.
+--
+--  You should have received a copy of the GNU Lesser General Public License
+--  along with BioSQL. If not, see <http://www.gnu.org/licenses/>.
+--
+-- ========================================================================
+--
 -- ==================================================================
 -- NOTE: This version of the module currently lags behind some recent
 -- changes that have been made for the Pg version of the module.
@@ -10,13 +29,8 @@
 --
 -- This was developed independently but is very similar to the
 -- phylogeny module in Chado (the GMOD common relational model).
-
--- Authors: Hilmar Lapp, Bill Piel, Jamie Estill
 --
--- (c) Hilmar Lapp, hlapp at gmx.net, 2007
--- (c) Bill Piel, william.piel at yale.edu, 2007. 
--- You may use, modify, and distribute this code under the same terms as Perl.
--- See the Perl Artistic License.
+-- Authors: Hilmar Lapp, Bill Piel, Jamie Estill
 --
 -- comments to biosql - biosql-l@open-bio.org
 
