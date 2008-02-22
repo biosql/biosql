@@ -1,4 +1,3 @@
--- $Id: biosqldb-derby.sql 258 2008-02-21 04:46:33Z lapp $
 --
 -- Copyright 2002-2003 Ewan Birney, Elia Stupka, Chris Mungall
 -- Copyright 2003-2008 Hilmar Lapp
