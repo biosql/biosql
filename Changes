@@ -7,10 +7,31 @@ Tokyo, prior to the v1.0 release.
 BioSQL core schema
 ------------------
 
+version 1.0:
+
+  o Brought sql/biosql-accelerators-pg.sql to the 1.0 schema, but
+    still retired it since no-one can have been using it.
+
+  o Updated and fixed views and functions in sql/biosqldb-views-pg.sql
+    to work with 1.0 schema. Apparently this hadn't been used for a while ...
+
+  o Retired scripts/create_mysql_db.pl. Not sure what this was ever
+    useful for, and the DDL path was wrong anyway.
+
+  o Oracle version is now under sql/biosqldb-ora for consistency.
+
+  o Added version for Apache Derby (Java embedded RDBMS).
+
+  o Changed license to LGPL v3.
+
 PhyloDB module
 --------------
 
 alpha - no release yet
+
+  o Added SQL script to drop phyloDB tables and sequences.
+ 
+  o Changed license to LGPL v3.
 
   o Added tables tree_dbxref and node_dbxref tables to allow storing
     identifiers and cross-references for trees and nodes.
