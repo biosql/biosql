@@ -1,4 +1,4 @@
--- $Id: $
+-- $Id: biosqldb-derby.sql 258 2008-02-21 04:46:33Z lapp $
 --
 -- Copyright 2002-2003 Ewan Birney, Elia Stupka, Chris Mungall
 -- Copyright 2003-2008 Hilmar Lapp
@@ -38,72 +38,86 @@
 --
 -- The Biosql database has bioentries. That is about it. 
 CREATE TABLE biodatabase ( 
-  biodatabase_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
-  name VARCHAR ( 128 ) NOT NULL , 
-  authority VARCHAR ( 128 ) , 
-  description VARCHAR (512) 
-) ;
+	 biodatabase_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
+	 name VARCHAR ( 128 ) NOT NULL UNIQUE, 
+	 authority VARCHAR ( 128 ) , 
+	 description VARCHAR (30000) 
+) ; 
+
 CREATE INDEX db_auth on biodatabase ( authority );
 
+-- we could insist that taxa are NCBI taxon id, but on reflection I made this 
+-- an optional extra line, as many flat file formats do not have the NCBI id 
+-- 
+-- no organelle/sub species 
+--
+-- this corresponds to the node table of the NCBI taxonomy database 
+-- left_value, right_value implement a nested sets model;
+-- see http://www.oreillynet.com/pub/a/network/2002/11/27/bioconf.html
+-- or Joe Celko's 'SQL for smarties' for more information.
 CREATE TABLE taxon ( 
-  taxon_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
-  ncbi_taxon_id INTEGER NOT NULL UNIQUE, 
-  parent_taxon_id INTEGER , 
-  node_rank VARCHAR ( 32 ) , 
-  genetic_code SMALLINT , 
-  mito_genetic_code SMALLINT , 
-  left_value INTEGER NOT NULL UNIQUE, 
-  right_value INTEGER NOT NULL UNIQUE
- );  
-CREATE INDEX taxparent ON taxon ( parent_taxon_id );
+	 taxon_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
+	 ncbi_taxon_id INTEGER NOT NULL UNIQUE, 
+	 parent_taxon_id INTEGER , 
+	 node_rank VARCHAR ( 32 ) , 
+	 genetic_code SMALLINT , 
+	 mito_genetic_code SMALLINT , 
+	 left_value INTEGER NOT NULL UNIQUE, 
+	 right_value INTEGER NOT NULL UNIQUE
+ );	 
+CREATE INDEX taxparent ON taxon ( parent_taxon_id ); 
 
 -- corresponds to the names table of the NCBI taxonomy databaase 
 CREATE TABLE taxon_name ( 
-  taxon_id INTEGER UNIQUE NOT NULL , 
-  name VARCHAR ( 255 ) UNIQUE NOT NULL , 
-  name_class VARCHAR ( 32 ) UNIQUE NOT NULL 
-) ;
+	 taxon_id INTEGER NOT NULL , 
+	 name VARCHAR ( 255 ) NOT NULL , 
+	 name_class VARCHAR ( 32 ) NOT NULL,
+         UNIQUE ( name , name_class, taxon_id )
+) ; 
 
 CREATE INDEX taxnametaxonid ON taxon_name ( taxon_id ); 
-CREATE INDEX taxnamename ON taxon_name ( name );
+CREATE INDEX taxnamename ON taxon_name ( name ); 
 
 -- this is where the namespace (controlled vocabulary) ontology terms live 
 -- we chose to have a separate table for this instead of reusing biodatabase 
 CREATE TABLE ontology ( 
-  ontology_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
-  name VARCHAR ( 32 ) NOT NULL UNIQUE, 
-  definition VARCHAR (1024)  
-  
-) ;
+	 ontology_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
+	 name VARCHAR ( 32 ) NOT NULL UNIQUE, 
+	 definition VARCHAR (30000)  
+	 
+) ; 
 
 -- any controlled vocab term, everything from full ontology 
 -- terms eg GO IDs to the various keys allowed as qualifiers 
 CREATE TABLE term ( 
-  term_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY , 
-  name VARCHAR ( 255 ) UNIQUE NOT NULL , 
-  definition VARCHAR(1024) , 
-  identifier VARCHAR ( 40 ) UNIQUE NOT NULL, 
-  is_obsolete CHAR ( 1 ) ,
-  ontology_id INTEGER NOT NULL
-);
-CREATE INDEX term_ont ON term ( ontology_id );
+	 term_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY , 
+	 name VARCHAR ( 255 ) NOT NULL , 
+	 definition VARCHAR(30000) , 
+	 identifier VARCHAR ( 40 ) NOT NULL, 
+	 is_obsolete CHAR ( 1 ) NOT NULL,
+	 ontology_id INTEGER NOT NULL,
+         UNIQUE ( name , ontology_id , is_obsolete ) , 
+         UNIQUE ( identifier ) 
+) ;
+
+CREATE INDEX term_ont ON term ( ontology_id ); 
 
 -- ontology terms have synonyms, here is how to store them.
 -- Synonym is a reserved word in many RDBMSs, so the column synonym
 -- may eventually be renamed to name.
 CREATE TABLE term_synonym (
-  synonym VARCHAR(255) NOT NULL,
-  term_id INTEGER NOT NULL,
-         PRIMARY KEY ( term_id , synonym ) ) ;
+	 synonym VARCHAR(255) NOT NULL,
+	 term_id INTEGER NOT NULL,
+       	 PRIMARY KEY ( term_id , synonym ) ) ;
 
 -- ontology terms to dbxref association: ontology terms have dbxrefs 
 CREATE TABLE term_dbxref ( 
-  term_id INTEGER NOT NULL , 
-  dbxref_id INTEGER NOT NULL , 
-  rank INTEGER , 
-  PRIMARY KEY ( term_id , dbxref_id ) ) ;
+	 term_id INTEGER NOT NULL , 
+	 dbxref_id INTEGER NOT NULL , 
+	 rank INTEGER , 
+	 PRIMARY KEY ( term_id , dbxref_id ) ) ; 
 
-CREATE INDEX trmdbxref_dbxrefid ON term_dbxref ( dbxref_id );
+CREATE INDEX trmdbxref_dbxrefid ON term_dbxref ( dbxref_id ); 
 
 -- relationship between controlled vocabulary / ontology term 
 -- we use subject/predicate/object but this could also 
@@ -120,19 +134,19 @@ CREATE INDEX trmdbxref_dbxrefid ON term_dbxref ( dbxref_id );
 -- this table probably won't be filled for a while, the core 
 -- will just treat ontologies as flat lists of terms 
 CREATE TABLE term_relationship ( 
-  term_relationship_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY , 
-  subject_term_id INTEGER NOT NULL , 
-  predicate_term_id INTEGER NOT NULL , 
-  object_term_id INTEGER NOT NULL , 
-  ontology_id INTEGER NOT NULL , 
-  UNIQUE ( subject_term_id , predicate_term_id , object_term_id , ontology_id ) ) ;
+	 term_relationship_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY , 
+	 subject_term_id INTEGER NOT NULL , 
+	 predicate_term_id INTEGER NOT NULL , 
+	 object_term_id INTEGER NOT NULL , 
+	 ontology_id INTEGER NOT NULL , 
+	 UNIQUE ( subject_term_id , predicate_term_id , object_term_id , ontology_id ) ) ; 
 
 CREATE INDEX trmrel_predicateid ON term_relationship ( predicate_term_id ); 
 CREATE INDEX trmrel_objectid ON term_relationship ( object_term_id ); 
 CREATE INDEX trmrel_ontid ON term_relationship ( ontology_id ); 
 -- CONFIG: you may want to add this if you can't get the optimizer to
 -- use the composite index for the initial keys
---CREATE INDEX trmrel_subjectid ON term_relationship(subject_term_id);
+--CREATE INDEX trmrel_subjectid ON term_relationship(subject_term_id); 
 
 -- This lets one associate a single term with a term_relationship 
 -- effecively allowing us to treat triples as 1st class terms.
@@ -142,7 +156,7 @@ CREATE INDEX trmrel_ontid ON term_relationship ( ontology_id );
 -- following article that Mat Pocock posted to the mailing list:
 -- http://www.open-bio.org/pipermail/biosql-l/2003-October/000455.html
 CREATE TABLE term_relationship_term (
-        term_relationship_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY ,
+        term_relationship_id INTEGER NOT NULL PRIMARY KEY ,
         term_id              INTEGER UNIQUE NOT NULL 
 );
 
@@ -159,19 +173,19 @@ CREATE TABLE term_relationship_term (
 -- documented) implementations of the transitive closure table approach. 
 CREATE TABLE term_path ( 
          term_path_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY  ,
-  subject_term_id INTEGER NOT NULL , 
-  predicate_term_id INTEGER NOT NULL , 
-  object_term_id INTEGER NOT NULL , 
-  ontology_id INTEGER NOT NULL , 
-  distance INTEGER NOT NULL, 
-  UNIQUE ( subject_term_id , predicate_term_id , object_term_id , ontology_id , distance ) ) ;
+	 subject_term_id INTEGER NOT NULL , 
+	 predicate_term_id INTEGER NOT NULL , 
+	 object_term_id INTEGER NOT NULL , 
+	 ontology_id INTEGER NOT NULL , 
+	 distance INTEGER NOT NULL, 
+	 UNIQUE ( subject_term_id , predicate_term_id , object_term_id , ontology_id , distance ) ) ; 
 
 CREATE INDEX trmpath_predicateid ON term_path ( predicate_term_id ); 
 CREATE INDEX trmpath_objectid ON term_path ( object_term_id ); 
 CREATE INDEX trmpath_ontid ON term_path ( ontology_id ); 
 -- CONFIG: you may want to add this if you can't get the optimizer to
 -- use the composite index for the initial keys
---CREATE INDEX trmpath_subjectid ON term_path(subject_term_id);
+--CREATE INDEX trmpath_subjectid ON term_path(subject_term_id); 
 
 -- we can be a bioentry without a biosequence, but not visa-versa 
 -- most things are going to be keyed off bioentry_id 
@@ -193,39 +207,39 @@ CREATE INDEX trmpath_ontid ON term_path ( ontology_id );
 -- Name maps to display_id in bioperl. We have a different column name 
 -- here to avoid confusion with the naming convention for foreign keys. 
 CREATE TABLE bioentry ( 
-  bioentry_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY , 
-  biodatabase_id INTEGER NOT NULL , 
-  taxon_id INTEGER , 
-  name VARCHAR ( 40 ) NOT NULL , 
-  accession VARCHAR ( 40 ) NOT NULL , 
-  identifier VARCHAR ( 40 ) NOT NULL, 
-  division VARCHAR ( 6 ) , 
-  description VARCHAR( 4096 ) , 
-  version INTEGER NOT NULL , 
-  UNIQUE ( accession , biodatabase_id , version ) , 
+	 bioentry_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY , 
+	 biodatabase_id INTEGER NOT NULL , 
+	 taxon_id INTEGER , 
+	 name VARCHAR ( 40 ) NOT NULL , 
+	 accession VARCHAR ( 40 ) NOT NULL , 
+	 identifier VARCHAR ( 40 ) NOT NULL, 
+	 division VARCHAR ( 6 ) , 
+	 description VARCHAR( 4096 ) , 
+	 version INTEGER NOT NULL , 
+	 UNIQUE ( accession , biodatabase_id , version ) , 
 -- CONFIG: uncomment one (and only one) of the two lines below. The
 -- first puts a uniqueness constraint on the identifier column alone;
 -- the other one puts a uniqueness constraint on identifier only
 -- within a namespace.
---  UNIQUE ( identifier ) 
-  UNIQUE ( identifier , biodatabase_id ) 
-) ;
+--	 UNIQUE ( identifier ) 
+	 UNIQUE ( identifier , biodatabase_id ) 
+) ; 
 
 CREATE INDEX bioentry_name ON bioentry ( name ); 
 CREATE INDEX bioentry_db ON bioentry ( biodatabase_id ); 
-CREATE INDEX bioentry_tax ON bioentry ( taxon_id );
+CREATE INDEX bioentry_tax ON bioentry ( taxon_id ); 
 
 -- 
 -- bioentry-bioentry relationships: these are typed 
 -- 
 CREATE TABLE bioentry_relationship ( 
-  bioentry_relationship_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY , 
-  object_bioentry_id INTEGER NOT NULL , 
-  subject_bioentry_id INTEGER NOT NULL , 
-  term_id INTEGER NOT NULL , 
-  rank INTEGER , 
-  UNIQUE ( object_bioentry_id , subject_bioentry_id , term_id ) 
-) ;
+	 bioentry_relationship_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY , 
+	 object_bioentry_id INTEGER NOT NULL , 
+	 subject_bioentry_id INTEGER NOT NULL , 
+	 term_id INTEGER NOT NULL , 
+	 rank INTEGER , 
+	 UNIQUE ( object_bioentry_id , subject_bioentry_id , term_id ) 
+) ; 
 
 CREATE INDEX bioentryrel_trm ON bioentry_relationship ( term_id ); 
 CREATE INDEX bioentryrel_child ON bioentry_relationship (subject_bioentry_id);
@@ -236,24 +250,24 @@ CREATE INDEX bioentryrel_child ON bioentry_relationship (subject_bioentry_id);
 -- for deep (depth > 1) bioentry relationship trees we need a transitive 
 -- closure table too 
 CREATE TABLE bioentry_path ( 
-  object_bioentry_id INTEGER NOT NULL , 
-  subject_bioentry_id INTEGER NOT NULL , 
-  term_id INTEGER NOT NULL , 
-  distance INTEGER NOT NULL,
-  UNIQUE ( object_bioentry_id , subject_bioentry_id , term_id , distance ) ) ;
+	 object_bioentry_id INTEGER NOT NULL , 
+	 subject_bioentry_id INTEGER NOT NULL , 
+	 term_id INTEGER NOT NULL , 
+	 distance INTEGER NOT NULL,
+	 UNIQUE ( object_bioentry_id , subject_bioentry_id , term_id , distance ) ) ; 
 
 CREATE INDEX bioentrypath_trm ON bioentry_path ( term_id ); 
-CREATE INDEX bioentrypath_child ON bioentry_path ( subject_bioentry_id );
+CREATE INDEX bioentrypath_child ON bioentry_path ( subject_bioentry_id ); 
 
 -- some bioentries will have a sequence 
 -- biosequence because sequence is sometimes a reserved word 
 CREATE TABLE biosequence ( 
-  bioentry_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY , 
-  version INTEGER , 
-  length INTEGER , 
-  alphabet VARCHAR ( 10 ) , 
-  seq CLOB  
-) ;
+	 bioentry_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY , 
+	 version INTEGER , 
+	 length INTEGER , 
+	 alphabet VARCHAR ( 10 ) , 
+	 seq CLOB  
+) ; 
 
 -- database cross-references (e.g., GenBank:AC123456.1) 
 --
@@ -265,13 +279,13 @@ CREATE TABLE biosequence (
 -- of zero means the version is to be interpreted as NULL.
 --
 CREATE TABLE dbxref ( 
-  dbxref_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY , 
-  dbname VARCHAR ( 40 ) NOT NULL , 
-  accession VARCHAR ( 40 ) NOT NULL , 
-  version INTEGER NOT NULL , 
-  UNIQUE ( accession , dbname , version ) ) ;
+	 dbxref_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY , 
+	 dbname VARCHAR ( 40 ) NOT NULL , 
+	 accession VARCHAR ( 40 ) NOT NULL , 
+	 version INTEGER NOT NULL , 
+	 UNIQUE ( accession , dbname , version ) ) ; 
 
-CREATE INDEX dbxref_db ON dbxref ( dbname );
+CREATE INDEX dbxref_db ON dbxref ( dbname ); 
 
 -- for roundtripping embl/genbank, we need to have the "optional ID" 
 -- for the dbxref. 
@@ -282,14 +296,14 @@ CREATE INDEX dbxref_db ON dbxref ( dbname );
 -- importing all of interpro), so we can attach the text 
 -- description as a synonym 
 CREATE TABLE dbxref_qualifier_value ( 
-  dbxref_id INTEGER NOT NULL , 
-  term_id INTEGER NOT NULL , 
-  rank INTEGER NOT NULL DEFAULT 0 , 
-  value VARCHAR (1024) , 
-  PRIMARY KEY ( dbxref_id , term_id , rank ) ) ;
+	 dbxref_id INTEGER NOT NULL , 
+	 term_id INTEGER NOT NULL , 
+	 rank INTEGER NOT NULL DEFAULT 0 , 
+	 value VARCHAR (30000) , 
+	 PRIMARY KEY ( dbxref_id , term_id , rank ) ) ; 
 
 CREATE INDEX dbxrefqual_dbx ON dbxref_qualifier_value ( dbxref_id ); 
-CREATE INDEX dbxrefqual_trm ON dbxref_qualifier_value ( term_id );
+CREATE INDEX dbxrefqual_trm ON dbxref_qualifier_value ( term_id ); 
 
 -- Direct dblinks. It is tempting to do this 
 -- from bioentry_id to bioentry_id. But that wont work 
@@ -297,12 +311,12 @@ CREATE INDEX dbxrefqual_trm ON dbxref_qualifier_value ( term_id );
 -- this table each time. Better to do the join through accession 
 -- and db each time. Should be almost as cheap 
 CREATE TABLE bioentry_dbxref ( 
-  bioentry_id INTEGER NOT NULL , 
-  dbxref_id INTEGER NOT NULL , 
-  rank INTEGER , 
-  PRIMARY KEY ( bioentry_id , dbxref_id ) ) ;
+	 bioentry_id INTEGER NOT NULL , 
+	 dbxref_id INTEGER NOT NULL , 
+	 rank INTEGER , 
+	 PRIMARY KEY ( bioentry_id , dbxref_id ) ) ; 
 
-CREATE INDEX dblink_dbx ON bioentry_dbxref ( dbxref_id );
+CREATE INDEX dblink_dbx ON bioentry_dbxref ( dbxref_id ); 
 
 -- We can have multiple references per bioentry, but one reference 
 -- can also be used for the same bioentry. 
@@ -310,116 +324,116 @@ CREATE INDEX dblink_dbx ON bioentry_dbxref ( dbxref_id );
 -- No two references can reference the same reference database entry 
 -- (dbxref_id). This is where the MEDLINE id goes: PUBMED:123456. 
 CREATE TABLE reference ( 
-  reference_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY , 
-  dbxref_id INTEGER NOT NULL UNIQUE, 
-  location VARCHAR (1024) NOT NULL , 
-  title VARCHAR (2048) , 
-  authors VARCHAR (4096) , 
-  crc VARCHAR ( 32 ) UNIQUE NOT NULL
-) ;
+	 reference_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY , 
+	 dbxref_id INTEGER NOT NULL UNIQUE, 
+	 location VARCHAR (30000) NOT NULL , 
+	 title VARCHAR (30000) , 
+	 authors VARCHAR (30000) , 
+	 crc VARCHAR ( 32 ) UNIQUE NOT NULL
+) ; 
 
 -- bioentry to reference associations 
 CREATE TABLE bioentry_reference ( 
-  bioentry_id INTEGER NOT NULL , 
-  reference_id INTEGER NOT NULL , 
-  start_pos INTEGER , 
-  end_pos INTEGER , 
-  rank INTEGER NOT NULL DEFAULT 0 , 
-  PRIMARY KEY ( bioentry_id , reference_id , rank ) ) ;
+	 bioentry_id INTEGER NOT NULL , 
+	 reference_id INTEGER NOT NULL , 
+	 start_pos INTEGER , 
+	 end_pos INTEGER , 
+	 rank INTEGER NOT NULL DEFAULT 0 , 
+	 PRIMARY KEY ( bioentry_id , reference_id , rank ) ) ; 
 
-CREATE INDEX bioentryref_ref ON bioentry_reference ( reference_id );
+CREATE INDEX bioentryref_ref ON bioentry_reference ( reference_id ); 
 
 -- We can have multiple comments per seqentry, and 
 -- comments can have embedded '\n' characters 
 CREATE TABLE comment ( 
-  comment_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
-  bioentry_id INTEGER NOT NULL , 
-  comment_text VARCHAR (4096) NOT NULL , 
-  rank INTEGER NOT NULL DEFAULT 0 ,
-  UNIQUE ( bioentry_id , rank ) ) ;
+	 comment_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
+	 bioentry_id INTEGER NOT NULL , 
+	 comment_text VARCHAR (30000) NOT NULL , 
+	 rank INTEGER NOT NULL DEFAULT 0 ,
+	 UNIQUE ( bioentry_id , rank ) ) ; 
 
 -- tag/value and ontology term annotation for bioentries goes here
 CREATE TABLE bioentry_qualifier_value ( 
-  bioentry_id INTEGER NOT NULL , 
-  term_id INTEGER NOT NULL , 
-  value VARCHAR (1024) , 
-  rank INTEGER NOT NULL DEFAULT 0 , 
-  UNIQUE ( bioentry_id , term_id , rank ) ) ;
+	 bioentry_id INTEGER NOT NULL , 
+	 term_id INTEGER NOT NULL , 
+	 value VARCHAR (30000) , 
+	 rank INTEGER NOT NULL DEFAULT 0 , 
+	 UNIQUE ( bioentry_id , term_id , rank ) ) ; 
 
-CREATE INDEX bioentryqual_trm ON bioentry_qualifier_value ( term_id );
+CREATE INDEX bioentryqual_trm ON bioentry_qualifier_value ( term_id ); 
 
 -- feature table. We cleanly handle 
 --   - simple locations 
 --   - split locations 
 --   - split locations on remote sequences 
 CREATE TABLE seqfeature ( 
-  seqfeature_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY , 
-  bioentry_id INTEGER NOT NULL , 
-  type_term_id INTEGER NOT NULL , 
-  source_term_id INTEGER NOT NULL , 
-  display_name VARCHAR ( 64 ) , 
-  rank INTEGER NOT NULL DEFAULT 0 ,  
-  UNIQUE ( bioentry_id , type_term_id , source_term_id , rank ) ) ;
+	 seqfeature_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY , 
+	 bioentry_id INTEGER NOT NULL , 
+	 type_term_id INTEGER NOT NULL , 
+	 source_term_id INTEGER NOT NULL , 
+	 display_name VARCHAR ( 64 ) , 
+	 rank INTEGER NOT NULL DEFAULT 0 ,  
+	 UNIQUE ( bioentry_id , type_term_id , source_term_id , rank ) ) ; 
 
 CREATE INDEX seqfeature_trm ON seqfeature ( type_term_id ); 
 CREATE INDEX seqfeature_fsrc ON seqfeature ( source_term_id ); 
 -- CONFIG: you may want to add this if you can't get the optimizer to
 -- use the composite index for the initial keys 
---CREATE INDEX seqfeature_bioentryid ON seqfeature(bioentry_id);
+--CREATE INDEX seqfeature_bioentryid ON seqfeature(bioentry_id); 
 
 -- seqfeatures can be arranged in containment hierarchies. 
 -- one can imagine storing other relationships between features, 
 -- in this case the term_id can be used to type the relationship 
 CREATE TABLE seqfeature_relationship ( 
-  seqfeature_relationship_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY , 
-  object_seqfeature_id INTEGER NOT NULL , 
-  subject_seqfeature_id INTEGER NOT NULL , 
-  term_id INTEGER NOT NULL , 
-  rank INTEGER , 
-  UNIQUE ( object_seqfeature_id , subject_seqfeature_id , term_id ) ) ;
+	 seqfeature_relationship_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY , 
+	 object_seqfeature_id INTEGER NOT NULL , 
+	 subject_seqfeature_id INTEGER NOT NULL , 
+	 term_id INTEGER NOT NULL , 
+	 rank INTEGER , 
+	 UNIQUE ( object_seqfeature_id , subject_seqfeature_id , term_id ) ) ; 
 
 CREATE INDEX seqfeaturerel_trm ON seqfeature_relationship ( term_id ); 
 CREATE INDEX seqfeaturerel_child ON seqfeature_relationship ( subject_seqfeature_id ); 
 -- CONFIG: you may want to add this if you can't get the optimizer to
 -- use the composite index for the initial keys 
---CREATE INDEX seqfeaturerel_parent ON seqfeature_relationship(object_seqfeature_id);
+--CREATE INDEX seqfeaturerel_parent ON seqfeature_relationship(object_seqfeature_id); 
 
 -- for deep (depth > 1) seqfeature relationship trees we need a transitive 
 -- closure table too 
 CREATE TABLE seqfeature_path ( 
-  object_seqfeature_id INTEGER NOT NULL , 
-  subject_seqfeature_id INTEGER NOT NULL , 
-  term_id INTEGER NOT NULL , 
-  distance INTEGER NOT NULL,
-  UNIQUE ( object_seqfeature_id , subject_seqfeature_id , term_id , distance ) ) ;
+	 object_seqfeature_id INTEGER NOT NULL , 
+	 subject_seqfeature_id INTEGER NOT NULL , 
+	 term_id INTEGER NOT NULL , 
+	 distance INTEGER NOT NULL,
+	 UNIQUE ( object_seqfeature_id , subject_seqfeature_id , term_id , distance ) ) ; 
 
 CREATE INDEX seqfeaturepath_trm ON seqfeature_path ( term_id ); 
 CREATE INDEX seqfeaturepath_child ON seqfeature_path ( subject_seqfeature_id );
 -- CONFIG: you may want to add this if you can't get the optimizer to
 -- use the composite index for the initial keys 
---CREATE INDEX seqfeaturerel_parent ON seqfeature_path(object_seqfeature_id);
+--CREATE INDEX seqfeaturerel_parent ON seqfeature_path(object_seqfeature_id); 
 
 -- tag/value associations - or ontology annotations 
 CREATE TABLE seqfeature_qualifier_value ( 
-  seqfeature_id INTEGER NOT NULL , 
-  term_id INTEGER NOT NULL , 
-  rank INTEGER NOT NULL DEFAULT 0 , 
-  value VARCHAR (1024)  NOT NULL , 
-  PRIMARY KEY ( seqfeature_id , term_id , rank ) ) ;
+	 seqfeature_id INTEGER NOT NULL , 
+	 term_id INTEGER NOT NULL , 
+	 rank INTEGER NOT NULL DEFAULT 0 , 
+	 value VARCHAR (1024)  NOT NULL , 
+	 PRIMARY KEY ( seqfeature_id , term_id , rank ) ) ; 
 
-CREATE INDEX seqfeaturequal_trm ON seqfeature_qualifier_value ( term_id );
+CREATE INDEX seqfeaturequal_trm ON seqfeature_qualifier_value ( term_id ); 
 
 -- DBXrefs for features. This is necessary for genome oriented viewpoints, 
 -- where you have a few have long sequences (contigs, or chromosomes) with many
 -- features on them. In that case the features are the semantic scope for 
 -- their annotation bundles, not the bioentry they are attached to. 
 CREATE TABLE seqfeature_dbxref ( 
-  seqfeature_id INTEGER NOT NULL , 
-  dbxref_id INTEGER NOT NULL , 
-  rank INTEGER , 
-  PRIMARY KEY ( seqfeature_id , dbxref_id ) ) ;
+	 seqfeature_id INTEGER NOT NULL , 
+	 dbxref_id INTEGER NOT NULL , 
+	 rank INTEGER , 
+	 PRIMARY KEY ( seqfeature_id , dbxref_id ) ) ; 
 
-CREATE INDEX feadblink_dbx ON seqfeature_dbxref ( dbxref_id );
+CREATE INDEX feadblink_dbx ON seqfeature_dbxref ( dbxref_id ); 
 
 -- basically we model everything as potentially having 
 -- any number of locations, ie, a split location. SimpleLocations 
@@ -437,19 +451,19 @@ CREATE INDEX feadblink_dbx ON seqfeature_dbxref ( dbxref_id );
 -- the FK to term is a possibility to store the type of the 
 -- location for determining in one hit whether it's a fuzzy or not 
 CREATE TABLE location ( 
-  location_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY , 
-  seqfeature_id INTEGER NOT NULL , 
-  dbxref_id INTEGER , 
-  term_id INTEGER , 
-  start_pos INTEGER , 
-  end_pos INTEGER , 
-  strand INTEGER NOT NULL DEFAULT 0 , 
-  rank INTEGER NOT NULL DEFAULT 0 , 
-  UNIQUE ( seqfeature_id , rank ) ) ;
+	 location_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY , 
+	 seqfeature_id INTEGER NOT NULL , 
+	 dbxref_id INTEGER , 
+	 term_id INTEGER , 
+	 start_pos INTEGER , 
+	 end_pos INTEGER , 
+	 strand INTEGER NOT NULL DEFAULT 0 , 
+	 rank INTEGER NOT NULL DEFAULT 0 , 
+	 UNIQUE ( seqfeature_id , rank ) ) ; 
 
 CREATE INDEX seqfeatureloc_start ON location ( start_pos, end_pos ); 
 CREATE INDEX seqfeatureloc_dbx ON location ( dbxref_id ); 
-CREATE INDEX seqfeatureloc_trm ON location ( term_id );
+CREATE INDEX seqfeatureloc_trm ON location ( term_id ); 
 
 -- location qualifiers - mainly intended for fuzzies but anything 
 -- can go in here 
@@ -460,17 +474,17 @@ CREATE INDEX seqfeatureloc_trm ON location ( term_id );
 -- for your own nefarious aims, although the bio* apis will 
 -- most likely ignore these 
 CREATE TABLE location_qualifier_value ( 
-  location_id INTEGER NOT NULL , 
-  term_id INTEGER NOT NULL , 
-  value VARCHAR ( 255 ) NOT NULL , 
-  int_value INTEGER , 
-  PRIMARY KEY ( location_id , term_id ) ) ;
+	 location_id INTEGER NOT NULL , 
+	 term_id INTEGER NOT NULL , 
+	 value VARCHAR ( 255 ) NOT NULL , 
+	 int_value INTEGER , 
+	 PRIMARY KEY ( location_id , term_id ) ) ; 
 
-CREATE INDEX locationqual_trm ON location_qualifier_value ( term_id );
+CREATE INDEX locationqual_trm ON location_qualifier_value ( term_id ); 
 
 -- 
 -- Create the foreign key constraints 
---
+-- 
 
 -- ontology term
 ALTER TABLE term ADD CONSTRAINT FKont_term
