@@ -1,4 +1,3 @@
--- $Id: $
 -- 
 -- Copyright 2007-2008 Hilmar Lapp
 --
