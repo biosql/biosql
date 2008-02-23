@@ -178,7 +178,7 @@ CREATE INDEX trmrel_objectid ON term_relationship(object_term_id);
 CREATE INDEX trmrel_ontid ON term_relationship(ontology_id);
 -- CONFIG: you may want to add this for mysql because MySQL often is broken
 -- with respect to using the composite index for the initial keys
---CREATE INDEX ontrel_subjectid ON term_relationship(subject_term_id);
+-- CREATE INDEX ontrel_subjectid ON term_relationship(subject_term_id);
 
 -- This lets one associate a single term with a term_relationship 
 -- effecively allowing us to treat triples as 1st class terms.
@@ -221,7 +221,7 @@ CREATE INDEX trmpath_objectid ON term_path(object_term_id);
 CREATE INDEX trmpath_ontid ON term_path(ontology_id);
 -- CONFIG: you may want to add this for mysql because MySQL often is broken
 -- with respect to using the composite index for the initial keys
---CREATE INDEX trmpath_subjectid ON term_path(subject_term_id);
+-- CREATE INDEX trmpath_subjectid ON term_path(subject_term_id);
 
 -- we can be a bioentry without a biosequence, but not visa-versa
 -- most things are going to be keyed off bioentry_id
@@ -283,7 +283,7 @@ CREATE INDEX bioentryrel_trm   ON bioentry_relationship(term_id);
 CREATE INDEX bioentryrel_child ON bioentry_relationship(subject_bioentry_id);
 -- CONFIG: you may want to add this for mysql because MySQL often is broken
 -- with respect to using the composite index for the initial keys
---CREATE INDEX bioentryrel_parent ON bioentry_relationship(object_bioentry_id);
+-- CREATE INDEX bioentryrel_parent ON bioentry_relationship(object_bioentry_id);
 
 -- for deep (depth > 1) bioentry relationship trees we need a transitive
 -- closure table too
@@ -299,7 +299,7 @@ CREATE INDEX bioentrypath_trm   ON bioentry_path(term_id);
 CREATE INDEX bioentrypath_child ON bioentry_path(subject_bioentry_id);
 -- CONFIG: you may want to add this for mysql because MySQL often is broken
 -- with respect to using the composite index for the initial keys
---CREATE INDEX bioentrypath_parent ON bioentry_path(object_bioentry_id);
+-- CREATE INDEX bioentrypath_parent ON bioentry_path(object_bioentry_id);
 
 -- some bioentries will have a sequence
 -- biosequence because sequence is sometimes a reserved word
@@ -447,7 +447,7 @@ CREATE INDEX seqfeature_trm  ON seqfeature(type_term_id);
 CREATE INDEX seqfeature_fsrc ON seqfeature(source_term_id);
 -- you may want to add this for mysql because MySQL often is broken with
 -- respect to using the composite index for the initial keys
---CREATE INDEX seqfeature_bioentryid ON seqfeature(bioentry_id);
+-- CREATE INDEX seqfeature_bioentryid ON seqfeature(bioentry_id);
 
 -- seqfeatures can be arranged in containment hierarchies.
 -- one can imagine storing other relationships between features,
@@ -467,7 +467,7 @@ CREATE INDEX seqfeaturerel_trm   ON seqfeature_relationship(term_id);
 CREATE INDEX seqfeaturerel_child ON seqfeature_relationship(subject_seqfeature_id);
 -- CONFIG: you may want to add this for mysql because MySQL often is broken
 -- with respect to using the composite index for the initial keys
---CREATE INDEX seqfeaturerel_parent ON seqfeature_relationship(object_seqfeature_id);
+-- CREATE INDEX seqfeaturerel_parent ON seqfeature_relationship(object_seqfeature_id);
 
 -- for deep (depth > 1) seqfeature relationship trees we need a transitive
 -- closure table too
@@ -483,7 +483,7 @@ CREATE INDEX seqfeaturepath_trm   ON seqfeature_path(term_id);
 CREATE INDEX seqfeaturepath_child ON seqfeature_path(subject_seqfeature_id);
 -- CONFIG: you may want to add this for mysql because MySQL often is broken
 -- with respect to using the composite index for the initial keys
---CREATE INDEX seqfeaturerel_parent ON seqfeature_path(object_seqfeature_id);
+-- CREATE INDEX seqfeaturerel_parent ON seqfeature_path(object_seqfeature_id);
 
 -- tag/value associations - or ontology annotations
 CREATE TABLE seqfeature_qualifier_value (
@@ -628,7 +628,7 @@ ALTER TABLE term_path ADD CONSTRAINT FKontology_trmpath
 
 -- unfortunately, we can't constrain parent_taxon_id as it is violated
 -- occasionally by the downloads available from NCBI
---ALTER TABLE taxon ADD CONSTRAINT FKtaxon_taxon
+-- ALTER TABLE taxon ADD CONSTRAINT FKtaxon_taxon
 --        FOREIGN KEY (parent_taxon_id) REFERENCES taxon(taxon_id);
 ALTER TABLE taxon_name ADD CONSTRAINT FKtaxon_taxonname
         FOREIGN KEY (taxon_id) REFERENCES taxon(taxon_id)
