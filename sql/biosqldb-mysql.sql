@@ -178,7 +178,7 @@ CREATE INDEX trmrel_objectid ON term_relationship(object_term_id);
 CREATE INDEX trmrel_ontid ON term_relationship(ontology_id);
 -- CONFIG: you may want to add this for mysql because MySQL often is broken
 -- with respect to using the composite index for the initial keys
---CREATE INDEX ontrel_subjectid ON term_relationship(subject_term_id);
+-- CREATE INDEX ontrel_subjectid ON term_relationship(subject_term_id);
 
 -- This lets one associate a single term with a term_relationship 
 -- effecively allowing us to treat triples as 1st class terms.
