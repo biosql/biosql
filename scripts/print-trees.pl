@@ -5,15 +5,23 @@
 # Script to print a named tree or all trees in a BioSQL database with
 # the phylodb extension.
 #
-# (c) Hilmar Lapp, hlapp at gmx.net, 2006.
-# (c) William Piel, william.piel at yale.edu, 2006
+# Copyright 2006-2007 Hilmar Lapp, hlapp at gmx.net, 2006.
+# Copyright 2006-2007 William Piel, william.piel at yale.edu, 2006
 # 
-# You may use, modify, and distribute this software under the same terms
-# as Perl itself. See the Perl Artistic License for the terms, for
-# example at http://www.perl.com/pub/a/language/misc/Artistic.html.
+#  This file is part of BioSQL.
 #
-# THIS SOFTWARE COMES AS IS, WITHOUT ANY EXPRESS OR IMPLIED
-# WARRANTY. USE AT YOUR OWN RISK.
+#  BioSQL is free software: you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as
+#  published by the Free Software Foundation, either version 3 of the
+#  License, or (at your option) any later version.
+#
+#  BioSQL is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with BioSQL. If not, see <http://www.gnu.org/licenses/>.
 
 =head1 NAME
 
