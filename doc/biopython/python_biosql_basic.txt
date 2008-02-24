@@ -1,4 +1,3 @@
-
    
                                      
                       Basic BioSQL with Biopython
@@ -9,11 +8,9 @@
                         ========================
                                     
   
+Contents
+*=*=*=*=
 
-Table of Contents
-*=*=*=*=*=*=*=*=*
-
-   
   
  - 1  Other BioSQL documentation 
  - 2  Installing python database packages 
@@ -42,44 +39,57 @@ Table of Contents
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 
   
-  This documentation provides basic descriptions of using BioSQL from
+  This document provides a basic description of using BioSQL from
 python. To keep it simple, it does not go into non-python specific parts
-of the documentation. The other documentation which will be helpful for
-using BioSQL from Biopython is currently available only from CVS. You
-can get this documentation anonymously from the `biosql-schema'
-directory in the open-bio CVS servers. There are two ways to get these
-docs:
+of the documentation. Other documentation which will be helpful for
+using BioSQL from Biopython is on the Biopython wiki at
+http://www.biopython.org/wiki/BioSQL, and in other files distributed
+with BioSQL. You can find these either as part of a BioSQL release, or
+you can access them directly using anonymous svn. The BioSQL source is
+hosted on a subversion (svn) based version control server, and its
+anonymous access mirror is at the URL . There is also a web-interface at
+http://code.open-bio.org/svnweb/index.cgi/biosql/browse/biosql-schema
+that allows browsing the repository as well as viewing and downloading
+files. Additional information for accessing O|B|F source code
+repositories is at http://www.open-bio.org/wiki/SourceCode. There are
+two ways to get these docs:
   
   
- 1. You can use a commandline CVS client to get the code with the
-   following commands:
+ 1. You can use a commandline svn client to get the code from the 
+   anonymous svn mirror at the URL 
+   svn://code.open-bio.org/biosql/biosql-schema with  the following
+   commands:
    <<
-     $ cvs -d :pserver:cvs@cvs.open-bio.org:/home/repository/biosql
-   login
-     (Logging in to cvs@cvs.open-bio.org)
-     CVS password: <<PASSWORD is cvs (lowercase)>>
-     $ cvs -d :pserver:cvs@cvs.open-bio.org:/home/repository/biosql co
-     biosql-schema
+     $ svn co svn://code.open-bio.org/biosql/biosql-schema biosql-schema
+   >>
+ 
+  This will check out the biosql-schema repository with all tags and 
+   branches into the local directory `biosql-schema' (which will  be
+   created if it doesn't exist yet). Usually you will be interested 
+   only in the main trunk. In this case append `/trunk' to the  URL:
+   <<
+     $ svn co svn://code.open-bio.org/biosql/biosql-schema/trunk
+   biosql-schema
    >>
  
  
- 2. You can browse and download the code from the web interfaces to CVS.
-   The biosql CVS repository is located at:
-   http://cvs.open-bio.org/cgi-bin/viewcvs/viewcvs.cgi/?cvsroot=biosql.
-   Click the `Download tarball' link to get a `tar.gz' file containing
-   the current CVS. 
+ 2. You can browse and download the code from the web-interface to svn.
+   The biosql svn repository is located at:
+   http://code.open-bio.org/svnweb/index.cgi/biosql/browse/biosql-schema
+   . You can download individual files, but currently the web-interface
+   does not offer an option to download the entire repository. 
   
-  Once you have gotten this code, there are two documents worth reading
-in the `doc' directory:
+  Once you have gotten the code, there are two documents worth reading:
   
    
- - `install.txt' -- This document contains basic information  about
-   BioSQL, installation instructions for the MySQL and PostgreSQL 
-   databases, and information about loading the BioSQL schema into a 
-   database.
+ - `INSTALL' -- This document contains basic information  about BioSQL,
+   installation instructions for the MySQL and PostgreSQL  databases,
+   and information about loading the BioSQL schema into a  database.
  
- - `schema-overview.txt' -- This is a description of the  current SQL
-   schema making up the BioSQL databases. 
+ - `doc/schema-overview.txt' -- This is a description of the  current
+   SQL schema making up the BioSQL database. Note that this document is
+   meanwhile maintained on the BioSQL wiki at
+   http://www.biosql.org/wiki/Schema_Overview. 
   
   
 
@@ -101,8 +111,8 @@ development package (for example, mysql-dev or mysql-headers or
 mysql-libs) separately. If you start trying to install one of the python
 interfaces below and start getting errors are missing libraries or
 header files, you should check to make sure these are installed.
-  The `install.txt' document mentioned above provides information on
-install and configuring MySQL and PostgreSQL.
+  The `INSTALL' document mentioned above provides information on install
+and configuring MySQL and PostgreSQL.
   
 
 2.1  MySQL
@@ -297,7 +307,7 @@ newly created module:
 
   
   Once you've got your python database interface installed you're ready
-to get started with BioSQL. This section is intented to get you going
+to get started with BioSQL. This section is intended to get you going
 with the basics in python. For in-depth information about the BioSQL
 schema itself, you should check out the standard BioSQL documentation
 which has extensive information about setting up databases, loading SQL
@@ -411,12 +421,17 @@ file, which we can do with the following code:
 <<
   >>> db.load(iterator)
   6
+  >>> server.adaptor.commit()
 >>
   
   And the GenBank file is loaded into the database. Notice that the load
 function returns the number of records loaded (6 in this case). This is
 useful for sanity checking to make sure that you didn't try to load a
 massive file and end up with a result like 3.
+  Note also that BioSQL is a transactional database even in MySQL (as it
+uses InnoDB as the table handler). Hence, transactions need to be
+committed before you can go and login to the database through mysql and
+indeed find the data there.
   
 
 3.4  Retrieving SeqRecord objects
@@ -468,7 +483,7 @@ the standard ways:
   >>> feature.type
   'source'
   >>> print feature.location
-  (0..880)
+  [0..880]
   >>> feature.qualifiers
   {'strain': ['ssp. L. Heynh, Colombia'], 'organism': ['Arabidopsis
   thaliana'], 'db_xref': ['taxon:3702']}
@@ -489,6 +504,4 @@ or other nastiness, but you get all the advantages of a database.
 suppose I could go ahead and write something here.
 -----------------------------------------------------------------------
   
-   
-              This document was translated from LaTeX by HeVeA
-              (http://pauillac.inria.fr/~maranget/hevea/index.html). 
+              This document was translated from LaTeX by HeVeA (1).
