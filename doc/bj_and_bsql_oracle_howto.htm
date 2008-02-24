@@ -1,5 +1,9 @@
 <html>
 <head><title>BioJava and BioSQL/Oracle HOWTO</title></head>
+<STYLE type="text/css">
+PRE{text-align:left;margin-left:0ex;margin-right:auto;}
+.part{margin:auto;text-align:center}
+</STYLE>
 <body>
 
 <h1>BioJava and BioSQL/Oracle HOWTO</h1>
@@ -10,7 +14,12 @@
 
 <p>You'll need the latest version of BioJava to take advantage of the full functionality of BioSQL. This can be downloaded from <a href="http://www.biojava.org">biojava.org</a>. You'll also need the latest Oracle BioSQL schema. Originally an alternative schema was available, however <i>BioJava is recommended for use only with the official schema</i>.
 <ul>
-<li><b>Original</b>: by Hilmar Lapp, the original BioSQL schema takes full advantage of Oracle's security mechanisms and produces a high quality schema. To download the schema, go to <a href="http://cvs.open-bio.org">cvs.open-bio.org</a> and select the <tt>biosql</tt> project. Navigate to and download the entire <tt>biosql-schema/sql/biosql-ora</tt> folder. </li>
+<li><b>Original</b>: by Hilmar Lapp, the original BioSQL schema takes full advantage of Oracle's security mechanisms and produces a high quality schema. To download the schema, either follow the <a href="http://www.biosql.org/wiki/Downloads">Downloads link on the BioSQL website</a>, or alternatively download the latest revision of the Oracle version from anonymous svn:
+<PRE CLASS="verbatim">
+$ svn co svn://code.open-bio.org/biosql/biosql-schema/trunk/sql/biosqldb-ora biosqldb-ora
+</PRE>
+  If you use a BioSQL release, you find the Oracle version in the <tt>sql/biosqldb-ora</tt> directory. All instructions below assume you unpacked the distribution and navigated to that directory.
+</li>
 <li><b>Alternative <i>(deprecated)</i></b>: by Len Trigg, this version sits entirely inside a single user account, requiring no sysdba access to install. You'll have to ask for a copy of the script from the <a href="http://obda.open-bio.org/mailman/listinfo/biosql-l">biosql-l</a> mailing lists.</li>
 </ul>
 Both options are fully functional and compatible with both BioJava and BioPerl. <i>This document only discusses the Original schema</i>.</p>
@@ -42,7 +51,7 @@ Both options are fully functional and compatible with both BioJava and BioPerl. 
 
 <p>Now, copy <tt>BS-defs.sql</tt> to <tt>BS-defs-local.sql</tt> and edit it. You should check every entry in it carefully, particularly the names and locations of the tablespace files to be created, and the names of the two roles you just decided on above. You will also choose names for the various default BioSQL roles and users. <tt>biosql_owner</tt> is the actual owner of the schema that should already exist and have had the <tt>schema_creator</tt> role granted to it, you'll need to define its password here too. <tt>biosql_user</tt> is a role to be granted to people who need read-only access to the BioSQL database, <tt>biosql_loader</tt> is a role designed for general read/write access, whilst <tt>biosql_admin</tt> has full read-write permission on the schema.</p>
 
-<p>Once you have edited the <tt>BS-defs-local.sql</tt> script appropriately, you need to create the two base roles of <tt>base_user</tt> and <tt>schema_creator</tt> manually. Create them by running something similar to the following script whilst logged in as sysdba, from inside the <tt>biosql-ora</tt> directory:<pre>   @BS-defs-local
+<p>Once you have edited the <tt>BS-defs-local.sql</tt> script appropriately, you need to create the two base roles of <tt>base_user</tt> and <tt>schema_creator</tt> manually. Create them by running something similar to the following script whilst logged in as sysdba, from inside the <tt>biosqldb-ora</tt> directory:<pre>   @BS-defs-local
    create role &base_user;
    grant 
    CREATE SESSION,
@@ -69,7 +78,7 @@ Both options are fully functional and compatible with both BioJava and BioPerl. 
 
 <p>The final stage before actual installation is to edit the <tt>BS-create-all.sql</tt> script to ensure that only the steps you require are carried out. If you already have predefined tablespaces and don't want it to create new ones, comment out the line that reads <tt>@BS-create-tablespaces</tt>. You should do the same for <tt>@BS-create-users</tt> and <tt>@BS-create-roles</tt> as necessary. Likewise if you don't want any default data loaded into the database, comment out the line near the end that reads <tt>@BS-prepopulate-db</tt>.</p>
 
-<p>Make sure you have commented/uncommented the appropriate parts of section 9 of <tt>BS-create-all.sql</tt>. The <tt>BS-create-Biosql-API2</tt> script it refers to is an alternative to <tt>BS-create-Biosql-API</tt>, which works much better with BioJava. This is because BioJava has no flexibility about column names in tables. The API2 version of the script ensures that the column names are exactly the same as what BioJava expects by using views. But, no matter which you run, everything will still work fine with BioPerl).</p>
+<p>Make sure you have commented/uncommented the appropriate parts of section 9 of <tt>BS-create-all.sql</tt>. The <tt>BS-create-Biosql-API2</tt> script it refers to is an alternative to <tt>BS-create-Biosql-API</tt>, which works much better with BioJava. This is because BioJava has no flexibility about column names in tables. The API2 version of the script ensures that the column names are exactly the same as what BioJava expects by using views. But, no matter which you run, everything will still work fine with BioPerl.</p>
 
 <p>Now, log into your Oracle database and create the BioSQL database by typing:<pre>   @BS-create-all</pre>. It will prompt you for the <tt>sysdba</tt> user and password if necessary (unless you commented out these parts), maybe a couple of times. You might want to spool the output to see what happens, but you'll find that half of it doesn't appear in the spool file, because BioSQL is using spool itself to generate dynamic scripts on the fly. If you've done everything right, the only messages you should get are a few <tt>Table or view does not exist</tt> style messages, referring to the attempts by the script to drop old objects before recreating new ones.</p>
 
@@ -77,7 +86,7 @@ Both options are fully functional and compatible with both BioJava and BioPerl. 
 
 <p>If something goes wrong, you can safely rerun the script without dropping anything first as it will drop the database objects from the previous attempt first. It will however leave behind the tablespaces, users, and roles. You can always just drop the users and tablespaces that have been created if it really messes up, and start again from scratch.</p>
 
-<p>Now, your database has been installed! The only remaining step is to log in to each user who will be using BioSQL, and run the <tt>usersyns.sql</tt> script that the installation generated for you in the <tt>biosql-ora</tt> directory. This script creates the synonyms for the BioSQL objects and allows the users to see them. This script should not have any errors at all. If it does, edit it and check it closely for things like misplaced linebreaks etc.</p>
+<p>Now, your database has been installed! The only remaining step is to log in to each user who will be using BioSQL, and run the <tt>usersyns.sql</tt> script that the installation generated for you in the <tt>biosqldb-ora</tt> directory. This script creates the synonyms for the BioSQL objects and allows the users to see them. This script should not have any errors at all. If it does, edit it and check it closely for things like misplaced linebreaks etc.</p>
 
 <p>Note that if your users can't connect or can't get the appropriate permissions to do what you want them to do, try re-running the <tt>BS-create-roles</tt> script as sysdba, then the <tt>BS-grants</tt> script as the <tt>biosql_owner</tt> user. Disconnect and reconnect as the user having trouble and it should be fixed.</p>
 
@@ -87,7 +96,7 @@ Both options are fully functional and compatible with both BioJava and BioPerl. 
 
 <p><b>THE END!</b></p>
 
-<p><small>Richard Holland, hollandr at gis dot a-star dot edu dot sg, December 2004, updated May 2005</small></p>
+<p><small>Richard Holland, hollandr at gis dot a-star dot edu dot sg, December 2004, updated May 2005. Very minor updates by H. Lapp, Feb 2008.</small></p>
 
 </body>
 </html>
