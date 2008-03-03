@@ -24,28 +24,3 @@ version 1.0:
 
   o Changed license to LGPL v3.
 
-PhyloDB module
---------------
-
-alpha - no release yet
-
-  o Added SQL script to drop phyloDB tables and sequences.
- 
-  o Changed license to LGPL v3.
-
-  o Added tables tree_dbxref and node_dbxref tables to allow storing
-    identifiers and cross-references for trees and nodes.
-
-  o Renamed edge_attribute_value and node_attribute_value to use
-    'qualifier' instead of 'attribute', for the sake of consistency
-    with the core schema (though attribute sounds like the better
-    name).
-
-  o Added tree_qualifier_value table to capture metadata for trees.
-
-  o Replaced 1-n relationships (foreign keys) between bioentry and
-    node and taxon and node, respectively, with n-n relationships
-    (association tables).
-
-  o Added tree_root table to allow storing of multiple roots (e.g., as
-    resulting from Bayesian analysis) (11/13/2007)
