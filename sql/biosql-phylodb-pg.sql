@@ -284,9 +284,32 @@ ALTER TABLE tree_root ADD CONSTRAINT FKnode_treeroot
        FOREIGN KEY (node_id) REFERENCES node (node_id)
            ON DELETE CASCADE;
 
+-- tree_dbxref
+ALTER TABLE tree_dbxref ADD CONSTRAINT FKtree_treedbxref
+       FOREIGN KEY (tree_id) REFERENCES tree (tree_id)
+           ON DELETE CASCADE;
+ALTER TABLE tree_dbxref ADD CONSTRAINT FKdbxref_treedbxref
+       FOREIGN KEY (dbxref_id) REFERENCES dbxref (dbxref_id)
+           ON DELETE CASCADE;
+
 -- node
 ALTER TABLE node ADD CONSTRAINT FKnode_tree
        FOREIGN KEY (tree_id) REFERENCES tree (tree_id);
+
+-- node_dbxref
+ALTER TABLE node_dbxref ADD CONSTRAINT FKnode_nodedbxref
+       FOREIGN KEY (node_id) REFERENCES node (node_id)
+           ON DELETE CASCADE;
+ALTER TABLE node_dbxref ADD CONSTRAINT FKdbxref_nodedbxref
+       FOREIGN KEY (dbxref_id) REFERENCES dbxref (dbxref_id)
+           ON DELETE CASCADE;
+
+-- node_qualifier_value
+ALTER TABLE node_qualifier_value ADD CONSTRAINT FKnav_node
+       FOREIGN KEY (node_id) REFERENCES node (node_id)
+           ON DELETE CASCADE;
+ALTER TABLE node_qualifier_value ADD CONSTRAINT FKnav_term
+       FOREIGN KEY (term_id) REFERENCES term (term_id);
 
 -- node_bioentry
 ALTER TABLE node_bioentry ADD CONSTRAINT FKnodebioentry_bioentry
@@ -325,11 +348,4 @@ ALTER TABLE edge_qualifier_value ADD CONSTRAINT FKeav_edge
        FOREIGN KEY (edge_id) REFERENCES edge (edge_id)
            ON DELETE CASCADE;
 ALTER TABLE edge_qualifier_value ADD CONSTRAINT FKeav_term
-       FOREIGN KEY (term_id) REFERENCES term (term_id);
-
--- node_qualifier_value
-ALTER TABLE node_qualifier_value ADD CONSTRAINT FKnav_node
-       FOREIGN KEY (node_id) REFERENCES node (node_id)
-           ON DELETE CASCADE;
-ALTER TABLE node_qualifier_value ADD CONSTRAINT FKnav_term
        FOREIGN KEY (term_id) REFERENCES term (term_id);
