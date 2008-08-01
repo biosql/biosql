@@ -56,8 +56,11 @@ are unaffected. An update will erase all changes you made on taxon
 nodes and their names which have an NCBI TaxonID set. Names of nodes
 that do not have an NCBI TaxonID will be left untouched.
 
-Note that by convention we re-use the NCBI TaxonID as the primary key
-of the taxon table.
+Note that we used to have the convention to re-use the NCBI TaxonID as
+the primary key of the taxon table, but as of BioSQL v1.0.1 that is
+not true anymore. If you happen to rely on that former behavior in
+your code, you will need to add a post-processing step to change the
+primary keys to the NCBI taxon IDs.
 
 =head1 ARGUMENTS
 

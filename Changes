@@ -7,7 +7,31 @@ Tokyo, prior to the v1.0 release.
 BioSQL core schema
 ------------------
 
-version 1.0:
+version 1.0.1:
+
+  o Enlarged column width for dbxref.accession and bioentry.accession
+    to 128 characters to deal with some very long accession numbers of
+    pathway database entries.
+
+  o Added migrate/ directory and migration scripts from 1.0.0 for Pg,
+    MySQL, and Oracle (the latter is in the sql/biosql-ora/1.0/migrate
+    directory).
+
+  o Fixed INSTALL documentation to consistently use biosql as the
+    schema (database) name.
+
+  o Added note to INSTALL file about incompatibility with PostgreSQL v8.3+.
+
+  o Added script to add back explicit typecasts to v8.3. This is
+    experimental and untested, use at your own risk. If it does make
+    v8.3+ work for you with bioperl-db, please let us know at
+    biosql-l{at}lists{dot}open-bio{dot}org.
+
+  o Fixed bug #2470: load_ncbi_taxonomy.pl will no longer require to
+    use the NCBI taxon ID as the primary key value. Hence, the primary
+    key will now be different from the NCBI taxon ID.
+
+version 1.0.0:
 
   o Brought sql/biosql-accelerators-pg.sql to the 1.0 schema, but
     still retired it since no-one can have been using it.
