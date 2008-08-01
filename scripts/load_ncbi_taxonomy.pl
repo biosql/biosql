@@ -254,7 +254,7 @@ my $ok = GetOptions("help"       => \$help,
 		    "password=s" => \$pass,
 		    "dbpass=s"   => \$pass,
 		    "driver=s"   => \$driver,
-          "schema=s"   => \$schema,
+                    "schema=s"   => \$schema,
 		    "allow_truncate" => \$allow_truncate,
 		    "chunksize=i"=> \$chunksize,
 		    "directory=s"=> \$dir,
@@ -290,8 +290,8 @@ if ($dsn && !$driver) {
 } else {
 	$dsn = "dbi:$driver:";
 	my %dbparam = ("mysql"  => "database=",
-						 "Pg"     => "dbname=",
-						 "Oracle" => ($host || $port) ? "sid=" : "");
+                       "Pg"     => "dbname=",
+                       "Oracle" => ($host || $port) ? "sid=" : "");
 	die "unrecognized driver '$driver', consider using the --dsn option\n"
 	  unless exists($dbparam{$driver});
 	$dsn .= $dbparam{$driver}.$db;
@@ -315,7 +315,10 @@ if(exists($tablemaps{$driver})) {
 #
 # go get the files we need if download requested
 #
-download_taxondb($dir) if $download;
+if ($download) {
+    print STDERR "Downloading NCBI taxon database to $dir\n" if $verbose;
+    download_taxondb($dir);
+}
 
 #
 # now connect and setup the SQL statements
@@ -343,14 +346,17 @@ my %sth = (
 	   # insert/update/delete taxon nodes
 	   #
 	   add_tax => 
-'INSERT INTO '.$taxontbl.' (taxon_id, ncbi_taxon_id, parent_taxon_id, node_rank, genetic_code, mito_genetic_code) VALUES (?, ?, ?, ?, ?, ?)'
+'INSERT INTO '.$taxontbl.' (ncbi_taxon_id, parent_taxon_id, node_rank, genetic_code, mito_genetic_code) VALUES (?, ?, ?, ?, ?)'
 	   ,
            upd_tax => 
 'UPDATE '.$taxontbl.' SET parent_taxon_id = ?, node_rank = ?, genetic_code = ?, mito_genetic_code = ? WHERE taxon_id = ?'
 	   ,
            del_tax => 
-'DELETE FROM '.$taxontbl.' WHERE taxon_id = ?'
+'DELETE FROM '.$taxontbl.' WHERE ncbi_taxon_id = ?'
 	   ,
+           upd_tax_parent => 
+'UPDATE '.$taxontbl.' SET parent_taxon_id = ? WHERE taxon_id = ?'
+           ,
 	   #
 	   # insert/update/delete taxon names
 	   #
@@ -408,7 +414,7 @@ print STDERR "\t... retrieving all taxon nodes in the database\n" if $verbose;
     $dbh->selectall_arrayref(
       'SELECT taxon_id, ncbi_taxon_id, parent_taxon_id, node_rank, '.
 	     'genetic_code, mito_genetic_code '.
-      'FROM '.$taxontbl.' ORDER BY taxon_id'
+      'FROM '.$taxontbl.' ORDER BY ncbi_taxon_id'
 			     ) || []
 };
 
@@ -418,15 +424,19 @@ print STDERR "\t... reading in taxon nodes from nodes.dmp\n" if $verbose;
 open(TAX, "<$dir/nodes.dmp") or
     die "Couldn't open data file $dir/nodes.dmp: $!\n";
 while (<TAX>) {
-    # this needs to be two instructions rather than combining them into one
-    # due to the repeated element 0 getting lost otherwise, at least on
-    # perl 5.6.0
     my @row = split(/\s*\|\s*/o, $_);
-    push @new, [ @row[0, 0..2, 6, 8] ];
+    my $rec = [ @row[0, 0..2, 6, 8] ];
+    # only keep if we have values here (apparently sometimes we do not)
+    next unless grep { defined($_) && (length($_) > 0) } @$rec;
+    push @new, $rec;
 }
 close(TAX);
 
 print STDERR "\t... insert / update / delete taxon nodes\n" if $verbose;
+
+# we also try to minimize the parent updates by mapping NCBI
+# taxonIDs to primary keys for the nodes we already have
+my $nodesToUpdate = map_parent_ids(\@old, \@new);
 
 # start transaction, possibly lock tables, etc.
 begin_work($driver, $dbh);
@@ -438,10 +448,26 @@ unconstrain_taxon($driver, $dbh);
 ($ins, $upd, $del, $nas) =
     handle_diffs(\@old,
 		 \@new,
-		 sub { return $sth{add_tax}->execute(@_) },
+		 sub { return $sth{add_tax}->execute(@_[1..5]) },
 		 sub { return $sth{upd_tax}->execute(@_[2..5,0]) },
-		 sub { return $sth{del_tax}->execute(@_[0..0]) }
+		 sub { return $sth{del_tax}->execute(@_[1..1]) }
 		);
+
+# to avoid having to look up the primary key for NCBI taxonIDs, we'll
+# create a map of NCBI taxonIDs to primary keys to speed things up
+my %ncbiIDmap = map { ($_->[1], $_->[0]); } @new;
+
+# carry out the parent ID updates we determined earlier
+print STDERR "\t... updating new parent IDs\n" if $verbose;
+my $n = 0;
+my $time = time();
+foreach my $nodeRec (@$nodesToUpdate) {
+    $sth{upd_tax_parent}->execute($ncbiIDmap{$nodeRec->[2]},$nodeRec->[0]);
+    # to avoid gotcha's later in the flow, let's also correct the
+    # value in the in-memory record
+    $nodeRec->[2] = $ncbiIDmap{$nodeRec->[2]};
+    handle_progress($dbh, \$time, ++$n);    
+}
 
 #
 # Because the commit will enforce the deferred foreign key constraint on
@@ -469,8 +495,8 @@ print STDERR "\t... rebuilding nested set left/right values\n" if $verbose;
 
 begin_work($driver, $dbh);
 
-my $time = time(); # this is for progress timing
-handle_subtree(1);
+$time = time(); # this is for progress timing
+handle_subtree($new[0]->[0]); # this relies on @new being ordered by NCBI ID
 
 end_work($driver,$dbh,1);
 
@@ -481,21 +507,22 @@ print STDERR "\t... reading in taxon names from names.dmp\n" if $verbose;
 open(NAMES, "<$dir/names.dmp") or
     die "Couldn't open data file $dir/names.dmp: $!\n";
 
-print STDERR "\t... deleting old taxon names\n" if $verbose;
-
 begin_work($driver,$dbh);
 
 # delete all names for taxon nodes with a NCBI taxonID
+print STDERR "\t... deleting old taxon names\n" if $verbose;
 delete_ncbi_names($driver, $dbh, $taxontbl, $taxonnametbl,
                   $driver eq "Oracle" ? $tablemap{taxon_name_table} : undef);
 
+# now add the new taxon names from the download
 print STDERR "\t... inserting new taxon names\n" if $verbose;
 
-my $n = 0;
+# go through the names file and insert one row at a time
+$n = 0;
 $time = time();
 while (<NAMES>) {
     my @data = split(/\s*\|\s*/o, $_);
-    $sth{add_taxname}->execute(@data[0, 1, 3]);
+    $sth{add_taxname}->execute($ncbiIDmap{$data[0]},@data[1, 3]);
     handle_progress($dbh, \$time, ++$n);
 }
 close(NAMES);
@@ -553,6 +580,29 @@ print STDERR "Done.\n" if $verbose;
     }
 }
 
+sub map_parent_ids {
+    my ($old,$new) = @_;
+    # we accumulate a list of node records which we will need to
+    # update to use the primary key instead
+    my @needs_upd = ();
+    # we try to minimize the parent updates by mapping NCBI
+    # taxonIDs to primary keys for the nodes we already have
+    my %ncbiIDmap = map { ($_->[1], $_->[0]); } @$old;
+    foreach my $rec (@$new) {
+        # if we have it, we know that the primary key isn't going to
+        # change, and hence we can map the parent NCBI ID right away
+        if (exists($ncbiIDmap{$rec->[2]})) {
+            $rec->[2] = $ncbiIDmap{$rec->[2]};
+        } else {
+            # if we don't have it yet, we don't know yet what the
+            # primary key is going to be, and hence need to update
+            # after we inserted the all the nodes
+            push (@needs_upd, $rec);
+        }
+    }
+    return \@needs_upd;
+}
+
 sub handle_diffs {
 
     my ($old, $new, $insert, $update, $delete) = @_;
@@ -564,8 +614,8 @@ sub handle_diffs {
     # we also assume that $old and $new are both arrays of array
     # references, the first elements of which are the unique id's
     
-    # we sort $new by id:
-    @$new = sort { $a->[0] <=> $b->[0] } @$new;
+    # we sort $new by NCBI taxonID:
+    @$new = sort { $a->[1] <=> $b->[1] } @$new;
 
     my $time = time();
     my ($o, $n) = (0, 0);
@@ -576,7 +626,11 @@ sub handle_diffs {
 	handle_progress($dbh, \$time, $n, scalar(@$new));
 	if ($odone) {
 	    # only new's left to add
-	    if(!$insert->(@{$new->[$n]})) {
+            if($insert->(@{$new->[$n]})) {
+                # propagate new primary key to the in-memory array
+                # of new taxon nodes
+                $new->[$n]->[0] = last_insert_id($dbh,$taxontbl,$schema);
+            } else {
 		die "failed to insert node (".join(";",@{$new->[$n]}).
 		    "): ".$dbh->errstr;
 	    }
@@ -597,8 +651,13 @@ sub handle_diffs {
 	} else {
 	    # both $o and $n are still valid
 	    my ($oldentry, $newentry) = ($old->[$o], $new->[$n]);
-	    if ($oldentry->[0] == $newentry->[0]) {
-		# same id; make sure entry data are identical, otherwise update:
+	    if ($oldentry->[1] == $newentry->[1]) {
+		# same taxon ID: we may need to update
+                # copy primary key:
+                $newentry->[0] = $oldentry->[0];
+                # and propagate to the in-memory array of new taxon nodes
+                $new->[$n]->[0] = $oldentry->[0];
+                # make sure entry data are identical, otherwise update:
 		my $ok = 1;
 		CHECK : for my $i (1 .. @$oldentry-1) {
 		    unless ( (defined($oldentry->[$i]) &&
@@ -620,7 +679,7 @@ sub handle_diffs {
 		    $na++;
 		}
 		$o++; $n++;
-	    } elsif ($oldentry->[0] < $newentry->[0]) {
+	    } elsif ($oldentry->[1] < $newentry->[1]) {
 		# old entry to be removed
                 if ($nodelete || (!$delete->(@{$oldentry}))) {
 		    print STDERR "note: node (".
@@ -635,7 +694,11 @@ sub handle_diffs {
 		$ds++; $o++;
 	    } else {
 		# new entry to be added
-		if(!$insert->(@{$newentry})) {
+		if($insert->(@{$newentry})) {
+                  # propagate new primary key to the in-memory array
+                  # of new taxon nodes
+                  $new->[$n]->[0] = last_insert_id($dbh,$taxontbl,$schema);
+                } else {
 		    die "failed to insert node (".join(";",@{$newentry}).
 			"): ".$dbh->errstr;
 		}
@@ -751,7 +814,7 @@ sub delete_ncbi_names{
 sub handle_progress{
     my ($dbh, $time, $n, $total, $commit) = @_;
     our $last_n = 0 if (!defined($last_n)) || ($n < $last_n);
-    if($n && ($n - 10000 >= $last_n)) {
+    if($n && ($n - 20000 >= $last_n)) {
 	my $elapsed = time() - $$time;
 	if($verbose > 1) {
 	    my $fmt = "\t\t%d";
@@ -857,3 +920,38 @@ sub end_work{
     }
     $dbh->disconnect() unless defined($commit);
 }
+
+=head2 last_insert_id
+
+ Title   : last_insert_id
+ Usage   : $id = last_insert_id($dbh,$table,$schema)
+ Function: Obtain the last primary key that was generated by the
+           database in the current session (as represented by the
+           database handle).
+
+           This implementation will use a special database handle
+           attribute for MySQL and the more recent last_insert_id()
+           method in DBI otherwise. Hence, it is not much different
+           from, and in fact for all drivers other than MySQL
+           identical to, calling the DBI method directly, and may
+           hence be removed in the future.
+
+ Returns : A scalar
+ Args    : The DBI database handle (mandatory).  The name of the table
+           into which the record was inserted (depends on RDBMS:
+           ignored for MySQL, optional for Pg, for example).  The name
+           of the schema (depends on RDBMS: ignored by MySQL, required
+           by Pg only if a schema other than public is used).
+
+=cut
+
+sub last_insert_id {
+    my ($dbh,$table_name,$schema) = @_;
+    my $driver = $dbh->{Driver}->{Name};
+    if (lc($driver) eq 'mysql') {
+        return $dbh->{'mysql_insertid'};
+    } else {
+        return $dbh->last_insert_id(undef,$schema,$table_name,undef);
+    }
+}
+
