@@ -35,11 +35,20 @@
 -- want BEFORE you run this script.
 --
 DROP TABLE tree CASCADE ;
+DROP TABLE tree_root CASCADE ;
+DROP TABLE tree_dbxref CASCADE ;
+DROP TABLE tree_qualifier_value CASCADE ;
 DROP TABLE node CASCADE ;
+DROP TABLE node_dbxref CASCADE ;
+DROP TABLE node_taxon CASCADE ;
+DROP TABLE node_bioentry CASCADE ;
 DROP TABLE edge CASCADE ;
 DROP TABLE node_path CASCADE ;
-DROP TABLE node_attribute_value CASCADE ;
-DROP TABLE edge_attribute_value CASCADE ;
+DROP TABLE node_qualifier_value CASCADE ;
+DROP TABLE edge_qualifier_value CASCADE ;
 DROP SEQUENCE tree_pk_seq;
+DROP SEQUENCE tree_root_pk_seq;
 DROP SEQUENCE node_pk_seq;
+DROP SEQUENCE node_taxon_pk_seq;
+DROP SEQUENCE node_bioentry_pk_seq;
 DROP SEQUENCE edge_pk_seq;
