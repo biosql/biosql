@@ -53,7 +53,7 @@ on your circumstances there will be different setups to use. Here are
 a couple of examples:
 
    - Running a BioSQL database on a laptop providing Swissprot in a
-     flexible and useable way. Here one might to use MySQL or Postgres
+     flexible and useable way. Here one might use MySQL or Postgres
      running locally on the laptop.
 
    - Running a BioSQL database for a small lab group in order to share 
@@ -141,8 +141,8 @@ Finally start the mysql server as per normal:
   >safe_mysqld &
 
 
-POSTGRES
---------
+POSTGRESQL
+----------
 
 Like Mysql, the best thing is to install from source. Go to
 www.postgresql.org and choose a mirror to download the postgres tar
@@ -150,14 +150,32 @@ ball.
 
 Unzip and Untar, in one step:
 
-  >tar -zxvf postgresql-7.3.2.tar.gz
+  >tar -zxvf postgresql-8.2.9.tar.gz
 
 Or in two steps:
  
-  >gunzip postgresql-7.3.2.tar.gz
-  >tar -xvf postgresql-7.3.2.tar
+  >gunzip postgresql-8.2.9.tar.gz
+  >tar -xvf postgresql-8.2.9.tar
 
- Now make the package by going:
+===============
+NOTE: In version 8.3 and higher, PostgreSQL introduced a significant
+change to the behavior of the database server that at present renders
+it incompatible with at least Bioperl-db, the Perl language binding
+for BioSQL. Specifically, PostgreSQL v8.3+ removes the automatic
+typecasts of numeric values to strings, and hence comparing a
+character-type column to an unquoted numeric value results in an
+error. This will break the binding or client code for untyped
+languages (such as Perl) if the code does not explicitly cast bound
+query parameters for character columns and if the bound data happens
+to be a valid number. This can happen, for example, for accession
+numbers (which ironically mostly are not numbers).
+
+Until this incompatibility is resolved, PostgreSQL v8.3 or higher is
+unsupported (though it may work well for language bindings such as
+Biojava).
+===============
+
+Now make the package by going:
 
   >./configure
   >make
@@ -170,11 +188,11 @@ In some systems, readline is not installed. In this case either:
     (a) install the readline package from ftp.gnu.org, or
     (b) do ./configure --without-readline
 
-Now make a new postgres user, for example 'psqldb', which will
+Now make a new postgres user, for example 'postgres', which will
 actually run the postgres server on your machine. On linux and other
 unix's this is done by something like:
 
-  >adduser psqldb
+  >adduser postgres
 
 On Mac OS X, go to SystemPreferences --> Users --> New User
 
@@ -182,29 +200,30 @@ You now need to make a place for your data directory for postgres.
 For example, as root:
 
   >cd /usr/local
-  >mkdir postgres
-  >mkdir postgres/data
-  >chown -R psqldb postgres/
+  # pgsql/ may already exist from installing PostgreSQL
+  >mkdir pgsql
+  >mkdir pgsql/data
+  >chown -R postgres pgsql/
 
-The chown command makes the psqldb user the owner of the postgres/
+The chown command makes the postgres user the owner of the pgsql/
 directory.
 
 Since this is where the postgres data will be stored, you may well want
 to have this directory on a separate disk partion. If so, simply build
-a directory tree (e.g. /somewhere/disk12/postgres/data). Remember that
+a directory tree (e.g. /somewhere/disk12/pgsql/data). Remember that
 the postgres server will be accessing this directory all the time, so
 wherever possible make sure this disk is local storage, *not* network
 mounted.
 
 Now log in as the postgres user to install the postgres server data files:
 
-  >su psqldb 
+  >su postgres 
 
 The postgres server needs to know where to find the data and where
 the postgres binaries are. For the postgres user, it is best to store
 this once in a init shell file, e.g. ~/.tcshrc for tcsh:
 
-  >setenv PGDATA /usr/local/postgres/data
+  >setenv PGDATA /usr/local/pgsql/data
   >setenv PATH ${PATH}:/usr/local/pgsql/bin
 
 The PGDATA environment variable tells postgres where the data files
@@ -214,7 +233,7 @@ The initdb command builds all the metadata files and basic starting
 files for the postgres server. you only need to run this once on your
 machine
 
-  >/usr/local/pgsql/bin/initdb -D /usr/local/postgres/data/
+  >/usr/local/pgsql/bin/initdb -D /usr/local/pgsql/data/
 
 *WARNING* In some situations, you need to init the database with the
 --no-locale command (this disables some of the sorting cases in the
@@ -227,12 +246,12 @@ Then remove the files in /usr/local/postgres/data/ and rerun initdb
 with --no-locale command.
 
   >rm -rf /usr/local/postgres/data/*
-  >/usr/local/pgsql/bin/initdb -D /usr/local/postgres/data/ --no-locale
+  >/usr/local/pgsql/bin/initdb -D /usr/local/pgsql/data/ --no-locale
 
 Now start the postgres server. This actually pulls up a instance of
 the postgres server for running things:
 
-  >/usr/local/pgsql/bin/pg_ctl -D /usr/local/postgres/data/ -l logfile start
+  >/usr/local/pgsql/bin/pg_ctl -D /usr/local/pgsql/data/ -l logfile start
   
 To test that your postgres server works, you need to make a test
 database and then connect to the server using the psql command
@@ -249,11 +268,10 @@ and if it has message like:
 Then remove the files in /usr/local/postgres/data/ and rerun initdb
 with --no-locale command
 
-  >rm -rf /usr/local/postgres/data/*
-  >/usr/local/pgsql/bin/initdb -D /usr/local/postgres/data/ --no-locale
+  >rm -rf /usr/local/pgsql/data/*
+  >/usr/local/pgsql/bin/initdb -D /usr/local/pgsql/data/ --no-locale
 
 The postgres server is now up and running.
-
 
 ORACLE Installation 
 ----------------
@@ -296,26 +314,26 @@ bindings. Use the svn checkout from the anonymous server:
 
  >svn co svn://code.open-bio.org/biosql/biosql-schema/trunk biosql-schema
 
-Create a database, which we'll call 'bioseqdb', in the data instance:
+Create a database, which we'll call 'biosql', in the data instance:
 
 For MySQL do:
 
-  >mysqladmin -u root create bioseqdb
+  >mysqladmin -u root create biosql
 
 For postgres do, as the postgres user:
 
-  >createdb bioseqdb
+  >createdb biosql
 
 To load the schema, use the appropiate SQL dialect in
 biosql-schema/sql.
 
 For mysql do:
 
-  >mysql -u root bioseqdb < biosqldb-mysql.sql
+  >mysql -u root biosql < biosqldb-mysql.sql
 
 For postgres do:
 
-  >psql bioseqdb < biosqldb-pg.sql
+  >psql biosql < biosqldb-pg.sql
 
 For Oracle there's more than a single script, and the database itself
 is more complex, complete with triggers, indices, and different
@@ -408,7 +426,7 @@ the bioperl and bioperl-db package.
 bioperl-1.5.2 is available from CPAN or www.bioperl.org, and
 bioperl-db is available from CPAN, or from svn:
 
-  >svn co svn://code.open-bio.org/bioperl/bioperl-db/trunk/bioperl-db bioperl-db
+  >svn co svn://code.open-bio.org/bioperl/bioperl-db/trunk bioperl-db
 
 Look at the INSTALL files in the bioperl and bioperl-db directories, 
 they will give specific instructions. Bioperl uses other CPAN modules 
@@ -443,7 +461,15 @@ Loading sequence data
 To load sequence data you can use the load_seqdatabase.pl script in 
 bioperl-db/scripts/biosql/, for example:
 
-  >perl load_seqdatabase.pl -dbuser psqldb -dbname bioseqdb -namespace swissprot -format swiss sprot40.dat
+  >perl load_seqdatabase.pl -dbuser postgres -dbname biosql -namespace swissprot -format swiss sprot40.dat
+
+Note that in this example for a PostgreSQL database it is the database
+superuser who loads the sequences. Just as one would not use the
+system root user on a Unix system as a normal user account, one would
+create separate users with more limited privileges as the ones
+"owning" a schema, and loading or manipulating data. Each RDBMS has
+its own way of creating users; look up the documentation for yours for
+the 'CREATE USER' command.
 
 The -dbname parameter is the name of the database you have set up for 
 your data.

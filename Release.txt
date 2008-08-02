@@ -1,35 +1,47 @@
-BioSQL v1.0.0 Release
+BioSQL v1.0.1 Release
 =====================
 
-I am extremely pleased to announce the release of version 1.0.0
-(code-named Tokyo, see below) of BioSQL. The release can be
+I am pleased to announce the release of version 1.0.1 of BioSQL, the
+second release in the Tokyo release series. The release can be
 downloaded from the following locations:
 
-http://biosql.org/DIST/biosql-1.0.0.tar.gz
-http://biosql.org/DIST/biosql-1.0.0.tar.bz2
-http://biosql.org/DIST/biosql-1.0.0.zip (has Windows-style EOL)
+http://biosql.org/DIST/biosql-1.0.1.tar.gz
+http://biosql.org/DIST/biosql-1.0.1.tar.bz2
+http://biosql.org/DIST/biosql-1.0.1.zip (has Windows-style EOL)
 
 The core BioSQL schema is a generic, extensible relational model for
 sequences, sequence features, their annotation, and ontology terms. It
 is also designed as the interoperable persistence interface between
 the Bio* projects. 
 
-This version of the schema has essentially been the same since
-November 2004. Software that worked with schema versions downloaded
-from CVS (or, as of lately, svn) after November 2004 should work with
-all 1.0.x releases.
-
 This release contains 
  - the core BioSQL schema as DDL (Data Definition Language) for the
-   following RDBMSs: MySQL, PostgreSQL, Oracle, HSQLDB, and Apache Derby,
- - ancillary (but optional) schema files for PostgreSQL,
+   following RDBMSs: MySQL, PostgreSQL, Oracle, HSQLDB, and Apache
+   Derby,
+ - migration scripts from v1.0.0 for PostgreSQL, MySQL, and Oracle,
+ - ancillary (but optional) schema files for PostgreSQL, among which
+   are scripts providing experimental support for the Bioperl and
+   possibly other language bindings to BioSQL
  - documentation and an ERD (Entity-Relationship Diagram), and
  - a Perl script that can pre-load (and update) a BioSQL instance with
    the NCBI taxonomy.
 
-Installation instructions for MySQL and PostgreSQL are in the file
-INSTALL, and the file doc/bj_and_bsql_oracle_howto.htm has
-instructions for installing the Oracle version.
+This version of the schema should be fully backwards compatible with
+the v1.0.0 schema for nearly all software and queries. The only change
+is relaxing the column width constraint (previously 40 chars, now 128)
+of bioentry.accession and dbxref.accession. Migration scripts are
+included for PostgreSQL, MySQL, and Oracle for those who want to
+simply upgrade their existing database.
+
+In addition, the script load_ncbi_taxonomy.pl has been fixed to no
+longer require the taxon primary key and the NCBI taxon ID to be
+identical. If you previously relied on this (documented but not
+guaranteed) behavior, you will need to adjust your respective
+software. To my knowledge, none of the Bio* language bindings should
+be affected by this change.
+
+The complete change log is listed in the file Changes, and installation
+instructions for MySQL and PostgreSQL are in the file INSTALL.
 
 Additional information regarding BioSQL, including links to language
 bindings, a roadmap to future releases and enhancements, and possible
@@ -43,35 +55,18 @@ On behalf of the BioSQL developers,
 Acknowledgments
 ---------------
 
-BioSQL in general and this releases in particular owes enormously to a
-number of number of people and would not exist without their
-contributions, the contributions of people on the biosql-l mailing
-list, and the support of other developers and users from the Bio*
-community. 
+BioSQL in general and in particular this point release owes to the
+community of users and developers who provide feedback, advice, and
+ideas, and report issues on the BioSQL mailing list
+(biosql-l{at}lists.open-bio.org). Credit also goes to those who have
+helped testing, in particular Peter Cock. This project would not exist
+without their contributions and the support of other developers and
+users from the Bio* community.
 
-Ewan Birney created the first version of the schema and during the
-2003 BioHackathon in Singapore tested and wrote much of the INSTALL
-document. Elia Stupka and Chris Mungall made significant changes at
-the 2002 BioHackathons in Tucson, AZ, and Cape Town, South
-Africa. Aaron Mackey was instrumental in the changes made at the
-Singapore BioHackathon, which set the path to the version (code-named
-'post-Singapore') that eventually stabilized as v1.0. Matthew Pocock
-and Thomas Down provided important input for the ontology model.
-
-This release and the accompanying work on cleaning up, updating
-documentation, and jump-starting a useful (wiki) website was
-irreversibly set in motion at the BioHackathon 2008 in Tokyo, and
-would not have happened without the active encouragement from
-several participants, especially Heikki Lehvahslaiho, Mark Schreiber,
-Richard Holland, and Raoul Bonnal. Finally, without the superb and
-prompt help from Mauricio Herrero Cuadra and Jason Stajich with
-various wiki and other admin issues that occasionally reared their
-heads we wouldn't have made it to this point.
-
-In recognition of the role the BioHackathon 2008 played in getting
-this release out the door, and in keeping with an informal tradition
-held up since the first BioHackathon, I am code-naming the 1.0.x
-release series the Tokyo release series of BioSQL.
+The 1.0.x release series is code-named Tokyo in recognition of the
+role the BioHackathon 2008 played in getting the first of the series
+(v1.0.0) out the door, and in keeping with an informal tradition held
+up since the first BioHackathon.
 
 Thank you to everyone!
 

@@ -247,7 +247,7 @@ CREATE TABLE bioentry (
   	biodatabase_id  INT(10) UNSIGNED NOT NULL,
   	taxon_id     	INT(10) UNSIGNED,
   	name		VARCHAR(40) NOT NULL,
-  	accession    	VARCHAR(40) BINARY NOT NULL,
+  	accession    	VARCHAR(128) BINARY NOT NULL,
   	identifier   	VARCHAR(40) BINARY,
 	division	VARCHAR(6),
   	description  	TEXT,
@@ -330,7 +330,7 @@ CREATE TABLE biosequence (
 CREATE TABLE dbxref (
         dbxref_id	INT(10) UNSIGNED NOT NULL auto_increment,
         dbname          VARCHAR(40) BINARY NOT NULL,
-        accession       VARCHAR(40) BINARY NOT NULL,
+        accession       VARCHAR(128) BINARY NOT NULL,
 	version		SMALLINT UNSIGNED NOT NULL,
 	PRIMARY KEY (dbxref_id),
         UNIQUE(accession, dbname, version)
