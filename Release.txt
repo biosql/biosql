@@ -19,9 +19,10 @@ This release contains
    following RDBMSs: MySQL, PostgreSQL, Oracle, HSQLDB, and Apache
    Derby,
  - migration scripts from v1.0.0 for PostgreSQL, MySQL, and Oracle,
- - ancillary (but optional) schema files for PostgreSQL, among which
-   are scripts providing experimental support for the Bioperl and
-   possibly other language bindings to BioSQL
+ - ancillary (but optional) schema files for PostgreSQL,
+ - scripts providing experimental support for the Bioperl and
+   possibly other language bindings to BioSQL with PostgreSQL v8.3+
+   (v8.2 and earlier are supported fine),
  - documentation and an ERD (Entity-Relationship Diagram), and
  - a Perl script that can pre-load (and update) a BioSQL instance with
    the NCBI taxonomy.
