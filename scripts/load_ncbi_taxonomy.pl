@@ -210,7 +210,7 @@ my $host;              # host name of the server
 my $port;              # port to which to connect
 my $user = $ENV{DBI_USER};     # the user to connect as
 my $pass = $ENV{DBI_PASSWORD}; # the password for the user
-our $driver = "mysql"; # the DBI driver module
+our $driver;           # the DBI driver module
 my $schema;            # for PostgreSQL, the schema to use, if any
 my $dir = "taxdata";   # the download and data directory
 my $download = 0;      # whether to download from NCBI first
@@ -286,33 +286,21 @@ if($dir) {
 # database name:
 die "Must supply --dbname argument!\n" unless $db;
 
-# build DSN if not provided, and parse out driver otherwise
-if ($dsn && !$driver) {
-	my $dummy;
-	($dummy, $driver) = split(/:/,$dsn);
-} else {
-	$dsn = "dbi:$driver:";
-	my %dbparam = ("mysql"  => "database=",
-                       "Pg"     => "dbname=",
-                       "Oracle" => ($host || $port) ? "sid=" : "");
-	die "unrecognized driver '$driver', consider using the --dsn option\n"
-	  unless exists($dbparam{$driver});
-	$dsn .= $dbparam{$driver}.$db;
-	$dsn .= ";host=$host" if $host;
-	$dsn .= ";port=$port" if $port;
-}
-
-# chunksize:
-if(! defined($chunksize)) {
-    $chunksize = ($driver eq "Pg") ? $pgchunk : 0;
-}
-
-# tablemap:
-if(exists($tablemaps{$driver})) {
-    %tablemap = %{$tablemaps{$driver}};
-} else {
-    # let's use mysql mapping as the default
-    %tablemap = %{$tablemaps{"mysql"}};
+# build DSN if not provided
+if (!$dsn) {
+    $driver = "mysql" unless $driver;
+    $dsn = "dbi:$driver:";
+    my $dbarg = "dbname=";
+    SWITCH: {
+          if ($driver eq "mysql") { $dbarg = "database="; last SWITCH; }
+          if ($driver eq "Oracle") { 
+              $dbarg = ($host || $port) ? "sid=" : ""; 
+              last SWITCH; 
+          }
+    }
+    $dsn .= $dbarg.$db;
+    $dsn .= ";host=$host" if $host;
+    $dsn .= ";port=$port" if $port;
 }
 
 #
@@ -335,12 +323,27 @@ my $dbh = DBI->connect($dsn,
 		       }
 		      ) or die $DBI::errstr;
 
+# recover the driver if it wasn't specified on the command line
+$driver = $dbh->{Driver}->{Name} if $dsn && !$driver;
+
 # if this is PostgreSQL and a schema was named, make sure it's in the
 # search path
 if (($driver eq "Pg") && $schema) {
     $dbh->do("SET search_path TO $schema, public") or die $DBI::errstr;
 } 
 
+# chunksize:
+if(! defined($chunksize)) {
+    $chunksize = ($driver eq "Pg") ? $pgchunk : 0;
+}
+
+# tablemap:
+if(exists($tablemaps{$driver})) {
+    %tablemap = %{$tablemaps{$driver}};
+} else {
+    # let's use mysql mapping as the default
+    %tablemap = %{$tablemaps{"mysql"}};
+}
 my $taxontbl = $tablemap{taxon};
 my $taxonnametbl = $tablemap{taxon_name};
 
@@ -465,11 +468,15 @@ print STDERR "\t... updating new parent IDs\n" if $verbose;
 my $n = 0;
 my $time = time();
 foreach my $nodeRec (@$nodesToUpdate) {
-    $sth{upd_tax_parent}->execute($ncbiIDmap{$nodeRec->[2]},$nodeRec->[0]);
+    if (!$sth{upd_tax_parent}->execute($ncbiIDmap{$nodeRec->[2]},
+                                       $nodeRec->[0])) {
+        die "failed to update parent ID for node (".join(";",@{$nodeRec}).
+          "): ".$dbh->errstr;
+    }
     # to avoid gotcha's later in the flow, let's also correct the
     # value in the in-memory record
     $nodeRec->[2] = $ncbiIDmap{$nodeRec->[2]};
-    handle_progress($dbh, \$time, ++$n);    
+    handle_progress($dbh, \$time, ++$n);
 }
 
 #
