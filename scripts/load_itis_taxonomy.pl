@@ -158,7 +158,8 @@ use POSIX;
 use Getopt::Long;
 use File::Spec;
 
-use constant ITIS_SCHEMA_DDL => "itisMS.sql";
+use constant ITIS_URL => "http://www.itis.gov/downloads/itisMS060408.TAR.gz";
+use constant ITIS_SCHEMA_DDL => "itisMSforTar.sql";
 use constant ITIS_TAXONOMIC_UNITS_TABLE => "taxonomic_units";
 use constant ITIS_KINGDOMS_TABLE => "kingdoms";
 
@@ -200,7 +201,7 @@ my $ok = GetOptions("help"       => \$help,
                     "encoding=s" => \$encoding,
                     "namespace=s"=> \$namespace,
 		    "directory=s"=> \$dir,
-		    #"download"   => \$download,
+		    "download"   => \$download,
 		    "verbose=i"  => \$verbose,
                    );
 
@@ -217,25 +218,25 @@ if($help || (!$ok)) {
 #
 # download directory:
 if ($dir) {
-    #mkdir $dir unless -e $dir;
+    mkdir $dir unless -e $dir;
     # remove trailing directory separator, if necessary:
     $dir =~ s!/$!!;
 }
-# database name:
-die "Must supply --dbname argument!\n" unless $db;
-
-# build DSN if not provided, and parse out driver otherwise
-if($dsn) {
-    my $dummy;
-    ($dummy, $driver) = split(/:/,$dsn);
-} else {
+# build DSN if not provided
+if (!$dsn) {
+    $driver = "mysql" unless $driver;
+    # database name:
+    die "Must supply --dbname argument!\n" unless $db;
     $dsn = "dbi:$driver:";
-    my %dbparam = ("mysql"  => "database=",
-		   "Pg"     => "dbname=",
-		   "Oracle" => ($host || $port) ? "sid=" : "");
-    die "unrecognized driver '$driver', consider using the --dsn option\n"
-	unless exists($dbparam{$driver});
-    $dsn .= $dbparam{$driver}.$db;
+    my $dbarg = "dbname=";
+    SWITCH: {
+          if ($driver eq "mysql") { $dbarg = "database="; last SWITCH; }
+          if ($driver eq "Oracle") { 
+              $dbarg = ($host || $port) ? "sid=" : ""; 
+              last SWITCH; 
+          }
+    }
+    $dsn .= $dbarg.$db;
     $dsn .= ";host=$host" if $host;
     $dsn .= ";port=$port" if $port;
 }
@@ -243,7 +244,10 @@ if($dsn) {
 #
 # go get the files we need if download requested
 #
-#download_taxondb($dir) if $download;
+if ($download) {
+    print STDERR "Downloading ITIS taxonomy to $dir\n" if $verbose;
+    $dir = download_taxondb($dir);
+}
 
 #
 # now connect and setup the SQL statements
@@ -256,6 +260,9 @@ my $dbh = DBI->connect($dsn,
 			 PrintError => 1,
 		       }
 		      ) or die $DBI::errstr;
+
+# recover the driver if it wasn't specified on the command line
+$driver = $dbh->{Driver}->{Name} if $dsn && !$driver;
 
 # if this is PostgreSQL and a schema was named, make sure it's in the
 # search path
@@ -291,6 +298,7 @@ my %sth = (
     # update root node of tree
     #
     upd_tree => "UPDATE tree SET node_id = ? WHERE tree_id = ?",
+    ins_treeroot => "INSERT INTO tree_root (node_id, tree_id) VALUES (?, ?)",
     #
     # update tree name
     #
@@ -448,7 +456,10 @@ while (<$fh>) {
         # if there is no valid parent, and the name of the node is
         # identical to the name of its kingdom, then this is the root node
         # of the tree
-        execute_sth($sth{upd_tree}, $node_id, $kingdoms{$kingdom}->{tree_id});
+        execute_sth($sth{upd_tree}, 
+                    $node_id, $kingdoms{$kingdom}->{tree_id});
+        execute_sth($sth{ins_treeroot}, 
+                    $node_id, $kingdoms{$kingdom}->{tree_id});
     }
 }
 close($fh);
@@ -651,6 +662,37 @@ sub end_work{
 	    "failed: ".$dbh->errstr;
     }
     $dbh->disconnect() unless defined($commit);
+}
+
+sub download_taxondb {
+    my $dir = shift;
+
+    eval {
+        require LWP::UserAgent;
+        require HTTP::Request;
+    };
+    die "must have LWP installed to download ITIS\n" if $@;
+
+    my $ua = LWP::UserAgent->new();
+    # the Accept header seems to be important as the download will
+    # stall otherwise after the first several hundred kB - no idea why
+    $ua->default_header("Accept" => "*/*"); 
+    $ua->timeout(30);
+    my $req = HTTP::Request->new(GET => ITIS_URL);
+    my @url_elems = split(/\//,ITIS_URL);
+    my $file = $url_elems[-1];
+    my $resp = $ua->request($req, File::Spec->catfile($dir, $file));
+    if (!$resp->is_success()) {
+        die "ITIS download failed: ".$resp->status_line()."\n";
+    }
+
+    # unpack them; overwrite previous files, if necessary
+    my $unpacked = $file;
+    $unpacked =~ s/\.gz$//;
+    system("cd $dir; gunzip -f $file ; tar -xf $unpacked ; rm -f $unpacked");
+    $unpacked =~ s/^([A-Za-z]+)(\d+)\.tar$/$1.$2/i;
+    $dir = File::Spec->catfile($dir, $unpacked);
+    return $dir;
 }
 
 sub read_table_structures{
