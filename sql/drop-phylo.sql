@@ -28,11 +28,12 @@
 -- the DROP SEQUENCE statements, mysql will proceed nonetheless and so
 -- you can use this under mysql just as well.
 --
--- NOTE: THIS SCRIPT WILL DROP YOUR ENTIRE SCHEMA, AND THEREFORE ALL
--- DATA STORED IN THE SCHEMA WILL BE LOST. THERE IS NO WAY TO UNDO
--- THIS EXCEPT IF YOU RESTORE A BACKUP. Rollback will NOT help (except
--- on PostgreSQL). Make absolutely sure that this is exactly what you
--- want BEFORE you run this script.
+-- NOTE: THIS SCRIPT WILL DROP THE PHYLODB PART OF YOUR SCHEMA, AND
+-- THEREFORE ALL DATA STORED IN THOSE TABLES SCHEMA WILL BE
+-- LOST. THERE IS NO WAY TO UNDO THIS EXCEPT IF YOU RESTORE A
+-- BACKUP. Rollback will NOT help (except on PostgreSQL). Make
+-- absolutely sure that this is exactly what you want BEFORE you run
+-- this script.
 --
 DROP TABLE tree CASCADE ;
 DROP TABLE tree_root CASCADE ;
