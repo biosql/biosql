@@ -62,7 +62,7 @@ CREATE TABLE tree_qualifier_value (
        term_id INTEGER NOT NULL,
        value TEXT,
        rank INTEGER NOT NULL DEFAULT 0
-       , UNIQUE (tree_id, term_id, rank)
+       , PRIMARY KEY (tree_id, term_id, rank)
 );
 
 COMMENT ON TABLE tree_qualifier_value IS 'Tree metadata as attribute/value pairs. Attribute names are from a controlled vocabulary (or ontology).';
@@ -80,7 +80,7 @@ CREATE TABLE tree_dbxref (
        tree_id INTEGER NOT NULL,
        dbxref_id INTEGER NOT NULL,
        term_id INTEGER NOT NULL
-       , UNIQUE (tree_id, dbxref_id, term_id)
+       , PRIMARY KEY (tree_id, dbxref_id, term_id)
 );
 
 CREATE INDEX tree_dbxref_i1 ON tree_dbxref (dbxref_id);
@@ -130,7 +130,7 @@ CREATE TABLE node_dbxref (
        node_id INTEGER NOT NULL,
        dbxref_id INTEGER NOT NULL,
        term_id INTEGER NOT NULL
-       , UNIQUE (node_id, dbxref_id, term_id)
+       , PRIMARY KEY (node_id, dbxref_id, term_id)
 );
 
 CREATE INDEX node_dbxref_i1 ON node_dbxref (dbxref_id);
@@ -250,7 +250,7 @@ CREATE TABLE edge_qualifier_value (
        rank INTEGER NOT NULL DEFAULT 0,
        edge_id INTEGER NOT NULL,
        term_id INTEGER NOT NULL
-       , UNIQUE (edge_id,term_id,rank)
+       , PRIMARY KEY (edge_id,term_id,rank)
 );
 
 COMMENT ON TABLE edge_qualifier_value IS 'Edge metadata as attribute/value pairs. Attribute names are from a controlled vocabulary (or ontology).';
@@ -269,7 +269,7 @@ CREATE TABLE node_qualifier_value (
        rank INTEGER NOT NULL DEFAULT 0,
        node_id INTEGER NOT NULL,
        term_id INTEGER NOT NULL
-       , UNIQUE (node_id,term_id)
+       , PRIMARY KEY (node_id,term_id)
 );
 
 COMMENT ON TABLE node_qualifier_value IS 'Tree (or network) node metadata as attribute/value pairs. Attribute names are from a controlled vocabulary (or ontology).';
