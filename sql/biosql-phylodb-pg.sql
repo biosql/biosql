@@ -274,7 +274,7 @@ CREATE TABLE node_qualifier_value (
 
 COMMENT ON TABLE node_qualifier_value IS 'Tree (or network) node metadata as attribute/value pairs. Attribute names are from a controlled vocabulary (or ontology).';
 
-COMMENT ON COLUMN node_qualifier_value.edge_id IS 'The tree (or network) node to which the metadata is being associated.';
+COMMENT ON COLUMN node_qualifier_value.node_id IS 'The tree (or network) node to which the metadata is being associated.';
 
 COMMENT ON COLUMN node_qualifier_value.term_id IS 'The name of the metadate element as a term from a controlled vocabulary (or ontology).';
 
