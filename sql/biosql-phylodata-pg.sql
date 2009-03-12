@@ -57,7 +57,7 @@ CREATE TABLE charmatrix_qualifier_value (
        term_id INTEGER NOT NULL,
        value TEXT,
        rank INTEGER NOT NULL DEFAULT 0
-       , UNIQUE (charmatrix_id, term_id, rank)
+       , PRIMARY KEY (charmatrix_id, term_id, rank)
 );
 
 COMMENT ON TABLE charmatrix_qualifier_value IS 'Character matrix metadata as attribute/value pairs. Attribute names are from a controlled vocabulary (or ontology).';
@@ -88,6 +88,16 @@ COMMENT ON COLUMN charmatrix_dbxref.dbxref_id IS 'The database cross-reference b
 
 COMMENT ON COLUMN charmatrix_dbxref.term_id IS 'The type of the database cross-reference as a controlled vocabulary or ontology term. The type of a tree accession should be ''primary identifier''.';
 
+-- relating character matrices and trees
+CREATE TABLE charmatrix_tree (
+       charmatrix_id INTEGER NOT NULL,
+       tree_id INTEGER NOT NULL,
+       term_id INTEGER NOT NULL
+       , PRIMARY KEY (charmatrix_id,tree_id,term_id)
+);
+
+CREATE INDEX charmatrix_tree_i1 ON charmatrix_tree (tree_id);
+
 -- matrix data characters
 CREATE SEQUENCE mchar_pk_seq;
 CREATE TABLE mchar (
@@ -110,17 +120,16 @@ COMMENT ON TABLE mchar IS 'A character in a character data matrix.';
 
 COMMENT ON COLUMN mchar.label IS 'The label of the character.';
 
-CREATE SEQUENCE charstate_pk_seq;
-CREATE TABLE charstate (
-       charstate_id INTEGER DEFAULT nextval('charstate_pk_seq') NOT NULL,
-       label VARCHAR(255),
-       description TEXT,
-       mchar_id INTEGER NOT NULL
-       , PRIMARY KEY (charstate_id)
-       , CONSTRAINT charstate_c1 UNIQUE (mchar_id,label)
+-- qualifier/value (metadata) annotation for data characters
+CREATE TABLE mchar_qualifier_value (
+       mchar_id INTEGER NOT NULL,       
+       term_id INTEGER NOT NULL,
+       value TEXT,
+       rank INTEGER NOT NULL DEFAULT 0
+       , PRIMARY KEY (mchar_id, term_id, rank)
 );
 
-CREATE INDEX charstate_id ON charstate (label);
+CREATE INDEX mchar_qualifier_value_i1 ON mchar_qualifier_value (term_id);
 
 -- dbxrefs, such as identifiers, for characters of a data matrix
 CREATE TABLE mchar_dbxref (
@@ -139,6 +148,18 @@ COMMENT ON COLUMN mchar_dbxref.mchar_id IS 'The character to which the database 
 COMMENT ON COLUMN mchar_dbxref.dbxref_id IS 'The database cross-reference being assigned to the character.';
 
 COMMENT ON COLUMN mchar_dbxref.term_id IS 'The type of the database cross-reference as a controlled vocabulary or ontology term. The type of a node identifier should be ''primary identifier''.';
+
+CREATE SEQUENCE charstate_pk_seq;
+CREATE TABLE charstate (
+       charstate_id INTEGER DEFAULT nextval('charstate_pk_seq') NOT NULL,
+       label VARCHAR(255),
+       description TEXT,
+       mchar_id INTEGER NOT NULL
+       , PRIMARY KEY (charstate_id)
+       , CONSTRAINT charstate_c1 UNIQUE (mchar_id,label)
+);
+
+CREATE INDEX charstate_id ON charstate (label);
 
 -- OTUs (rows of a character data matrix)
 CREATE SEQUENCE otu_pk_seq;
@@ -213,11 +234,11 @@ CREATE INDEX mcell_charstate_i1 ON mcell_charstate (charstate_id);
 
 -- foreign keys and constraints:
 
--- charmatrix:
+-- table charmatrix:
 ALTER TABLE charmatrix ADD CONSTRAINT FKterm_charmatrix
       FOREIGN KEY (type_id) REFERENCES term (term_id);
 
--- charmatrix_qualifier_value:
+-- table charmatrix_qualifier_value:
 ALTER TABLE charmatrix_qualifier_value ADD CONSTRAINT FKcharmatrix_cmqualvalue
       FOREIGN KEY (charmatrix_id) REFERENCES charmatrix (charmatrix_id)
       ON DELETE CASCADE;
@@ -226,7 +247,7 @@ ALTER TABLE charmatrix_qualifier_value ADD CONSTRAINT FKterm_cmqualvalue
       FOREIGN KEY (term_id) REFERENCES term (term_id)
       ON DELETE CASCADE;
 
--- charmatrix_dbxref
+-- table charmatrix_dbxref
 ALTER TABLE charmatrix_dbxref ADD CONSTRAINT FKdbxref_cmdbxref
       FOREIGN KEY (dbxref_id) REFERENCES dbxref (dbxref_id)
       ON DELETE CASCADE;
@@ -239,8 +260,22 @@ ALTER TABLE charmatrix_dbxref ADD CONSTRAINT FKterm_cmdbxref
       FOREIGN KEY (term_id) REFERENCES term (term_id)
       ON DELETE CASCADE;
 
--- table charstate:
-ALTER TABLE charstate ADD CONSTRAINT FKmchar_charstate
+-- table charmatrix_tree
+ALTER TABLE charmatrix_tree ADD CONSTRAINT FKterm_cmtree
+      FOREIGN KEY (term_id) REFERENCES term (term_id);
+
+ALTER TABLE charmatrix_tree ADD CONSTRAINT FKcharmatrix_cmtree
+      FOREIGN KEY (charmatrix_id) REFERENCES charmatrix (charmatrix_id);
+
+ALTER TABLE charmatrix_tree ADD CONSTRAINT FKtree_cmtree
+      FOREIGN KEY (tree_id) REFERENCES tree (tree_id);
+
+-- table mchar_qualifier_value:
+ALTER TABLE mchar_qualifier_value ADD CONSTRAINT FKterm_mcharqual
+      FOREIGN KEY (term_id) REFERENCES term (term_id)
+      ON DELETE CASCADE;
+
+ALTER TABLE mchar_qualifier_value ADD CONSTRAINT FKmchar_mcharqual
       FOREIGN KEY (mchar_id) REFERENCES mchar (mchar_id)
       ON DELETE CASCADE;
 
@@ -255,6 +290,11 @@ ALTER TABLE mchar_dbxref ADD CONSTRAINT FKdbxref_mchardbxref
 
 ALTER TABLE mchar_dbxref ADD CONSTRAINT FKterm_mchardbxref
       FOREIGN KEY (term_id) REFERENCES term (term_id)
+      ON DELETE CASCADE;
+
+-- table charstate:
+ALTER TABLE charstate ADD CONSTRAINT FKmchar_charstate
+      FOREIGN KEY (mchar_id) REFERENCES mchar (mchar_id)
       ON DELETE CASCADE;
 
 -- table node_otu:
