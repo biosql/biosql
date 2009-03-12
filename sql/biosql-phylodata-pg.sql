@@ -94,16 +94,17 @@ CREATE TABLE mchar (
        mchar_id INTEGER DEFAULT nextval('mchar_pk_seq') NOT NULL,
        label VARCHAR(255),
        description TEXT
-       , PRIMARY KEY (node_id)
--- CONFIG: you might like to enforce uniqueness of a node's label within a tree,
--- though keep in mind that data providers often violate this constraint
---       , CONSTRAINT mchar_c1 UNIQUE (label,mchar_id)
+       , PRIMARY KEY (mchar_id)
+-- CONFIG: you might like to enforce uniqueness of a character's label
+-- within a tree, though keep in mind that data providers often
+-- violate this constraint 
+       --, CONSTRAINT mchar_c1 UNIQUE (label,mchar_id)
 );
 
 -- CONFIG: if you decided on the unique key constraint on character
 -- label within a matrix, you won't need the index on label, so
 -- comment it out for efficiency.
-CREATE INDEX mchar_i1 ON node (label);
+CREATE INDEX mchar_i1 ON mchar (label);
 
 COMMENT ON TABLE mchar IS 'A character in a character data matrix.';
 
@@ -165,7 +166,7 @@ CREATE TABLE charmatrix_mchar (
        charmatrix_id INTEGER NOT NULL,
        mchar_id INTEGER NOT NULL,
        position INTEGER NOT NULL DEFAULT 0
-       , PRIMARY KEY (charmatrix_id,mchar_id,rank)
+       , PRIMARY KEY (charmatrix_id,mchar_id,position)
 );
 
 CREATE INDEX charmatrix_mchar_i1 ON charmatrix_mchar (mchar_id);
@@ -175,7 +176,7 @@ CREATE TABLE charmatrix_otu (
        charmatrix_id INTEGER NOT NULL,
        otu_id INTEGER NOT NULL,
        position INTEGER NOT NULL DEFAULT 0
-       , PRIMARY KEY (charmatrix_id,otu_id,rank)
+       , PRIMARY KEY (charmatrix_id,otu_id,position)
 );
 
 CREATE INDEX charmatrix_otu_i1 ON charmatrix_otu (otu_id);
