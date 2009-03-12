@@ -22,7 +22,7 @@
 -- Schema extension on top of the BioSQL core schema for representing
 -- phylogenetic trees or networks (anastomizing and reticulating).
 --
--- This was developed independently but is very similar to the
+-- This was developed independently of but is very similar to the
 -- phylogeny module in Chado (the GMOD common relational model).
 --
 -- Authors: Hilmar Lapp, hlapp at gmx.net
@@ -137,7 +137,7 @@ CREATE INDEX node_dbxref_i1 ON node_dbxref (dbxref_id);
 
 COMMENT ON TABLE node_dbxref IS 'Identifiers and other database cross-references for nodes. There can only be one dbxref of a specific type for a node.';
 
-COMMENT ON COLUMN node_dbxref.node_id IS 'The node to which the database corss-reference is being assigned.';
+COMMENT ON COLUMN node_dbxref.node_id IS 'The node to which the database cross-reference is being assigned.';
 
 COMMENT ON COLUMN node_dbxref.dbxref_id IS 'The database cross-reference being assigned to the node.';
 
@@ -201,7 +201,7 @@ COMMENT ON COLUMN tree_root.tree_id IS 'The tree for which the referenced node i
 
 COMMENT ON COLUMN tree_root.node_id IS 'The node that is a root for the referenced tree.';
 
-COMMENT ON COLUMN tree_root.is_alternate IS 'True if the root note is the preferential (most likely) root node of the tree, and false otherwise.';
+COMMENT ON COLUMN tree_root.is_alternate IS 'True if the root node is the preferential (most likely) root node of the tree, and false otherwise.';
 
 COMMENT ON COLUMN tree_root.significance IS 'The significance (such as likelihood, or posterior probability) with which the node is the root node. This only has meaning if the method used for reconstructing the tree calculates this value.'; 
 
@@ -253,6 +253,16 @@ CREATE TABLE edge_qualifier_value (
        , UNIQUE (edge_id,term_id,rank)
 );
 
+COMMENT ON TABLE edge_qualifier_value IS 'Edge metadata as attribute/value pairs. Attribute names are from a controlled vocabulary (or ontology).';
+
+COMMENT ON COLUMN edge_qualifier_value.edge_id IS 'The tree edge to which the metadata is being associated.';
+
+COMMENT ON COLUMN edge_qualifier_value.term_id IS 'The name of the metadate element as a term from a controlled vocabulary (or ontology).';
+
+COMMENT ON COLUMN edge_qualifier_value.value IS 'The value of the attribute/value pair association of metadata (if applicable).';
+
+COMMENT ON COLUMN edge_qualifier_value.rank IS 'The index of the metadata value if there is more than one value for the same metadata element. If there is only one value, this may be left at the default of zero.';
+
 -- attribute/value pairs for nodes
 CREATE TABLE node_qualifier_value (
        value text,
@@ -261,6 +271,16 @@ CREATE TABLE node_qualifier_value (
        term_id INTEGER NOT NULL
        , UNIQUE (node_id,term_id)
 );
+
+COMMENT ON TABLE node_qualifier_value IS 'Tree (or network) node metadata as attribute/value pairs. Attribute names are from a controlled vocabulary (or ontology).';
+
+COMMENT ON COLUMN node_qualifier_value.edge_id IS 'The tree (or network) node to which the metadata is being associated.';
+
+COMMENT ON COLUMN node_qualifier_value.term_id IS 'The name of the metadate element as a term from a controlled vocabulary (or ontology).';
+
+COMMENT ON COLUMN node_qualifier_value.value IS 'The value of the attribute/value pair association of metadata (if applicable).';
+
+COMMENT ON COLUMN node_qualifier_value.rank IS 'The index of the metadata value if there is more than one value for the same metadata element. If there is only one value, this may be left at the default of zero.';
 
 -- tree
 ALTER TABLE tree ADD CONSTRAINT FKnode
