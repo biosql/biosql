@@ -94,24 +94,24 @@ CREATE TABLE node_path (
 CREATE INDEX node_path_parent_node_id ON node_path(parent_node_id);
 
 -- attribute/value pairs for edges
-CREATE TABLE edge_attribute_value (
+CREATE TABLE edge_qualifier_value (
        value text,
        edge_id INT(10) UNSIGNED NOT NULL,
        term_id INT(10) UNSIGNED NOT NULL
-       , UNIQUE (edge_id,term_id)
+       , PRIMARY KEY (edge_id,term_id)
 ) TYPE=INNODB;
 
-CREATE INDEX ea_val_term_id ON edge_attribute_value(term_id);
+CREATE INDEX ea_val_term_id ON edge_qualifier_value(term_id);
 
 -- attribute/value pairs for nodes
-CREATE TABLE node_attribute_value (
+CREATE TABLE node_qualifier_value (
        value text,
        node_id INT(10) UNSIGNED NOT NULL,
        term_id INT(10) UNSIGNED NOT NULL
-       , UNIQUE (node_id,term_id)
+       , PRIMARY KEY (node_id,term_id)
 ) TYPE=INNODB;
 
-CREATE INDEX na_val_term_id ON node_attribute_value(term_id);
+CREATE INDEX na_val_term_id ON node_qualifier_value(term_id);
 
 -- The pg below
 --ALTER TABLE tree ADD CONSTRAINT FKnode
@@ -146,16 +146,16 @@ ALTER TABLE node_path ADD CONSTRAINT FKnpath_parent
        FOREIGN KEY (parent_node_id) REFERENCES node (node_id)
            ON DELETE CASCADE;
 
-ALTER TABLE edge_attribute_value ADD CONSTRAINT FKeav_edge
+ALTER TABLE edge_qualifier_value ADD CONSTRAINT FKeav_edge
        FOREIGN KEY (edge_id) REFERENCES edge (edge_id)
            ON DELETE CASCADE;
 
-ALTER TABLE edge_attribute_value ADD CONSTRAINT FKeav_term
+ALTER TABLE edge_qualifier_value ADD CONSTRAINT FKeav_term
        FOREIGN KEY (term_id) REFERENCES term (term_id);
 
-ALTER TABLE node_attribute_value ADD CONSTRAINT FKnav_node
+ALTER TABLE node_qualifier_value ADD CONSTRAINT FKnav_node
        FOREIGN KEY (node_id) REFERENCES node (node_id)
            ON DELETE CASCADE;
 
-ALTER TABLE node_attribute_value ADD CONSTRAINT FKnav_term
+ALTER TABLE node_qualifier_value ADD CONSTRAINT FKnav_term
        FOREIGN KEY (term_id) REFERENCES term (term_id);
