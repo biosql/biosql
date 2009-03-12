@@ -185,9 +185,9 @@ CREATE INDEX charmatrix_otu_i1 ON charmatrix_otu (otu_id);
 CREATE TABLE charmatrix_relationship (
        parent_charmatrix_id INTEGER NOT NULL,
        child_charmatrix_id INTEGER NOT NULL,
-       type_id INTEGER NOT NULL,
+       term_id INTEGER NOT NULL,
        rank INTEGER NOT NULL DEFAULT 0
-       , PRIMARY KEY (parent_charmatrix_id,child_charmatrix_id,type_id)
+       , PRIMARY KEY (parent_charmatrix_id,child_charmatrix_id,term_id)
 );
 
 CREATE INDEX charmatrix_relationship_i1 ON charmatrix_relationship (child_charmatrix_id);
@@ -210,3 +210,110 @@ CREATE TABLE mcell_charstate (
 );
 
 CREATE INDEX mcell_charstate_i1 ON mcell_charstate (charstate_id);
+
+-- foreign keys and constraints:
+
+-- charmatrix:
+ALTER TABLE charmatrix ADD CONSTRAINT FKterm_charmatrix
+      FOREIGN KEY (type_id) REFERENCES term (term_id);
+
+-- charmatrix_qualifier_value:
+ALTER TABLE charmatrix_qualifier_value ADD CONSTRAINT FKcharmatrix_cmqualvalue
+      FOREIGN KEY (charmatrix_id) REFERENCES charmatrix (charmatrix_id)
+      ON DELETE CASCADE;
+
+ALTER TABLE charmatrix_qualifier_value ADD CONSTRAINT FKterm_cmqualvalue
+      FOREIGN KEY (term_id) REFERENCES term (term_id)
+      ON DELETE CASCADE;
+
+-- charmatrix_dbxref
+ALTER TABLE charmatrix_dbxref ADD CONSTRAINT FKdbxref_cmdbxref
+      FOREIGN KEY (dbxref_id) REFERENCES dbxref (dbxref_id)
+      ON DELETE CASCADE;
+
+ALTER TABLE charmatrix_dbxref ADD CONSTRAINT FKcharmatrix_cmdbxref
+      FOREIGN KEY (charmatrix_id) REFERENCES charmatrix (charmatrix_id)
+      ON DELETE CASCADE;
+
+ALTER TABLE charmatrix_dbxref ADD CONSTRAINT FKterm_cmdbxref
+      FOREIGN KEY (term_id) REFERENCES term (term_id)
+      ON DELETE CASCADE;
+
+-- table charstate:
+ALTER TABLE charstate ADD CONSTRAINT FKmchar_charstate
+      FOREIGN KEY (mchar_id) REFERENCES mchar (mchar_id)
+      ON DELETE CASCADE;
+
+-- table mchar_dbxref:
+ALTER TABLE mchar_dbxref ADD CONSTRAINT FKmchar_mchardbxref
+      FOREIGN KEY (mchar_id) REFERENCES mchar (mchar_id)
+      ON DELETE CASCADE;
+
+ALTER TABLE mchar_dbxref ADD CONSTRAINT FKdbxref_mchardbxref
+      FOREIGN KEY (dbxref_id) REFERENCES dbxref (dbxref_id)
+      ON DELETE CASCADE;
+
+ALTER TABLE mchar_dbxref ADD CONSTRAINT FKterm_mchardbxref
+      FOREIGN KEY (term_id) REFERENCES term (term_id)
+      ON DELETE CASCADE;
+
+-- table node_otu:
+ALTER TABLE node_otu ADD CONSTRAINT FKotu_nodeotu
+      FOREIGN KEY (otu_id) REFERENCES otu (otu_id)
+      ON DELETE CASCADE;
+
+ALTER TABLE node_otu ADD CONSTRAINT FKnode_nodeotu
+      FOREIGN KEY (node_id) REFERENCES node (node_id)
+      ON DELETE CASCADE;
+
+-- table charmatrix_mchar:
+ALTER TABLE charmatrix_mchar ADD CONSTRAINT FKmchar_cmmchar
+      FOREIGN KEY (mchar_id) REFERENCES mchar (mchar_id)
+      ON DELETE CASCADE;
+
+ALTER TABLE charmatrix_mchar ADD CONSTRAINT FKcharmatrix_cmmchar
+      FOREIGN KEY (charmatrix_id) REFERENCES charmatrix (charmatrix_id)
+      ON DELETE CASCADE;
+
+-- table charmatrix_otu:
+ALTER TABLE charmatrix_otu ADD CONSTRAINT FKotu_cmotu
+      FOREIGN KEY (otu_id) REFERENCES otu (otu_id)
+      ON DELETE CASCADE;
+
+ALTER TABLE charmatrix_otu ADD CONSTRAINT FKcharmatrix_cmotu
+      FOREIGN KEY (charmatrix_id) REFERENCES charmatrix (charmatrix_id)
+      ON DELETE CASCADE;
+
+-- table charmatrix_relationship:
+ALTER TABLE charmatrix_relationship ADD CONSTRAINT FKparentcharmatrix_cmrel
+      FOREIGN KEY (parent_charmatrix_id) REFERENCES charmatrix (charmatrix_id)
+      ON DELETE CASCADE;
+
+ALTER TABLE charmatrix_relationship ADD CONSTRAINT FKchildcharmatrix_cmrel
+      FOREIGN KEY (child_charmatrix_id) REFERENCES charmatrix (charmatrix_id)
+      ON DELETE CASCADE;
+
+ALTER TABLE charmatrix_relationship ADD CONSTRAINT FKterm_cmrel
+      FOREIGN KEY (term_id) REFERENCES term (term_id);
+
+-- table mcell:
+ALTER TABLE mcell ADD CONSTRAINT FKmchar_mcell
+      FOREIGN KEY (mchar_id) REFERENCES mchar (mchar_id)
+      ON DELETE CASCADE;
+
+ALTER TABLE mcell ADD CONSTRAINT FKotu_mcell
+      FOREIGN KEY (otu_id) REFERENCES otu (otu_id)
+      ON DELETE CASCADE;
+
+ALTER TABLE mcell ADD CONSTRAINT FKcharmatrix_mcell
+      FOREIGN KEY (charmatrix_id) REFERENCES charmatrix (charmatrix_id)
+      ON DELETE CASCADE;
+
+-- table mcell_charstate:
+ALTER TABLE mcell_charstate ADD CONSTRAINT FKmcell_mcell
+      FOREIGN KEY (mcell_id) REFERENCES mcell (mcell_id)
+      ON DELETE CASCADE;
+
+ALTER TABLE mcell_charstate ADD CONSTRAINT FKcharstate_mcell
+      FOREIGN KEY (charstate_id) REFERENCES charstate (charstate_id)
+      ON DELETE CASCADE;
