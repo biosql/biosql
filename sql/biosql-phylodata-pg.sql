@@ -1,4 +1,4 @@
--- $Id: biosql-phylodata-pg.sql 282 2008-07-30 15:01:43Z lapp $
+-- $Id$
 --
 -- Copyright 2009 Hilmar Lapp.
 -- 
