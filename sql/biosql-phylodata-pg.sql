@@ -35,7 +35,8 @@ CREATE TABLE charmatrix (
        charmatrix_id INTEGER DEFAULT nextval('charmatrix_pk_seq') NOT NULL,
        name VARCHAR(32) NOT NULL,
        identifier VARCHAR(32),
-       biodatabase_id INTEGER NOT NULL
+       biodatabase_id INTEGER NOT NULL,
+       type_id INTEGER NOT NULL
        , PRIMARY KEY (charmatrix_id)
        , CONSTRAINT charmatrix_c1 UNIQUE (name, biodatabase_id)
 );
@@ -47,6 +48,8 @@ COMMENT ON COLUMN charmatrix.name IS 'The name of the character matrix, in essen
 COMMENT ON COLUMN charmatrix.identifier IS 'The identifier of the character matrix, if there is one.';
 
 COMMENT ON COLUMN charmatrix.biodatabase_id IS 'The namespace of the character matrix. If the concept of namespace (often a collection name) encapsulating several matrices does not apply, one may assign a default namespace (such as "biosql"), or create one named the same as the data matrix.';
+
+COMMENT ON COLUMN charmatrix.type_id IS 'The type of the matrix as a link to an ontology term.';
 
 -- qualifier/value pairs (metadata) for character matrices
 CREATE TABLE charmatrix_qualifier_value (
@@ -108,11 +111,11 @@ COMMENT ON COLUMN mchar.label IS 'The label of the character.';
 
 CREATE SEQUENCE charstate_pk_seq;
 CREATE TABLE charstate (
-       mcoding_id INTEGER DEFAULT nextval('charstate_pk_seq') NOT NULL,
+       charstate_id INTEGER DEFAULT nextval('charstate_pk_seq') NOT NULL,
        label VARCHAR(255),
        description TEXT,
        mchar_id INTEGER NOT NULL
-       , PRIMARY KEY (mcoding_id)
+       , PRIMARY KEY (charstate_id)
        , CONSTRAINT charstate_c1 UNIQUE (mchar_id,label)
 );
 
@@ -157,37 +160,36 @@ CREATE TABLE node_otu (
 
 CREATE INDEX node_otu_i1 ON node_otu (otu_id);
 
-CREATE SEQUENCE mpartition_pk_seq;
-CREATE TABLE mpartition (
-       mpartition_id INTEGER DEFAULT nextval('mpartition_pk_seq') NOT NULL,
-       name VARCHAR(255),
+-- associating characters with character matrices (or partitions)
+CREATE TABLE charmatrix_mchar (
        charmatrix_id INTEGER NOT NULL,
-       rank INTEGER NOT NULL DEFAULT 0
-       , PRIMARY KEY (mpartition_id)
-       , CONSTRAINT mpartition_c1 UNIQUE (name,charmatrix_id,rank)
-);
-
-CREATE INDEX mpartition_i1 ON mpartition (charmatrix_id);
-
--- associating characters with character matrix partitions
-CREATE TABLE mpartition_mchar (
-       mpartition_id INTEGER NOT NULL,
        mchar_id INTEGER NOT NULL,
-       rank INTEGER NOT NULL DEFAULT 0
-       , PRIMARY KEY (mpartition_id,mchar_id,rank)
+       position INTEGER NOT NULL DEFAULT 0
+       , PRIMARY KEY (charmatrix_id,mchar_id,rank)
 );
 
-CREATE INDEX mpartition_mchar_i1 ON mpartition_mchar (mchar_id);
+CREATE INDEX charmatrix_mchar_i1 ON charmatrix_mchar (mchar_id);
 
 -- associating characters with character matrix partitions
-CREATE TABLE mpartition_otu (
-       mpartition_id INTEGER NOT NULL,
+CREATE TABLE charmatrix_otu (
+       charmatrix_id INTEGER NOT NULL,
        otu_id INTEGER NOT NULL,
-       rank INTEGER NOT NULL DEFAULT 0
-       , PRIMARY KEY (mpartition_id,otu_id,rank)
+       position INTEGER NOT NULL DEFAULT 0
+       , PRIMARY KEY (charmatrix_id,otu_id,rank)
 );
 
-CREATE INDEX mpartition_otu_i1 ON mpartition_otu (otu_id);
+CREATE INDEX charmatrix_otu_i1 ON charmatrix_otu (otu_id);
+
+-- creating partitions (sub-matrices) of character matrices
+CREATE TABLE charmatrix_relationship (
+       parent_charmatrix_id INTEGER NOT NULL,
+       child_charmatrix_id INTEGER NOT NULL,
+       type_id INTEGER NOT NULL,
+       rank INTEGER NOT NULL DEFAULT 0
+       , PRIMARY KEY (parent_charmatrix_id,child_charmatrix_id,type_id)
+);
+
+CREATE INDEX charmatrix_relationship_i1 ON charmatrix_relationship (child_charmatrix_id);
 
 CREATE SEQUENCE mcell_pk_seq;
 CREATE TABLE mcell (
