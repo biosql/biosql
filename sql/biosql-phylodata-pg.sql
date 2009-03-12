@@ -22,8 +22,10 @@
 -- Schema extension on top of the BioSQL core schema for representing
 -- phylogenetic data matrices.
 --
--- This was developed independently but is very similar to the
--- phylogeny module in Chado (the GMOD common relational model).
+-- This schema is based on the model developed by the Evolutionary
+-- Informatics Working Group at NESCent (see phyloanalysis.png in the
+-- doc/ directory), and a reconciliation of that model with the MX
+-- data model developed by Matt Yoder.
 --
 -- Authors: Hilmar Lapp, hlapp at gmx.net
 --
