@@ -1,16 +1,16 @@
-#
-# By Peter Eisentraut (2008)
-# See http://people.planetpostgresql.org/peter/index.php?/archives/18-Readding-implicit-casts-in-PostgreSQL-8.3.html
-# for the context. This is the result produced by the also included shell
-# script pg83-add-old-casts.sh.
-#
-# Use at your own risk. Version 8.3+ of PostgreSQL has not been tested yet with
-# these casts added. Adding them might make v8.3 work with bioperl-db, but it
-# is not tested.
-#
-# Obviously, DO NOT run this in PostgreSQL prior to v8.3. It's not needed, and
-# hence if anything will cause damage.
-#
+--
+-- By Peter Eisentraut (2008)
+-- See http://people.planetpostgresql.org/peter/index.php?/archives/18-Readding-implicit-casts-in-PostgreSQL-8.3.html
+-- for the context. This is the result produced by the also included shell
+-- script pg83-add-old-casts.sh.
+--
+-- Use at your own risk. Version 8.3+ of PostgreSQL has not been tested yet with
+-- these casts added. Adding them might make v8.3 work with bioperl-db, but it
+-- is not tested.
+--
+-- Obviously, DO NOT run this in PostgreSQL prior to v8.3. It's not needed, and
+-- hence if anything will cause damage.
+--
 CREATE FUNCTION pg_catalog.text(integer) RETURNS text STRICT IMMUTABLE LANGUAGE SQL AS 'SELECT textin(int4out($1));';
 CREATE CAST (integer AS text) WITH FUNCTION pg_catalog.text(integer) AS IMPLICIT;
 CREATE FUNCTION pg_catalog.text(smallint) RETURNS text STRICT IMMUTABLE LANGUAGE SQL AS 'SELECT textin(int2out($1));';
