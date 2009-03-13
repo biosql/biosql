@@ -150,29 +150,28 @@ ball.
 
 Unzip and Untar, in one step:
 
-  >tar -zxvf postgresql-8.2.9.tar.gz
+  >tar -zxvf postgresql-8.3.6.tar.gz
 
 Or in two steps:
  
-  >gunzip postgresql-8.2.9.tar.gz
-  >tar -xvf postgresql-8.2.9.tar
+  >gunzip postgresql-8.3.6.tar.gz
+  >tar -xvf postgresql-8.3.6.tar
 
 ===============
 NOTE: In version 8.3 and higher, PostgreSQL introduced a significant
-change to the behavior of the database server that at present renders
-it incompatible with at least Bioperl-db, the Perl language binding
-for BioSQL. Specifically, PostgreSQL v8.3+ removes the automatic
-typecasts of numeric values to strings, and hence comparing a
-character-type column to an unquoted numeric value results in an
-error. This will break the binding or client code for untyped
-languages (such as Perl) if the code does not explicitly cast bound
-query parameters for character columns and if the bound data happens
-to be a valid number. This can happen, for example, for accession
-numbers (which ironically mostly are not numbers).
+change to the behavior of the database server. Specifically,
+PostgreSQL v8.3+ removes the automatic typecasts of numeric values to
+strings, and hence comparing a character-type column to an unquoted
+numeric value results in an error.
 
-Until this incompatibility is resolved, PostgreSQL v8.3 or higher is
-unsupported (though it may work well for language bindings such as
-Biojava).
+This may break client code that includes unquoted number literals in
+query constraints for text-type columns, for example for accession
+numbers (which ironically often are not numbers).
+
+None of the Bio* language-bindings is currently known to suffer from
+this, and hence PostgreSQL v8.3 is supported. Custom code, however,
+may be affected, and we recommend to test such code first before
+upgrading from an older version of PostgreSQL. 
 ===============
 
 Now make the package by going:
