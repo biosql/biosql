@@ -36,6 +36,8 @@ load_itis_taxonomy.pl
         --dbuser     # optional: user name to connect with
         --dbpass     # optional: password to connect with
         --download   # optional: whether to download new ITIS taxonomy data
+        --url        # optional: ITIS download URL or file
+        --printurl   # optional: print default download URL and exit
         --schema     # optional: Pg only, load using given schema
         --encoding   # optional: Pg only, client encoding to set
 
@@ -47,13 +49,14 @@ kingdom. There are a number of options to do with where the biosql
 database is (i.e., database name, hostname, user for database,
 password, database name).
 
-At present, this script cannot yet download the ITIS taxonomy from the
-ITIS HTTP download page on-the-fly (http://www.itis.gov/downloads/),
-because the name of the file contains the date and hence isn't fixed.
+This script can download the ITIS taxonomy from the ITIS HTTP download
+page on-the-fly (http://www.itis.gov/downloads/). However, since the
+name of the file contains the date it isn't fixed and may need to be
+corrected on the command line (see --url argument).
 
-Hence, for now you need to manually download the taxonomy. Save the
-file named 'itisMSmmddyy.TAR.gz' to disk (where mm, dd, and yy are the
-numeric month, day, and year in which the snapshot was taken by ITIS),
+You may also manually download the taxonomy. Save the file named
+'itisMSmmddyy.TAR.gz' to disk (where mm, dd, and yy are the numeric
+month, day, and year in which the snapshot was taken by ITIS),
 decompress it using gunzip, and then un-tar using 'tar xvf
 <uncompressed_file>. This will create a directory in which the
 individual files constituting the ITIS database reside. Provide this
@@ -121,16 +124,30 @@ the database, you might want to try setting this to iso_8859_1.
 
 =item --download
 
-this is not supported currently
+Download the ITIS taxonomy to the specified directory. Use the
+--printurl parameter to obtain the default download, and if that is no
+longer available use the --url parameter to change it.
+
+=item --url
+
+The URL from which to download the ITIS taxonomy. Specify --download
+too to make this take effect. If not specified, a default URL is used
+which can be obtained with argument --printurl. If specified relative,
+it is considered relative to the directory of the default download
+URL.
+
+=item --printurl
+
+Prints the default ITIS download URL.
 
 =item --directory
 
-the directory in which the individual files reside that make up the
+The directory in which the individual files reside that make up the
 ITIS taxonomy database
 
 =item --namespace
 
-the namespace for the ITIS trees, defaults to "ITIS"
+The namespace for the ITIS trees, defaults to "ITIS"
 
 =item --verbose=n
 
@@ -158,7 +175,8 @@ use POSIX;
 use Getopt::Long;
 use File::Spec;
 
-use constant ITIS_URL => "http://www.itis.gov/downloads/itisMS060408.TAR.gz";
+use constant ITIS_URL_PREFIX => "http://www.itis.gov/downloads/";
+use constant ITIS_DEFAULT_FILE => "itisMS013009.TAR.gz";
 use constant ITIS_SCHEMA_DDL => "itisMSforTar.sql";
 use constant ITIS_TAXONOMIC_UNITS_TABLE => "taxonomic_units";
 use constant ITIS_KINGDOMS_TABLE => "kingdoms";
@@ -178,6 +196,7 @@ my $encoding;          # a specific client encoding to enable, if any
 my $schema;            # for PostgreSQL, the schema to use, if any
 my $namespace = "ITIS";# the namespace for the tree
 my $dir;               # the download and data directory
+my $itis_download = ITIS_URL_PREFIX . ITIS_DEFAULT_FILE;
 my $download = 0;      # whether to download from itis.gov first
 my $verbose = 1;       # guess what
 
@@ -202,6 +221,8 @@ my $ok = GetOptions("help"       => \$help,
                     "namespace=s"=> \$namespace,
 		    "directory=s"=> \$dir,
 		    "download"   => \$download,
+                    "url=s"      => \$itis_download,
+                    "printurl"   => sub { print $itis_download,"\n"; exit 0; },
 		    "verbose=i"  => \$verbose,
                    );
 
@@ -246,7 +267,7 @@ if (!$dsn) {
 #
 if ($download) {
     print STDERR "Downloading ITIS taxonomy to $dir\n" if $verbose;
-    $dir = download_taxondb($dir);
+    $dir = download_taxondb($dir,$itis_download);
 }
 
 #
@@ -666,6 +687,7 @@ sub end_work{
 
 sub download_taxondb {
     my $dir = shift;
+    my $url = shift;
 
     eval {
         require LWP::UserAgent;
@@ -678,8 +700,10 @@ sub download_taxondb {
     # stall otherwise after the first several hundred kB - no idea why
     $ua->default_header("Accept" => "*/*"); 
     $ua->timeout(30);
-    my $req = HTTP::Request->new(GET => ITIS_URL);
-    my @url_elems = split(/\//,ITIS_URL);
+    # add default prefix to download URL if it is relative
+    $url = ITIS_URL_PREFIX . $url unless $url =~ /^[A-Za-z]+:\/\//;
+    my $req = HTTP::Request->new(GET => $url);
+    my @url_elems = split(/\//,$url);
     my $file = $url_elems[-1];
     my $resp = $ua->request($req, File::Spec->catfile($dir, $file));
     if (!$resp->is_success()) {
