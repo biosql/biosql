@@ -150,7 +150,7 @@ the organism to which a given bioentry refers, and they reflect the
 structure of NCBI's taxonomy database. Each bioentry can be
 associated with only one taxon, but many bioentries can be associated
 with the same taxon. In order to get the most value from these tables
-it's recommended that you use the BioSQL script load_taxonomy.pl
+it's recommended that you use the BioSQL script load_ncbi_taxonomy.pl
 to populate them.
 
 The taxon_name.taxon_id field is meant to store an NCBI
@@ -165,7 +165,7 @@ stores the class of the taxon (e.g. "species", "kingdom"). The
 parent_taxon_id contains the taxon id of the parent taxon, since there
 should only be one parent in the taxonomic tree. The right_value and
 left_value fields store values that are calculated and entered by the 
-load_taxonomy.pl script. These arbitrary values are the upper and
+load_ncbi_taxonomy.pl script. These arbitrary values are the upper and
 lower bounds of "nested sets", one set for each taxa, where the set 
 of the child taxa is contained within the larger set of the parent 
 taxon. An example would be the set for the species Procyon lotor,  

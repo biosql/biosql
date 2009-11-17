@@ -449,7 +449,7 @@ Loading taxonomy data
 
 With bioperl and bioperl-db installed you are ready to load some data.
 It is advisable to pre-load the NCBI taxonomy database (use
-scripts/load_taxonomy.pl in the biosql-schema package, the details are
+scripts/load_ncbi_taxonomy.pl in the biosql-schema package, the details are
 in its documentation). Otherwise you'll see errors from misparsed
 organisms. 
 
