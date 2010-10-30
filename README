@@ -11,13 +11,17 @@ different Bio* projects, Bioperl, Biojava, Biopython, and Bioruby.
 Entries stored through an application written in, say, Bioperl could
 be retrieved by another written in Biojava.
 
-There are currently three different RDBMSs supported: MySQL,
-PostgreSQL, and Oracle. The MySQL schema DDL is in
-sql/biosqldb-mysql.sql, the PostgreSQL schema is in 
+There are currently four different RDBMSs supported: MySQL,
+PostgreSQL, Oracle, and most recently SQLite. The MySQL schema
+DDL is in sql/biosqldb-mysql.sql, the PostgreSQL schema is in
 sql/biosqldb-pg.sql, and the Oracle schema is in multiple files
-in the directory sql/biosql-ora. In order to instantiate the schema, feed
-the respective file or files to your SQL shell (mysql for MySQL, and psql for
-PostgreSQL).
+in the directory sql/biosql-ora, and the SQLite schema is in
+sql/biosqldb-sqlite.sql. In order to instantiate the schema, feed
+the respective file or files to your SQL shell (e.g. mysql for
+MySQL, and psql for PostgreSQL).
+
+Note the SQLite schema is new, and is not yet supported by all the
+Bio* projects (at the time of writing, just Biopython supports this).
 
 ======================================================================
 INSTALLATION NOTES
