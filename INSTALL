@@ -309,9 +309,9 @@ Schema Loading
 -------------
 
 The BioSQL schema is distributed separately from the language
-bindings. Use the svn checkout from the anonymous server:
+bindings. Use git clone to get a local copy:
 
- >svn co svn://code.open-bio.org/biosql/biosql-schema/trunk biosql-schema
+ >git clone https://github.com/biosql/biosql.git
 
 Create a database, which we'll call 'biosql', in the data instance:
 
@@ -423,9 +423,9 @@ With DBI and the driver of choice set up you now should download
 the bioperl and bioperl-db package.
 
 bioperl-1.5.2 is available from CPAN or www.bioperl.org, and
-bioperl-db is available from CPAN, or from svn:
+bioperl-db is available from CPAN, or from git:
 
-  >svn co svn://code.open-bio.org/bioperl/bioperl-db/trunk bioperl-db
+  >git clone https://github.com/bioperl/bioperl-db.git
 
 Look at the INSTALL files in the bioperl and bioperl-db directories, 
 they will give specific instructions. Bioperl uses other CPAN modules 
