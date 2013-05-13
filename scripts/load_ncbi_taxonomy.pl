@@ -196,7 +196,6 @@ Hilmar Lapp E<lt>hlapp at gmx.netE<gt>
 use strict;
 
 use DBI;
-use Net::FTP;
 use POSIX;
 use Getopt::Long;
 use LWP::UserAgent;
@@ -732,7 +731,7 @@ sub download_taxondb{
     my $ua = new LWP::UserAgent(agent => 'Mozilla/5.0');
     $ua->proxy(['http', 'ftp'] =>  $ENV{HTTP_PROXY});
     my $req = HTTP::Request->new('GET',"ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz");
-    my  $res = $ua->request($req,$dir."/taxdump.tar.gz");
+    $ua->request($req,$dir."/taxdump.tar.gz") or die("Error downloading file");
 
     # unpack them; overwrite previous files, if necessary
     system("gunzip -f $dir/taxdump.tar.gz");
