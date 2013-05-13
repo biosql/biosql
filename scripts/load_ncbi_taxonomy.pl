@@ -196,10 +196,9 @@ Hilmar Lapp E<lt>hlapp at gmx.netE<gt>
 use strict;
 
 use DBI;
-use Net::FTP;
 use POSIX;
 use Getopt::Long;
-
+use LWP::UserAgent;
 ####################################################################
 # Global defaults or definitions, mostly changeable through commandline
 ####################################################################
@@ -729,12 +728,10 @@ sub handle_diffs {
 
 sub download_taxondb{
     my $dir = shift;
-    my $ftp = Net::FTP->new('ftp.ncbi.nlm.nih.gov');
-    $ftp->login('anonymous', 'anonymous');
-    $ftp->cwd('/pub/taxonomy');
-    $ftp->binary;	
-    $ftp->get('taxdump.tar.gz', "$dir/taxdump.tar.gz");
-    $ftp->quit();
+    my $ua = new LWP::UserAgent(agent => 'Mozilla/5.0');
+    $ua->proxy(['http', 'ftp'] =>  $ENV{HTTP_PROXY});
+    my $req = HTTP::Request->new('GET',"ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz");
+    $ua->request($req,$dir."/taxdump.tar.gz") or die("Error downloading file");
 
     # unpack them; overwrite previous files, if necessary
     system("gunzip -f $dir/taxdump.tar.gz");
