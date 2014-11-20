@@ -28,7 +28,7 @@ load_ncbi_taxonomy.pl
   Usage: load_ncbi_taxonomy.pl
         --dbname     # name of database to use
         --dsn        # the DSN of the database to connect to
-        --driver     # "mysql", "Pg", "Oracle" (default "mysql")
+        --driver     # "mysql", "Pg", "Oracle", "SQLite" (default "mysql")
         --host       # optional: host to connect with
         --port       # optional: port to connect with
         --dbuser     # optional: user name to connect with
@@ -237,6 +237,10 @@ my %tablemaps = (
 		     # we can't truncate on a view ...
 		     "taxon_name_table" => "taxon_name",
 		 },
+		 "SQLite" => {
+			 "taxon" => "taxon",
+			 "taxon_name" => "taxon_name",
+		 },
 		 );
 my %tablemap;
 
@@ -292,9 +296,9 @@ if (!$dsn) {
     my $dbarg = "dbname=";
     SWITCH: {
           if ($driver eq "mysql") { $dbarg = "database="; last SWITCH; }
-          if ($driver eq "Oracle") { 
-              $dbarg = ($host || $port) ? "sid=" : ""; 
-              last SWITCH; 
+          if ($driver eq "Oracle") {
+              $dbarg = ($host || $port) ? "sid=" : "";
+              last SWITCH;
           }
     }
     $dsn .= $dbarg.$db;
@@ -329,7 +333,7 @@ $driver = $dbh->{Driver}->{Name} if $dsn && !$driver;
 # search path
 if (($driver eq "Pg") && $schema) {
     $dbh->do("SET search_path TO $schema, public") or die $DBI::errstr;
-} 
+}
 
 # chunksize:
 if(! defined($chunksize)) {
@@ -350,22 +354,22 @@ my %sth = (
 	   #
 	   # insert/update/delete taxon nodes
 	   #
-	   add_tax => 
+	   add_tax =>
 'INSERT INTO '.$taxontbl.' (ncbi_taxon_id, parent_taxon_id, node_rank, genetic_code, mito_genetic_code) VALUES (?, ?, ?, ?, ?)'
 	   ,
-           upd_tax => 
+           upd_tax =>
 'UPDATE '.$taxontbl.' SET parent_taxon_id = ?, node_rank = ?, genetic_code = ?, mito_genetic_code = ? WHERE taxon_id = ?'
 	   ,
-           del_tax => 
+           del_tax =>
 'DELETE FROM '.$taxontbl.' WHERE ncbi_taxon_id = ?'
 	   ,
-           upd_tax_parent => 
+           upd_tax_parent =>
 'UPDATE '.$taxontbl.' SET parent_taxon_id = ? WHERE taxon_id = ?'
            ,
 	   #
 	   # insert/update/delete taxon names
 	   #
-	   add_taxname => 
+	   add_taxname =>
 'INSERT INTO '.$taxonnametbl.' (taxon_id, name, name_class) VALUES (?, ?, ?)'
 	   ,
            upd_taxname =>  # this is actually not used presently
@@ -380,7 +384,7 @@ my %sth = (
 	   get_children =>
 'SELECT taxon_id, left_value, right_value FROM '.$taxontbl.' WHERE parent_taxon_id = ? ORDER BY ncbi_taxon_id'
 	   ,
-	   set_nested_set => 
+	   set_nested_set =>
 'UPDATE '.$taxontbl.' SET left_value = ?, right_value = ? WHERE taxon_id = ?'
 	   ,
 	   unset_nested_set => $driver eq "mysql" ?
@@ -395,8 +399,8 @@ my %sth = (
 	   );
 
 # prepare all our statements
-@sth{keys %sth} = map { 
-    ref($_) ? [map { $dbh->prepare($_); } @$_] : $dbh->prepare($_); 
+@sth{keys %sth} = map {
+    ref($_) ? [map { $dbh->prepare($_); } @$_] : $dbh->prepare($_);
 } values %sth;
 
 # install the exit handler
@@ -622,7 +626,7 @@ sub handle_diffs {
 
     # we also assume that $old and $new are both arrays of array
     # references, the first elements of which are the unique id's
-    
+
     # we sort $new by NCBI taxonID:
     @$new = sort { $a->[1] <=> $b->[1] } @$new;
 
@@ -752,7 +756,7 @@ sub delete_ncbi_names{
     # away with a TRUNCATE.
     #
     my $truncsql = "TRUNCATE TABLE ".$taxonnametbl;
-    my $delsql   = 
+    my $delsql   =
 	'DELETE FROM '.$taxonnametbl.' WHERE taxon_id IN ('.
 	'SELECT taxon_id FROM '.$taxontbl.' t '.
 	'WHERE t.ncbi_taxon_id IS NOT NULL)';
@@ -760,7 +764,7 @@ sub delete_ncbi_names{
     # our hands are tied.
     my $purgesql;
     if((!$allow_truncate) &&
-       (($driver eq "Pg") || ($driver eq "Oracle"))) {
+       (($driver eq "Pg") || ($driver eq "Oracle")) || ($driver eq "SQLite")) {
 	$purgesql = $delsql;
     } else {
 	my $row = $dbh->selectall_arrayref('SELECT COUNT(*) FROM '.
@@ -809,7 +813,11 @@ sub delete_ncbi_names{
 		 'WHERE tnm.taxon_id = tn.taxon_id '.
 		 'AND tn.ncbi_taxon_id IS NULL');
 	# delete all
-	$dbh->do('TRUNCATE TABLE '.$taxonnametbl);
+	if($driver ne 'SQLite') {
+		$dbh->do('TRUNCATE TABLE '.$taxonnametbl);
+	} else {
+		$dbh->do('DELETE FROM '.$taxonnametbl);
+	}
 	# restore the saved ones
 	$dbh->do('INSERT INTO '.$taxonnametbl.' SELECT * FROM tname_temp');
 	# whew! isn't there an easier way?
@@ -835,7 +843,7 @@ sub handle_progress{
 		       $n, $elapsed, ($n-$last_n)/($elapsed||1);
 	    }
 	}
-	if(defined($commit) && ($commit > 0) && 
+	if(defined($commit) && ($commit > 0) &&
 	   (($n % $commit) <= ($last_n % $commit))) {
 	    end_work($driver, $dbh, 1);
 	    if($driver eq "Pg") {
@@ -882,12 +890,12 @@ sub unconstrain_taxon{
     # key constraint temporarily. Ugly.
     elsif($driver eq "Pg") {
 	if(!$dbh->do('SELECT unconstrain_taxon()')) {
-	    warn "failed to un-constrain taxon: ".$dbh->errstr;    
+	    warn "failed to un-constrain taxon: ".$dbh->errstr;
 	    end_work($driver,$dbh,0);
 	    begin_work($driver,$dbh);
 	    $dbh->do('SET CONSTRAINTS ALL DEFERRED');
 	}
-    } 
+    }
     # otherwise let's assume we're fine with just deferring FK constraints
     else {
 	# turn on deferrable
@@ -961,4 +969,3 @@ sub last_insert_id {
         return $dbh->last_insert_id(undef,$schema,$table_name,undef);
     }
 }
-
