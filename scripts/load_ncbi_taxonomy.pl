@@ -497,6 +497,10 @@ end_work($driver,$dbh,1);
 if($driver eq "Pg") {
     print STDERR "\t... (vacuuming)\n" if $verbose;
     $dbh->do("VACUUM ANALYZE taxon");
+} elsif($driver eq "SQLite") {
+	print STDERR "\t... (vacuuming)\n" if $verbose;
+	$dbh->do("VACUUM");
+	$dbh->do("ANALYZE taxon");
 }
 
 # in case un-constraining it required some special action
