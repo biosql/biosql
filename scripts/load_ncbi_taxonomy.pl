@@ -335,6 +335,11 @@ if (($driver eq "Pg") && $schema) {
     $dbh->do("SET search_path TO $schema, public") or die $DBI::errstr;
 }
 
+# Set foreign keys to be on if the schema is SQLite
+if ($driver eq "SQLite") {
+    $dbh->do("PRAGMA foreign_keys = ON") or die $DBI::errstr;
+}
+
 # chunksize:
 if(! defined($chunksize)) {
     $chunksize = ($driver eq "Pg") ? $pgchunk : 0;
