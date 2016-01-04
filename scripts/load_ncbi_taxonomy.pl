@@ -28,7 +28,7 @@ load_ncbi_taxonomy.pl
   Usage: load_ncbi_taxonomy.pl
         --dbname     # name of database to use
         --dsn        # the DSN of the database to connect to
-        --driver     # "mysql", "Pg", "Oracle" (default "mysql")
+        --driver     # "mysql", "Pg", "Oracle", "SQLite" (default "mysql")
         --host       # optional: host to connect with
         --port       # optional: port to connect with
         --dbuser     # optional: user name to connect with
@@ -237,6 +237,10 @@ my %tablemaps = (
 		     # we can't truncate on a view ...
 		     "taxon_name_table" => "taxon_name",
 		 },
+		 "SQLite" => {
+			 "taxon" => "taxon",
+			 "taxon_name" => "taxon_name",
+		 },
 		 );
 my %tablemap;
 
@@ -330,6 +334,11 @@ $driver = $dbh->{Driver}->{Name} if $dsn && !$driver;
 if (($driver eq "Pg") && $schema) {
     $dbh->do("SET search_path TO $schema, public") or die $DBI::errstr;
 } 
+
+# Set foreign keys to be on if the schema is SQLite
+if ($driver eq "SQLite") {
+    $dbh->do("PRAGMA foreign_keys = ON") or die $DBI::errstr;
+}
 
 # chunksize:
 if(! defined($chunksize)) {
@@ -493,6 +502,10 @@ end_work($driver,$dbh,1);
 if($driver eq "Pg") {
     print STDERR "\t... (vacuuming)\n" if $verbose;
     $dbh->do("VACUUM ANALYZE taxon");
+} elsif($driver eq "SQLite") {
+	print STDERR "\t... (vacuuming)\n" if $verbose;
+	$dbh->do("VACUUM");
+	$dbh->do("ANALYZE taxon");
 }
 
 # in case un-constraining it required some special action
@@ -760,7 +773,7 @@ sub delete_ncbi_names{
     # our hands are tied.
     my $purgesql;
     if((!$allow_truncate) &&
-       (($driver eq "Pg") || ($driver eq "Oracle"))) {
+       (($driver eq "Pg") || ($driver eq "Oracle")) || ($driver eq "SQLite")) {
 	$purgesql = $delsql;
     } else {
 	my $row = $dbh->selectall_arrayref('SELECT COUNT(*) FROM '.
@@ -809,7 +822,11 @@ sub delete_ncbi_names{
 		 'WHERE tnm.taxon_id = tn.taxon_id '.
 		 'AND tn.ncbi_taxon_id IS NULL');
 	# delete all
+	if($driver ne 'SQLite') {
 	$dbh->do('TRUNCATE TABLE '.$taxonnametbl);
+	} else {
+		$dbh->do('DELETE FROM '.$taxonnametbl);
+	}
 	# restore the saved ones
 	$dbh->do('INSERT INTO '.$taxonnametbl.' SELECT * FROM tname_temp');
 	# whew! isn't there an easier way?
@@ -961,4 +978,3 @@ sub last_insert_id {
         return $dbh->last_insert_id(undef,$schema,$table_name,undef);
     }
 }
-
